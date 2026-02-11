@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run app (venv, no debugger)",
+      "type": "process",
+      "command": "${workspaceFolder}\\env\\Scripts\\python.exe",
+      "args": ["${workspaceFolder}\\main.py"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}

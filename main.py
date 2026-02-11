@@ -1,12 +1,20 @@
-class ChessPushIntroductoryService:
-    CURRENT_VER = "0.1 ALPHA"
+import sys
+from PySide6.QtWidgets import QApplication
+from ui.mainwindow import MainWindow
+from config import VERSION
+
+def main():
+    print(f"Chess push version: {VERSION}")
+
+    app = QApplication()
     
-    def show_intro(self):
-        print("Hello from chesspush!")
-        print(f"Current version: {self.CURRENT_VER}")
+    mainWindow = MainWindow()
+    mainWindow.show()
 
-        
-if __name__ == "__main__":
-    service = ChessPushIntroductoryService()
-    service.show_intro()
+    sys.exit(app.exec())
 
+if __name__ == '__main__':
+    main()
+
+
+    
