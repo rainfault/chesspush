@@ -2,18 +2,19 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Run app (venv, no debugger)",
+      "label": "Run app (venv)",
       "type": "process",
       "command": "${workspaceFolder}\\env\\Scripts\\python.exe",
-      "args": ["${workspaceFolder}\\main.py"],
+      "args": ["-u", "${workspaceFolder}\\main.py"],
       "options": {
-        "cwd": "${workspaceFolder}"
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "QML_IMPORT_PATH": "${workspaceFolder}\\qml",
+          "QML2_IMPORT_PATH": "${workspaceFolder}\\qml"
+        }
       },
       "problemMatcher": [],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      }
+      "group": { "kind": "build", "isDefault": true }
     }
   ]
 }
