@@ -100,11 +100,14 @@
         <mxCell id="OPF7QqS5WIPosD4ooFFB-40" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="press to select output folder" vertex="1">
           <mxGeometry height="30" width="120" x="240" y="460" as="geometry" />
         </mxCell>
-        <mxCell id="NSAjJwDV44P74RN4NT2G-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Считать строку" vertex="1">
+        <mxCell id="NSAjJwDV44P74RN4NT2G-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Считать чанк" vertex="1">
           <mxGeometry height="60" width="120" x="621" y="411" as="geometry" />
         </mxCell>
         <mxCell id="NSAjJwDV44P74RN4NT2G-2" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" value="Архив (30 ГБ)" vertex="1">
           <mxGeometry height="60" width="120" x="621" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="NSAjJwDV44P74RN4NT2G-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
+          <mxGeometry height="60" width="120" x="760" y="411" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
