@@ -6,6 +6,9 @@ import string
 import random
 import re
 
+import codecs
+
+
 # Открываю файл 1 раз и начинаю писать порциями
 
 def generate_random_string(length=8):
@@ -24,17 +27,9 @@ def write_single_pgn(pgn_str: str) -> None:
         f.write(pgn_str)
 
 
-def parse_chunk(data, tail, reader) -> list[str] | str:
+def parse_chunk(data, tail, decoder) -> list[str] | str:
     """Парсит чанк."""
-
-    try:
-        result = data.decode("utf-8")
-    except UnicodeDecodeError as e:
-        print(e)
-        # print(f"Data with error: {data}")
-        additional_data = reader.read(16384)
-        return parse_chunk(data + additional_data, tail, reader)
-
+    result = decoder.decode(data)
     
     parts: list[str] = result.split('\n\n[')
     last_part: str = ""
@@ -55,15 +50,11 @@ def parse_chunk(data, tail, reader) -> list[str] | str:
             break
 
         pgns.append(game)
-
-    # print("Last game: ", last_game)
     
     return pgns, last_game 
 
 def check_game_matches(pgn: str, flags: tuple[str, int, int, str]) -> bool:
-    """Проверяет игру по фильтрам"""
-
-    # print("PGN: ", pgn)
+    """Проверяет игру по фильтрам."""
 
     time_control_pattern = r'\[Event \"Rated ([A-Z][a-z]*) [Gg]ame\"\]'
     black_elo_pattern = r'\[WhiteElo \"(\d*)\"\]'
@@ -81,11 +72,6 @@ def check_game_matches(pgn: str, flags: tuple[str, int, int, str]) -> bool:
     if not all((time_control, black_elo, white_elo, eco)):
         return False
 
-    print(time_control.group(1), time_control_req)
-    print(black_elo.group(1), black_elo_req)
-    print(white_elo.group(1), white_elo_req)
-    print(eco.group(1))
-
     return (
             (time_control.group(1) == time_control_req) and
             (int(black_elo.group(1)) >= black_elo_req) and
@@ -95,10 +81,8 @@ def check_game_matches(pgn: str, flags: tuple[str, int, int, str]) -> bool:
 
 
 def decompress_database(path: str) -> None:    
-    
+    """Осуществляет потоковую распаковку базы данных."""
     chunks_total = 0
-
-    # Ставлю флаги (экспериметально)
     time_control_req = "Rapid" 
     black_elo_min = 2200
     white_elo_min = 2200
@@ -110,30 +94,27 @@ def decompress_database(path: str) -> None:
     with open(path, "rb") as fh:
         cctx = ZstdDecompressor(max_window_size=2**31)
         reader = cctx.stream_reader(fh, os.stat(path).st_size) # ZstdCompressionReader
-
-        # reader.seek(11000) -> могу сделать seek но только в пределах распакованных данных
-
-        with open("output.pgn", 'w', encoding='utf-8') as f:
+        
+        decoder = codecs.getincrementaldecoder('utf-8')()
+        
+        with open("output_4.pgn", 'w', encoding='utf-8') as f:
             tail: str = ""
 
             games_collected: int = 0
             
             while True:
-                chunk = reader.read(1638400) # количество байт для чтения
-                # Может потерять кодировку символа при чтении...
-                # Нужно найти способ не терять.
-
+                chunk = reader.read(1638400) 
+               
                 if not chunk:  
                     break
 
                 chunks_total += 1
                 print(f"============   Chunks readed: {chunks_total} ============")
 
-                games, tail = parse_chunk(chunk, tail, reader)
+                games, tail = parse_chunk(chunk, tail, decoder)
 
                 for game in games:
                     if check_game_matches(game, flags):
-                        # print("Game matches!")
                         games_collected += 1
                         f.write(game)
                         f.write('\n\n')
