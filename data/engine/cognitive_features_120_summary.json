@@ -1,0 +1,34 @@
+{
+  "games_total": 120,
+  "class_counts": {
+    "1": 60,
+    "0": 60
+  },
+  "null_counts": {
+    "game_id": 0,
+    "label": 0,
+    "source_class": 0,
+    "source_username": 60,
+    "engine_move_count": 0,
+    "critical_positions_count": 0,
+    "error_moves_count": 0,
+    "time_complexity_corr": 0,
+    "critical_time_lift": 0,
+    "cpl_mean": 0,
+    "cpl_median": 0,
+    "cpl_std": 0,
+    "post_error_time_ratio": 16
+  },
+  "numeric_means": {
+    "label": 0.5,
+    "engine_move_count": 73.8,
+    "critical_positions_count": 14.775,
+    "error_moves_count": 7.55,
+    "time_complexity_corr": 0.06894256675012163,
+    "critical_time_lift": 1.1363282359105606,
+    "cpl_mean": 40.49418016695292,
+    "cpl_median": 15.941666666666666,
+    "cpl_std": 65.47023166394183,
+    "post_error_time_ratio": 2.30101801492256
+  }
+}

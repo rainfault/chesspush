@@ -1,0 +1,814 @@
+{
+  "merged_dataset_size": 120,
+  "class_counts": {
+    "0": 60,
+    "1": 60
+  },
+  "feature_sets": {
+    "baseline_only": [
+      "white_elo",
+      "black_elo",
+      "elo_diff_abs",
+      "ply_count",
+      "move_count_total",
+      "avg_move_time",
+      "median_move_time",
+      "std_move_time",
+      "max_move_time",
+      "cv_move_time",
+      "fast_move_ratio",
+      "slow_move_ratio",
+      "white_move_count",
+      "white_avg_move_time",
+      "white_median_move_time",
+      "white_std_move_time",
+      "white_fast_move_ratio",
+      "white_slow_move_ratio",
+      "black_move_count",
+      "black_avg_move_time",
+      "black_median_move_time",
+      "black_std_move_time",
+      "black_fast_move_ratio",
+      "black_slow_move_ratio",
+      "wb_avg_time_diff",
+      "wb_move_count_diff"
+    ],
+    "baseline_plus_cognitive": [
+      "white_elo",
+      "black_elo",
+      "elo_diff_abs",
+      "ply_count",
+      "move_count_total",
+      "avg_move_time",
+      "median_move_time",
+      "std_move_time",
+      "max_move_time",
+      "cv_move_time",
+      "fast_move_ratio",
+      "slow_move_ratio",
+      "white_move_count",
+      "white_avg_move_time",
+      "white_median_move_time",
+      "white_std_move_time",
+      "white_fast_move_ratio",
+      "white_slow_move_ratio",
+      "black_move_count",
+      "black_avg_move_time",
+      "black_median_move_time",
+      "black_std_move_time",
+      "black_fast_move_ratio",
+      "black_slow_move_ratio",
+      "wb_avg_time_diff",
+      "wb_move_count_diff",
+      "time_complexity_corr",
+      "critical_time_lift",
+      "cpl_mean",
+      "cpl_median",
+      "cpl_std",
+      "post_error_time_ratio"
+    ],
+    "baseline_plus_cognitive_plus_bestmove": [
+      "white_elo",
+      "black_elo",
+      "elo_diff_abs",
+      "ply_count",
+      "move_count_total",
+      "avg_move_time",
+      "median_move_time",
+      "std_move_time",
+      "max_move_time",
+      "cv_move_time",
+      "fast_move_ratio",
+      "slow_move_ratio",
+      "white_move_count",
+      "white_avg_move_time",
+      "white_median_move_time",
+      "white_std_move_time",
+      "white_fast_move_ratio",
+      "white_slow_move_ratio",
+      "black_move_count",
+      "black_avg_move_time",
+      "black_median_move_time",
+      "black_std_move_time",
+      "black_fast_move_ratio",
+      "black_slow_move_ratio",
+      "wb_avg_time_diff",
+      "wb_move_count_diff",
+      "time_complexity_corr",
+      "critical_time_lift",
+      "cpl_mean",
+      "cpl_median",
+      "cpl_std",
+      "post_error_time_ratio",
+      "best_move_ratio",
+      "top2_move_ratio",
+      "top3_move_ratio",
+      "best_move_ratio_in_critical_positions",
+      "best_move_ratio_under_time_pressure"
+    ]
+  },
+  "experiments": {
+    "baseline_only": {
+      "stratified_5fold_cv": {
+        "LogisticRegression": {
+          "fold_metrics": [
+            {
+              "accuracy": 0.75,
+              "precision": 0.875,
+              "recall": 0.5833333333333334,
+              "f1": 0.7
+            },
+            {
+              "accuracy": 0.7916666666666666,
+              "precision": 0.8181818181818182,
+              "recall": 0.75,
+              "f1": 0.782608695652174
+            },
+            {
+              "accuracy": 0.9166666666666666,
+              "precision": 0.8571428571428571,
+              "recall": 1.0,
+              "f1": 0.9230769230769231
+            },
+            {
+              "accuracy": 0.875,
+              "precision": 0.9090909090909091,
+              "recall": 0.8333333333333334,
+              "f1": 0.8695652173913043
+            },
+            {
+              "accuracy": 0.7916666666666666,
+              "precision": 0.8181818181818182,
+              "recall": 0.75,
+              "f1": 0.782608695652174
+            }
+          ],
+          "summary": {
+            "accuracy_mean": 0.825,
+            "accuracy_std": 0.06123724356957945,
+            "precision_mean": 0.8555194805194806,
+            "precision_std": 0.03475694465213668,
+            "recall_mean": 0.7833333333333334,
+            "recall_std": 0.13540064007726602,
+            "f1_mean": 0.8115719063545151,
+            "f1_std": 0.07735970309564455
+          }
+        },
+        "RandomForestClassifier": {
+          "fold_metrics": [
+            {
+              "accuracy": 0.9583333333333334,
+              "precision": 1.0,
+              "recall": 0.9166666666666666,
+              "f1": 0.9565217391304348
+            },
+            {
+              "accuracy": 0.9166666666666666,
+              "precision": 1.0,
+              "recall": 0.8333333333333334,
+              "f1": 0.9090909090909091
+            },
+            {
+              "accuracy": 0.9166666666666666,
+              "precision": 0.8571428571428571,
+              "recall": 1.0,
+              "f1": 0.9230769230769231
+            },
+            {
+              "accuracy": 0.9166666666666666,
+              "precision": 0.8571428571428571,
+              "recall": 1.0,
+              "f1": 0.9230769230769231
+            },
+            {
+              "accuracy": 0.9166666666666666,
+              "precision": 0.8571428571428571,
+              "recall": 1.0,
+              "f1": 0.9230769230769231
+            }
+          ],
+          "summary": {
+            "accuracy_mean": 0.925,
+            "accuracy_std": 0.016666666666666698,
+            "precision_mean": 0.9142857142857143,
+            "precision_std": 0.06998542122237654,
+            "recall_mean": 0.95,
+            "recall_std": 0.06666666666666667,
+            "f1_mean": 0.9269686834904227,
+            "f1_std": 0.01573807683606739
+          }
+        }
+      },
+      "leave_one_bot_out": {
+        "LogisticRegression": {
+          "per_bot_results": [
+            {
+              "accuracy": 0.8181818181818182,
+              "precision": 0.8888888888888888,
+              "recall": 0.7272727272727273,
+              "f1": 0.8,
+              "bot_name": "Boris-Trapsky",
+              "test_size": 22
+            },
+            {
+              "accuracy": 0.875,
+              "precision": 0.8,
+              "recall": 1.0,
+              "f1": 0.8888888888888888,
+              "bot_name": "Lynx_BOT",
+              "test_size": 8
+            },
+            {
+              "accuracy": 0.5,
+              "precision": 0.5,
+              "recall": 0.09090909090909091,
+              "f1": 0.15384615384615385,
+              "bot_name": "OpeningsBot",
+              "test_size": 22
+            },
+            {
+              "accuracy": 0.75,
+              "precision": 0.8333333333333334,
+              "recall": 0.625,
+              "f1": 0.7142857142857143,
+              "bot_name": "maia1",
+              "test_size": 16
+            },
+            {
+              "accuracy": 0.9090909090909091,
+              "precision": 0.9090909090909091,
+              "recall": 0.9090909090909091,
+              "f1": 0.9090909090909091,
+              "bot_name": "maia5",
+              "test_size": 22
+            },
+            {
+              "accuracy": 0.8125,
+              "precision": 0.7777777777777778,
+              "recall": 0.875,
+              "f1": 0.8235294117647058,
+              "bot_name": "maia9",
+              "test_size": 16
+            },
+            {
+              "accuracy": 0.7857142857142857,
+              "precision": 0.8333333333333334,
+              "recall": 0.7142857142857143,
+              "f1": 0.7692307692307693,
+              "bot_name": "simpleEval",
+              "test_size": 14
+            }
+          ],
+          "summary": {
+            "accuracy_mean": 0.7786410018552876,
+            "accuracy_std": 0.12393736262386158,
+            "precision_mean": 0.7917748917748918,
+            "precision_std": 0.12651625731766936,
+            "recall_mean": 0.7059369202226345,
+            "recall_std": 0.2781730956321695,
+            "f1_mean": 0.7226959781581631,
+            "f1_std": 0.24033690309312572
+          }
+        },
+        "RandomForestClassifier": {
+          "per_bot_results": [
+            {
+              "accuracy": 0.7727272727272727,
+              "precision": 0.875,
+              "recall": 0.6363636363636364,
+              "f1": 0.7368421052631579,
+              "bot_name": "Boris-Trapsky",
+              "test_size": 22
+            },
+            {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "bot_name": "Lynx_BOT",
+              "test_size": 8
+            },
+            {
+              "accuracy": 0.7272727272727273,
+              "precision": 0.8571428571428571,
+              "recall": 0.5454545454545454,
+              "f1": 0.6666666666666666,
+              "bot_name": "OpeningsBot",
+              "test_size": 22
+            },
+            {
+              "accuracy": 0.9375,
+              "precision": 0.8888888888888888,
+              "recall": 1.0,
+              "f1": 0.9411764705882353,
+              "bot_name": "maia1",
+              "test_size": 16
+            },
+            {
+              "accuracy": 0.9090909090909091,
+              "precision": 0.8461538461538461,
+              "recall": 1.0,
+              "f1": 0.9166666666666666,
+              "bot_name": "maia5",
+              "test_size": 22
+            },
+            {
+              "accuracy": 0.9375,
+              "precision": 0.8888888888888888,
+              "recall": 1.0,
+              "f1": 0.9411764705882353,
+              "bot_name": "maia9",
+              "test_size": 16
+            },
+            {
+              "accuracy": 0.8571428571428571,
+              "precision": 1.0,
+              "recall": 0.7142857142857143,
+              "f1": 0.8333333333333334,
+              "bot_name": "simpleEval",
+              "test_size": 14
+            }
+          ],
+          "summary": {
+            "accuracy_mean": 0.8773191094619666,
+            "accuracy_std": 0.09036748593858984,
+            "precision_mean": 0.9080106401534973,
+            "precision_std": 0.05995100865166774,
+            "recall_mean": 0.8423005565862709,
+            "recall_std": 0.1876135188156898,
+            "f1_mean": 0.8622659590151851,
+            "f1_std": 0.11289132814888006
+          }
+        }
+      }
+    },
+    "baseline_plus_cognitive": {
+      "stratified_5fold_cv": {
+        "LogisticRegression": {
+          "fold_metrics": [
+            {
+              "accuracy": 0.7916666666666666,
+              "precision": 0.8888888888888888,
+              "recall": 0.6666666666666666,
+              "f1": 0.7619047619047619
+            },
+            {
+              "accuracy": 0.6666666666666666,
+              "precision": 0.7,
+              "recall": 0.5833333333333334,
+              "f1": 0.6363636363636364
+            },
+            {
+              "accuracy": 0.9166666666666666,
+              "precision": 0.8571428571428571,
+              "recall": 1.0,
+              "f1": 0.9230769230769231
+            },
+            {
+              "accuracy": 0.8333333333333334,
+              "precision": 0.9,
+              "recall": 0.75,
+              "f1": 0.8181818181818182
+            },
+            {
+              "accuracy": 0.875,
+              "precision": 1.0,
+              "recall": 0.75,
+              "f1": 0.8571428571428571
+            }
+          ],
+          "summary": {
+            "accuracy_mean": 0.8166666666666668,
+            "accuracy_std": 0.08579691784155835,
+            "precision_mean": 0.8692063492063491,
+            "precision_std": 0.09717916117974519,
+            "recall_mean": 0.75,
+            "recall_std": 0.13944333775567924,
+            "f1_mean": 0.7993339993339993,
+            "f1_std": 0.09692234264003123
+          }
+        },
+        "RandomForestClassifier": {
+          "fold_metrics": [
+            {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            {
+              "accuracy": 0.9583333333333334,
+              "precision": 1.0,
+              "recall": 0.9166666666666666,
+              "f1": 0.9565217391304348
+            },
+            {
+              "accuracy": 0.9166666666666666,
+              "precision": 0.8571428571428571,
+              "recall": 1.0,
+              "f1": 0.9230769230769231
+            },
+            {
+              "accuracy": 0.9166666666666666,
+              "precision": 0.8571428571428571,
+              "recall": 1.0,
+              "f1": 0.9230769230769231
+            },
+            {
+              "accuracy": 0.9166666666666666,
+              "precision": 0.8571428571428571,
+              "recall": 1.0,
+              "f1": 0.9230769230769231
+            }
+          ],
+          "summary": {
+            "accuracy_mean": 0.9416666666666667,
+            "accuracy_std": 0.033333333333333354,
+            "precision_mean": 0.9142857142857143,
+            "precision_std": 0.06998542122237654,
+            "recall_mean": 0.9833333333333332,
+            "recall_std": 0.03333333333333335,
+            "f1_mean": 0.9451505016722409,
+            "f1_std": 0.030329856986634453
+          }
+        }
+      },
+      "leave_one_bot_out": {
+        "LogisticRegression": {
+          "per_bot_results": [
+            {
+              "accuracy": 0.7272727272727273,
+              "precision": 0.7777777777777778,
+              "recall": 0.6363636363636364,
+              "f1": 0.7,
+              "bot_name": "Boris-Trapsky",
+              "test_size": 22
+            },
+            {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "bot_name": "Lynx_BOT",
+              "test_size": 8
+            },
+            {
+              "accuracy": 0.5454545454545454,
+              "precision": 0.6666666666666666,
+              "recall": 0.18181818181818182,
+              "f1": 0.2857142857142857,
+              "bot_name": "OpeningsBot",
+              "test_size": 22
+            },
+            {
+              "accuracy": 0.8125,
+              "precision": 0.8571428571428571,
+              "recall": 0.75,
+              "f1": 0.8,
+              "bot_name": "maia1",
+              "test_size": 16
+            },
+            {
+              "accuracy": 0.8181818181818182,
+              "precision": 0.8888888888888888,
+              "recall": 0.7272727272727273,
+              "f1": 0.8,
+              "bot_name": "maia5",
+              "test_size": 22
+            },
+            {
+              "accuracy": 0.75,
+              "precision": 0.75,
+              "recall": 0.75,
+              "f1": 0.75,
+              "bot_name": "maia9",
+              "test_size": 16
+            },
+            {
+              "accuracy": 0.8571428571428571,
+              "precision": 0.7777777777777778,
+              "recall": 1.0,
+              "f1": 0.875,
+              "bot_name": "simpleEval",
+              "test_size": 14
+            }
+          ],
+          "summary": {
+            "accuracy_mean": 0.7872217068645639,
+            "accuracy_std": 0.12828082243642486,
+            "precision_mean": 0.8168934240362811,
+            "precision_std": 0.10030970495664802,
+            "recall_mean": 0.7207792207792209,
+            "recall_std": 0.25503034917734396,
+            "f1_mean": 0.7443877551020408,
+            "f1_std": 0.20735261321176449
+          }
+        },
+        "RandomForestClassifier": {
+          "per_bot_results": [
+            {
+              "accuracy": 0.7272727272727273,
+              "precision": 0.8571428571428571,
+              "recall": 0.5454545454545454,
+              "f1": 0.6666666666666666,
+              "bot_name": "Boris-Trapsky",
+              "test_size": 22
+            },
+            {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "bot_name": "Lynx_BOT",
+              "test_size": 8
+            },
+            {
+              "accuracy": 0.7727272727272727,
+              "precision": 0.875,
+              "recall": 0.6363636363636364,
+              "f1": 0.7368421052631579,
+              "bot_name": "OpeningsBot",
+              "test_size": 22
+            },
+            {
+              "accuracy": 0.9375,
+              "precision": 0.8888888888888888,
+              "recall": 1.0,
+              "f1": 0.9411764705882353,
+              "bot_name": "maia1",
+              "test_size": 16
+            },
+            {
+              "accuracy": 0.9545454545454546,
+              "precision": 0.9166666666666666,
+              "recall": 1.0,
+              "f1": 0.9565217391304348,
+              "bot_name": "maia5",
+              "test_size": 22
+            },
+            {
+              "accuracy": 0.9375,
+              "precision": 0.8888888888888888,
+              "recall": 1.0,
+              "f1": 0.9411764705882353,
+              "bot_name": "maia9",
+              "test_size": 16
+            },
+            {
+              "accuracy": 0.9285714285714286,
+              "precision": 1.0,
+              "recall": 0.8571428571428571,
+              "f1": 0.9230769230769231,
+              "bot_name": "simpleEval",
+              "test_size": 14
+            }
+          ],
+          "summary": {
+            "accuracy_mean": 0.8940166975881263,
+            "accuracy_std": 0.09440527500331342,
+            "precision_mean": 0.9180839002267575,
+            "precision_std": 0.054375984615089364,
+            "recall_mean": 0.8627087198515769,
+            "recall_std": 0.18020181909592697,
+            "f1_mean": 0.8807800536162362,
+            "f1_std": 0.11686216149175452
+          }
+        }
+      }
+    },
+    "baseline_plus_cognitive_plus_bestmove": {
+      "stratified_5fold_cv": {
+        "LogisticRegression": {
+          "fold_metrics": [
+            {
+              "accuracy": 0.75,
+              "precision": 0.8,
+              "recall": 0.6666666666666666,
+              "f1": 0.7272727272727273
+            },
+            {
+              "accuracy": 0.7916666666666666,
+              "precision": 0.8888888888888888,
+              "recall": 0.6666666666666666,
+              "f1": 0.7619047619047619
+            },
+            {
+              "accuracy": 0.875,
+              "precision": 0.8,
+              "recall": 1.0,
+              "f1": 0.8888888888888888
+            },
+            {
+              "accuracy": 0.7916666666666666,
+              "precision": 0.8888888888888888,
+              "recall": 0.6666666666666666,
+              "f1": 0.7619047619047619
+            },
+            {
+              "accuracy": 0.7916666666666666,
+              "precision": 0.8181818181818182,
+              "recall": 0.75,
+              "f1": 0.782608695652174
+            }
+          ],
+          "summary": {
+            "accuracy_mean": 0.7999999999999999,
+            "accuracy_std": 0.040824829046386304,
+            "precision_mean": 0.8391919191919192,
+            "precision_std": 0.041116942976027596,
+            "recall_mean": 0.7499999999999999,
+            "recall_std": 0.12909944487358058,
+            "f1_mean": 0.7845159671246626,
+            "f1_std": 0.05513014818374823
+          }
+        },
+        "RandomForestClassifier": {
+          "fold_metrics": [
+            {
+              "accuracy": 0.9166666666666666,
+              "precision": 0.9166666666666666,
+              "recall": 0.9166666666666666,
+              "f1": 0.9166666666666666
+            },
+            {
+              "accuracy": 0.9583333333333334,
+              "precision": 1.0,
+              "recall": 0.9166666666666666,
+              "f1": 0.9565217391304348
+            },
+            {
+              "accuracy": 0.9166666666666666,
+              "precision": 0.8571428571428571,
+              "recall": 1.0,
+              "f1": 0.9230769230769231
+            },
+            {
+              "accuracy": 0.875,
+              "precision": 0.8461538461538461,
+              "recall": 0.9166666666666666,
+              "f1": 0.88
+            },
+            {
+              "accuracy": 0.875,
+              "precision": 0.8,
+              "recall": 1.0,
+              "f1": 0.8888888888888888
+            }
+          ],
+          "summary": {
+            "accuracy_mean": 0.9083333333333332,
+            "accuracy_std": 0.031180478223116186,
+            "precision_mean": 0.883992673992674,
+            "precision_std": 0.068895207853892,
+            "recall_mean": 0.95,
+            "recall_std": 0.04082482904638632,
+            "f1_mean": 0.9130308435525827,
+            "f1_std": 0.02712737186853514
+          }
+        }
+      },
+      "leave_one_bot_out": {
+        "LogisticRegression": {
+          "per_bot_results": [
+            {
+              "accuracy": 0.7272727272727273,
+              "precision": 0.7272727272727273,
+              "recall": 0.7272727272727273,
+              "f1": 0.7272727272727273,
+              "bot_name": "Boris-Trapsky",
+              "test_size": 22
+            },
+            {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "bot_name": "Lynx_BOT",
+              "test_size": 8
+            },
+            {
+              "accuracy": 0.5909090909090909,
+              "precision": 1.0,
+              "recall": 0.18181818181818182,
+              "f1": 0.3076923076923077,
+              "bot_name": "OpeningsBot",
+              "test_size": 22
+            },
+            {
+              "accuracy": 0.75,
+              "precision": 0.75,
+              "recall": 0.75,
+              "f1": 0.75,
+              "bot_name": "maia1",
+              "test_size": 16
+            },
+            {
+              "accuracy": 0.6818181818181818,
+              "precision": 0.6666666666666666,
+              "recall": 0.7272727272727273,
+              "f1": 0.6956521739130435,
+              "bot_name": "maia5",
+              "test_size": 22
+            },
+            {
+              "accuracy": 0.75,
+              "precision": 0.7,
+              "recall": 0.875,
+              "f1": 0.7777777777777778,
+              "bot_name": "maia9",
+              "test_size": 16
+            },
+            {
+              "accuracy": 0.7857142857142857,
+              "precision": 0.7,
+              "recall": 1.0,
+              "f1": 0.8235294117647058,
+              "bot_name": "simpleEval",
+              "test_size": 14
+            }
+          ],
+          "summary": {
+            "accuracy_mean": 0.7551020408163265,
+            "accuracy_std": 0.11592392891905552,
+            "precision_mean": 0.7919913419913421,
+            "precision_std": 0.13369371379304018,
+            "recall_mean": 0.7516233766233766,
+            "recall_std": 0.25759053579054136,
+            "f1_mean": 0.725989199774366,
+            "f1_std": 0.19410926946327428
+          }
+        },
+        "RandomForestClassifier": {
+          "per_bot_results": [
+            {
+              "accuracy": 0.7272727272727273,
+              "precision": 0.8571428571428571,
+              "recall": 0.5454545454545454,
+              "f1": 0.6666666666666666,
+              "bot_name": "Boris-Trapsky",
+              "test_size": 22
+            },
+            {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "bot_name": "Lynx_BOT",
+              "test_size": 8
+            },
+            {
+              "accuracy": 0.7272727272727273,
+              "precision": 0.8571428571428571,
+              "recall": 0.5454545454545454,
+              "f1": 0.6666666666666666,
+              "bot_name": "OpeningsBot",
+              "test_size": 22
+            },
+            {
+              "accuracy": 0.9375,
+              "precision": 0.8888888888888888,
+              "recall": 1.0,
+              "f1": 0.9411764705882353,
+              "bot_name": "maia1",
+              "test_size": 16
+            },
+            {
+              "accuracy": 0.9090909090909091,
+              "precision": 0.8461538461538461,
+              "recall": 1.0,
+              "f1": 0.9166666666666666,
+              "bot_name": "maia5",
+              "test_size": 22
+            },
+            {
+              "accuracy": 0.9375,
+              "precision": 0.8888888888888888,
+              "recall": 1.0,
+              "f1": 0.9411764705882353,
+              "bot_name": "maia9",
+              "test_size": 16
+            },
+            {
+              "accuracy": 0.8571428571428571,
+              "precision": 0.8571428571428571,
+              "recall": 0.8571428571428571,
+              "f1": 0.8571428571428571,
+              "bot_name": "simpleEval",
+              "test_size": 14
+            }
+          ],
+          "summary": {
+            "accuracy_mean": 0.87082560296846,
+            "accuracy_std": 0.09888180730729747,
+            "precision_mean": 0.8850514564800279,
+            "precision_std": 0.049414158283870344,
+            "recall_mean": 0.8497217068645639,
+            "recall_std": 0.19840303354797553,
+            "f1_mean": 0.8556422569027611,
+            "f1_std": 0.12571006279302688
+          }
+        }
+      }
+    }
+  }
+}

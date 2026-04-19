@@ -1,0 +1,48 @@
+{
+  "games_total": 120,
+  "class_counts": {
+    "1": 60,
+    "0": 60
+  },
+  "null_counts": {
+    "game_id": 0,
+    "label": 0,
+    "source_class": 0,
+    "source_username": 60,
+    "early_move_count": 0,
+    "middle_move_count": 0,
+    "late_move_count": 0,
+    "early_avg_time": 0,
+    "middle_avg_time": 0,
+    "late_avg_time": 0,
+    "early_cpl_mean": 0,
+    "middle_cpl_mean": 0,
+    "late_cpl_mean": 1,
+    "early_cpl_std": 0,
+    "middle_cpl_std": 0,
+    "late_cpl_std": 1,
+    "time_early_to_middle_diff": 0,
+    "time_middle_to_late_diff": 0,
+    "cpl_early_to_middle_diff": 0,
+    "cpl_middle_to_late_diff": 1
+  },
+  "numeric_means": {
+    "label": 0.5,
+    "early_move_count": 24.275,
+    "middle_move_count": 24.633333333333333,
+    "late_move_count": 24.891666666666666,
+    "early_avg_time": 5.805356481558258,
+    "middle_avg_time": 9.535782514819068,
+    "late_avg_time": 8.172877221693632,
+    "early_cpl_mean": 24.44969895682657,
+    "middle_cpl_mean": 44.12162336789382,
+    "late_cpl_mean": 54.43755525355247,
+    "early_cpl_std": 34.05670331834962,
+    "middle_cpl_std": 59.03847042523574,
+    "late_cpl_std": 77.42611859003243,
+    "time_early_to_middle_diff": 3.73042603326081,
+    "time_middle_to_late_diff": -1.3629052931254364,
+    "cpl_early_to_middle_diff": 19.671924411067252,
+    "cpl_middle_to_late_diff": 10.413397235508278
+  }
+}
