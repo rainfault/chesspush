@@ -1,0 +1,48 @@
+{
+  "games_seen": 1216,
+  "games_saved": 209,
+  "reject_stats": {
+    "white_elo_out_of_range": 461,
+    "black_elo_out_of_range": 255,
+    "time_control_not_allowed": 256,
+    "too_short_game": 7,
+    "non_normal_termination": 28
+  },
+  "saved_time_controls": {
+    "600+0": 134,
+    "600+5": 75
+  },
+  "top_saved_openings": {
+    "Goldsmith Defense": 17,
+    "Queen's Pawn Game: Zukertort Variation": 6,
+    "Queen's Pawn Game: Accelerated London System": 5,
+    "Modern Defense": 5,
+    "Saragossa Opening": 5,
+    "Rapport-Jobava System": 4,
+    "Caro-Kann Defense": 4,
+    "King's Pawn Game: McConnell Defense": 3,
+    "Scandinavian Defense: Mieses-Kotroc Variation": 3,
+    "Queen's Pawn Game: Chigorin Variation": 3,
+    "Queen's Pawn Game: Accelerated London System, Steinitz Countergambit": 3,
+    "Hungarian Opening": 3,
+    "Sicilian Defense: Open": 2,
+    "Pirc Defense": 2,
+    "English Opening: Agincourt Defense": 2,
+    "Ruy Lopez: Steinitz Defense": 2,
+    "Pirc Defense: Classical Variation": 2,
+    "English Defense": 2,
+    "Sicilian Defense: Flohr Variation": 2,
+    "English Opening: King's English Variation, Reversed Sicilian": 2
+  },
+  "saved_by_bot": {
+    "maia1": 27,
+    "maia5": 34,
+    "maia9": 43,
+    "Boris-Trapsky": 37,
+    "simpleEval": 48,
+    "OpeningsBot": 20
+  },
+  "seen_events": {
+    "rated rapid game": 1216
+  }
+}

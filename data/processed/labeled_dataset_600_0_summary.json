@@ -1,0 +1,24 @@
+{
+  "dataset_size": 426,
+  "class_counts": {
+    "1": 213,
+    "0": 213
+  },
+  "time_controls": {
+    "600+0": 426
+  },
+  "bot_source_distribution": {
+    "OpeningsBot": 25,
+    "maia1": 31,
+    "maia5": 26,
+    "simpleEval": 41,
+    "maia9": 31,
+    "Boris-Trapsky": 41,
+    "Lynx_BOT": 13,
+    "Humaia": 5
+  },
+  "required_time_control": "600+0",
+  "human_candidates_before_sampling": 433,
+  "bot_candidates_before_sampling": 213,
+  "sampled_per_class": 213
+}

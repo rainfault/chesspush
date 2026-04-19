@@ -1,0 +1,51 @@
+{
+  "games_seen": 1600,
+  "games_saved": 335,
+  "reject_stats": {
+    "time_control_not_allowed": 635,
+    "black_elo_out_of_range": 231,
+    "white_elo_out_of_range": 320,
+    "too_short_game": 17,
+    "non_normal_termination": 47,
+    "per_bot_cap_reached": 15
+  },
+  "saved_time_controls": {
+    "600+5": 122,
+    "600+0": 213
+  },
+  "top_saved_openings": {
+    "Goldsmith Defense": 26,
+    "Rapport-Jobava System": 8,
+    "Queen's Pawn Game: Zukertort Variation": 8,
+    "Queen's Pawn Game: Accelerated London System": 7,
+    "Saragossa Opening": 6,
+    "Hungarian Opening": 5,
+    "Scandinavian Defense: Mieses-Kotroc Variation": 5,
+    "Modern Defense": 5,
+    "Center Game: Normal Variation": 4,
+    "Sicilian Defense: Bowdler Attack": 4,
+    "Caro-Kann Defense": 4,
+    "Bird Opening: Dutch Variation": 3,
+    "Sicilian Defense": 3,
+    "King's Pawn Game: McConnell Defense": 3,
+    "Sicilian Defense: Open": 3,
+    "Petrov's Defense: Italian Variation": 3,
+    "Ruy Lopez: Steinitz Defense": 3,
+    "Queen's Pawn Game: Chigorin Variation": 3,
+    "Scandinavian Defense": 3,
+    "Indian Defense: Accelerated London System": 3
+  },
+  "saved_by_bot": {
+    "maia1": 41,
+    "maia5": 60,
+    "maia9": 60,
+    "Humaia": 5,
+    "Boris-Trapsky": 60,
+    "simpleEval": 60,
+    "OpeningsBot": 33,
+    "Lynx_BOT": 16
+  },
+  "seen_events": {
+    "rated rapid game": 1600
+  }
+}

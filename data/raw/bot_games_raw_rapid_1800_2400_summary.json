@@ -1,0 +1,43 @@
+{
+  "games_seen": 832,
+  "games_saved": 41,
+  "reject_stats": {
+    "white_elo_out_of_range": 646,
+    "black_elo_out_of_range": 83,
+    "time_control_not_allowed": 56,
+    "non_normal_termination": 6
+  },
+  "saved_time_controls": {
+    "600+0": 29,
+    "600+5": 12
+  },
+  "top_saved_openings": {
+    "Goldsmith Defense": 7,
+    "Rapport-Jobava System": 3,
+    "Queen's Pawn Game: Chigorin Variation": 2,
+    "Queen's Pawn Game: Accelerated London System, Steinitz Countergambit": 2,
+    "Queen's Pawn Game: Zukertort Variation": 2,
+    "Saragossa Opening": 2,
+    "Hungarian Opening": 2,
+    "Van Geet Opening: Berlin Gambit": 1,
+    "Benoni Defense: Modern Variation": 1,
+    "Modern Defense: Standard Line": 1,
+    "Hungarian Opening: Indian Defense": 1,
+    "King's Indian Attack: Smyslov Variation": 1,
+    "Queen's Pawn Game: Veresov, Richter Attack": 1,
+    "English Opening: Symmetrical Variation, Three Knights, Fianchetto Variation": 1,
+    "English Opening: Symmetrical Variation, Hedgehog Defense": 1,
+    "Zukertort Opening: Dutch Variation": 1,
+    "Indian Defense: Przepiorka Variation": 1,
+    "Scandinavian Defense: Mieses-Kotroc Variation": 1,
+    "Queen's Pawn Game: Levitsky Attack": 1,
+    "Four Knights Game: Scotch Variation, Belgrade Gambit": 1
+  },
+  "saved_by_bot": {
+    "Boris-Trapsky": 18,
+    "simpleEval": 23
+  },
+  "seen_events": {
+    "rated rapid game": 832
+  }
+}

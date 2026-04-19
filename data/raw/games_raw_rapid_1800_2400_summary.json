@@ -1,0 +1,38 @@
+{
+  "games_seen": 27601,
+  "games_saved": 500,
+  "reject_stats": {
+    "wrong_event": 24172,
+    "white_elo_out_of_range": 2737,
+    "non_normal_termination": 69,
+    "black_elo_out_of_range": 67,
+    "time_control_not_allowed": 45,
+    "too_short_game": 11
+  },
+  "saved_time_controls": {
+    "600+0": 433,
+    "600+5": 67
+  },
+  "top_saved_openings": {
+    "Caro-Kann Defense": 11,
+    "French Defense: Exchange Variation": 9,
+    "Bird Opening": 8,
+    "Modern Defense": 6,
+    "Indian Defense": 6,
+    "Philidor Defense": 6,
+    "Sicilian Defense: Old Sicilian": 6,
+    "Sicilian Defense: McDonnell Attack": 6,
+    "Queen's Pawn Game: Chigorin Variation": 5,
+    "Pirc Defense": 5,
+    "Caro-Kann Defense: Exchange Variation": 5,
+    "Queen's Pawn Game": 5,
+    "Slav Defense": 5,
+    "Queen's Pawn Game: London System": 5,
+    "Queen's Pawn Game: Accelerated London System": 5,
+    "Queen's Gambit Declined: Marshall Defense": 4,
+    "Scandinavian Defense: Mieses-Kotroc Variation": 4,
+    "Scandinavian Defense": 4,
+    "Ruy Lopez: Steinitz Defense": 4,
+    "Queen's Pawn Game: Zukertort Variation": 4
+  }
+}

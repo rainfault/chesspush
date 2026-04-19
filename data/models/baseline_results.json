@@ -1,0 +1,18 @@
+[
+  {
+    "model": "LogisticRegression",
+    "accuracy": 0.872093023255814,
+    "precision": 0.9,
+    "recall": 0.8372093023255814,
+    "f1": 0.8674698795180723,
+    "classification_report": "              precision    recall  f1-score   support\n\n           0       0.85      0.91      0.88        43\n           1       0.90      0.84      0.87        43\n\n    accuracy                           0.87        86\n   macro avg       0.87      0.87      0.87        86\nweighted avg       0.87      0.87      0.87        86\n"
+  },
+  {
+    "model": "RandomForestClassifier",
+    "accuracy": 0.9883720930232558,
+    "precision": 0.9772727272727273,
+    "recall": 1.0,
+    "f1": 0.9885057471264368,
+    "classification_report": "              precision    recall  f1-score   support\n\n           0       1.00      0.98      0.99        43\n           1       0.98      1.00      0.99        43\n\n    accuracy                           0.99        86\n   macro avg       0.99      0.99      0.99        86\nweighted avg       0.99      0.99      0.99        86\n"
+  }
+]
