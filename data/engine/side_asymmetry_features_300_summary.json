@@ -1,0 +1,40 @@
+{
+  "games_total": 300,
+  "class_counts": {
+    "0": 150,
+    "1": 150
+  },
+  "null_counts": {
+    "game_id": 0,
+    "label": 0,
+    "source_class": 0,
+    "source_username": 150,
+    "white_cpl_mean": 0,
+    "black_cpl_mean": 0,
+    "wb_cpl_mean_diff": 0,
+    "white_best_move_ratio": 0,
+    "black_best_move_ratio": 0,
+    "wb_best_move_ratio_diff": 0,
+    "white_time_complexity_corr": 0,
+    "black_time_complexity_corr": 0,
+    "wb_time_complexity_corr_diff": 0,
+    "white_critical_time_lift": 0,
+    "black_critical_time_lift": 0,
+    "wb_critical_time_lift_diff": 0
+  },
+  "numeric_means": {
+    "label": 0.5,
+    "white_cpl_mean": 43.39805630402285,
+    "black_cpl_mean": 42.946701376538144,
+    "wb_cpl_mean_diff": 0.45135492748471306,
+    "white_best_move_ratio": 0.41686486889666763,
+    "black_best_move_ratio": 0.40668534899964326,
+    "wb_best_move_ratio_diff": 0.010179519897024368,
+    "white_time_complexity_corr": 0.08812042119341117,
+    "black_time_complexity_corr": 0.0933583436842197,
+    "wb_time_complexity_corr_diff": -0.005237922490808547,
+    "white_critical_time_lift": 1.3058082817746113,
+    "black_critical_time_lift": 1.1834994521275015,
+    "wb_critical_time_lift_diff": 0.12230882964710972
+  }
+}
