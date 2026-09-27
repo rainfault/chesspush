@@ -1,0 +1,6 @@
+{
+  "id": "statistics",
+  "title": "Статистика",
+  "enabled": true,
+  "order": 50
+}

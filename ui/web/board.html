@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' qrc:; script-src 'self' qrc:; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'">
+<title>ChessPush board</title>
+<link rel="stylesheet" href="vendor/chessground.base.css">
+<link rel="stylesheet" href="vendor/chessground.brown.css">
+<link rel="stylesheet" href="board.css">
+</head><body><div id="board" class="cg-wrap" tabindex="0" aria-label="Шахматная доска"></div>
+<div id="promotion" hidden role="dialog" aria-label="Превращение пешки"></div>
+<script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+<script type="module" src="board.js"></script></body></html>

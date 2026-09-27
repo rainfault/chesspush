@@ -1,0 +1,5 @@
+* text=auto eol=lf
+
+# Keep pinned upstream assets byte-for-byte identical to their manifest hashes.
+ui/web/vendor/** -text
+ui/web/vendor/manifest.json text eol=lf

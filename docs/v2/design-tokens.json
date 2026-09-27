@@ -1,0 +1,126 @@
+{
+  "schema_version": 2,
+  "name": "ChessPush — Lichess light and dark",
+  "status": "Reference colors; detailed screen geometry and interaction states require visual verification",
+  "defaultTheme": "light",
+  "followSystemTheme": false,
+  "themes": {
+    "light": {
+      "colors": {
+        "background": "#edebe9",
+        "bodyGradient": "#dbd7d1",
+        "surface": "#ffffff",
+        "surfaceMid": "#f8f7f7",
+        "surfaceLow": "#e3e3e3",
+        "input": "#f8f8f7",
+        "text": "#4c4c4c",
+        "textStrong": "#000000",
+        "textSecondary": "#787878",
+        "border": "#d9d9d9",
+        "primary": "#1b78d0",
+        "secondary": "#629924",
+        "accent": "#d64f00",
+        "success": "#629924",
+        "warning": "#d59020",
+        "error": "#cc3333",
+        "onAction": "#ffffff"
+      }
+    },
+    "dark": {
+      "colors": {
+        "background": "#161512",
+        "bodyGradient": "#2e2a24",
+        "surface": "#262421",
+        "surfaceMid": "#2c2926",
+        "surfaceLow": "#3c3934",
+        "input": "#221f1c",
+        "text": "#bababa",
+        "textStrong": "#e3e3e3",
+        "textSecondary": "#949494",
+        "border": "#404040",
+        "primary": "#3692e7",
+        "secondary": "#629924",
+        "accent": "#d64f00",
+        "success": "#629924",
+        "warning": "#bf811d",
+        "error": "#cc3333",
+        "onAction": "#ffffff"
+      }
+    }
+  },
+  "reference": {
+    "repository": "lichess-org/lila",
+    "commit": "fa6614fcd5bc8afdad24bf341dbc6686afa4208d",
+    "checkedOn": "2026-09-28",
+    "dark": "https://github.com/lichess-org/lila/blob/fa6614fcd5bc8afdad24bf341dbc6686afa4208d/ui/lib/css/theme/_theme.default.scss",
+    "light": "https://github.com/lichess-org/lila/blob/fa6614fcd5bc8afdad24bf341dbc6686afa4208d/ui/lib/css/theme/_theme.light.scss",
+    "licenses": "https://github.com/lichess-org/lila/blob/fa6614fcd5bc8afdad24bf341dbc6686afa4208d/COPYING.md"
+  },
+  "sourceColorVariables": {
+    "background": "c-bg-page",
+    "bodyGradient": "c-body-gradient",
+    "surface": "c-bg",
+    "surfaceMid": "c-bg-mid",
+    "surfaceLow": "c-bg-low",
+    "input": "c-bg-input",
+    "text": "c-font",
+    "textStrong": "c-font-clearer",
+    "textSecondary": "c-font-dim",
+    "border": "c-border",
+    "primary": "c-primary",
+    "secondary": "c-secondary",
+    "accent": "c-accent",
+    "success": "c-good",
+    "warning": "c-warn",
+    "error": "c-error",
+    "onAction": "c-over"
+  },
+  "spacing": {
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24,
+    "xxl": 32
+  },
+  "radii": {
+    "none": 0,
+    "control": 3,
+    "surface": 6
+  },
+  "typography": {
+    "family": "Noto Sans",
+    "fallback": "sans-serif",
+    "body": 14,
+    "heading": 22,
+    "clock": 76,
+    "weightRegular": 400,
+    "weightEmphasis": 500,
+    "lineHeight": 1.5
+  },
+  "layout": {
+    "sidebar": 192,
+    "detail": 310,
+    "controlHeight": 36
+  },
+  "geometryStatus": "Provisional; not approved page layouts",
+  "board": {
+    "theme": "brown",
+    "pieces": "cburnett",
+    "boardAsset": "https://github.com/lichess-org/lila/blob/fa6614fcd5bc8afdad24bf341dbc6686afa4208d/public/images/board/brown.png",
+    "pieceDirectory": "https://github.com/lichess-org/lila/tree/fa6614fcd5bc8afdad24bf341dbc6686afa4208d/public/piece/cburnett",
+    "coordinates": true,
+    "unicodePieces": false,
+    "appearanceChangesWithAppTheme": false,
+    "interactionReference": "https://lichess.org/analysis"
+  },
+  "contentRules": {
+    "explanatoryCaptions": false,
+    "pageExplanatorySubtitles": false,
+    "navigationSlogan": false,
+    "brand": "ChessPush"
+  },
+  "home": {
+    "timeOfDayBackgrounds": "To be designed within both Lichess themes"
+  }
+}

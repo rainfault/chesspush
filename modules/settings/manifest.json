@@ -1,0 +1,6 @@
+{
+  "id": "settings",
+  "title": "Настройки",
+  "enabled": true,
+  "order": 90
+}
