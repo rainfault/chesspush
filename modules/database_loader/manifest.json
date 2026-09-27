@@ -1,0 +1,6 @@
+{
+  "id": "database_loader",
+  "title": "Загрузка из базы",
+  "enabled": true,
+  "order": 30
+}

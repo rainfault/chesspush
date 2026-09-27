@@ -1,0 +1,31 @@
+[Event "Rated Rapid Game"]
+[Site "https://lichess.org/sample1"]
+[Date "2026.05.01"]
+[Round "-"]
+[White "JustAIM"]
+[Black "OpponentA"]
+[Result "1-0"]
+[WhiteElo "1900"]
+[BlackElo "1910"]
+[ECO "B12"]
+[Opening "Caro-Kann Defense: Advance Variation"]
+[TimeControl "600+5"]
+[Termination "Normal"]
+
+1. e4 c6 2. d4 d5 3. e5 Bf5 4. Nf3 e6 5. Be2 c5 6. O-O Nc6 7. Be3 cxd4 8. Nxd4 Nxd4 9. Bxd4 Ne7 10. c4 Nc6 1-0
+
+[Event "Rated Blitz Game"]
+[Site "https://lichess.org/sample2"]
+[Date "2026.05.02"]
+[Round "-"]
+[White "OpponentB"]
+[Black "JustAIM"]
+[Result "1-0"]
+[WhiteElo "1800"]
+[BlackElo "1770"]
+[ECO "D02"]
+[Opening "Queen's Pawn Game: London System"]
+[TimeControl "180+2"]
+[Termination "Normal"]
+
+1. d4 d5 2. Nf3 Nf6 3. Bf4 e6 4. e3 Bd6 5. Bg3 O-O 6. Bd3 b6 7. Nbd2 Bb7 8. Ne5 c5 9. c3 Nc6 10. f4 1-0
