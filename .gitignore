@@ -1,45 +1,35 @@
-# Local environments and caches
+# Dependencies and generated files
+/node_modules/
+/dist/
+/src-tauri/target/
+/src-tauri/gen/
+/.qa/
+/test-results/
+/playwright-report/
+*.tsbuildinfo
+*.log
+
+# Personal data, credentials, legacy backups and local environments
+/data/
+/outputs/
 .venv/
 venv/
 __pycache__/
 *.py[cod]
-.pytest_cache/
-.ruff_cache/
-.mypy_cache/
-.coverage
-htmlcov/
-
-# Credentials, personal games, profiles and generated files
 .env
 .env.*
 !.env.example
-/data/
-/outputs/
 *.sqlite*
 *.db
 *.db-*
 *.pgn
-!sample_data/sample_games.pgn
 *.zst
-*.log
 *.lnk
+!/tests/fixtures/*.pgn
+!/tests/fixtures/*.zst
 
-# Build and editor output
-/build/
-/dist/
-*.egg-info/
-node_modules/
+# Editor and operating-system files
 .idea/
 .vscode/
 .DS_Store
 Thumbs.db
-
-# Tauri build products; only synthetic migration fixtures are versioned
-/v2/dist/
-/v2/src-tauri/target/
-/v2/test-results/
-/v2/.qa/
-/v2/*.tsbuildinfo
-/v2/src-tauri/gen/
-!v2/tests/fixtures/*.pgn
-!v2/tests/fixtures/*.zst

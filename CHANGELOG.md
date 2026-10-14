@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.0-alpha.2 — 2026-10-14
+
+- Tauri 2 / React / TypeScript / Rust is now the main project at repository root.
+- Retired the active Qt/Python implementation; the original alpha remains in Git history.
+- Added a backed-up, idempotent transfer of legacy games, file history, settings and saved positions to SQLite.
+- Desktop shortcut targets the native ChessPush executable.
+- Parity fixtures and native checks run without a Qt/Python installation.
+- Corrected the visibility of PGN/FEN editor validation errors.
+
 ## 0.1.0-alpha.1 — 2026-09-28
 
 Зафиксированная десктопная альфа перед переходом на новый стек.

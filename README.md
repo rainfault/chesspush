@@ -1,79 +1,108 @@
-# ChessPush
+# ChessPush · 0.2.0-alpha.2
 
-Новая рабочая версия на **Tauri 2 / React / Rust** находится в [v2](v2/README.md).
-Инструкции ниже относятся к сохранённой Qt/Python-версии-эталону.
+Персональная шахматная утилита на **Tauri 2, React, TypeScript и Rust**.
+Рабочие разделы — ZST/PGN-парсер и шахматная доска. Qt/Python исключён из текущей
+версии; прежняя реализация сохранена в Git под tag `v0.1.0-alpha.1`.
 
-**v0.1.0-alpha.1 · Desktop alpha** — зафиксированная версия перед переходом
-на новый стек. История изменений: [CHANGELOG.md](CHANGELOG.md).
+## Подготовка и запуск
 
-Персональная шахматная утилита на Python / Qt Quick. Текущий этап: главная страница, ZST-парсер и настройки.
-
-## Запуск
-
-На Windows: ярлык **ChessPush** на рабочем столе. Он использует `.venv/Scripts/pythonw.exe` и `launch.pyw`, без консоли.
-
-Из терминала:
+Windows 10/11, Node.js 24+, Rust stable MSVC, Visual Studio Build Tools с Desktop
+development with C++ и Windows SDK, WebView2 Runtime.
+[Официальные prerequisites Tauri](https://v2.tauri.app/start/prerequisites/).
+Все команды выполняются из корня репозитория.
 
 ```powershell
-.venv\Scripts\python.exe main.py
+npm ci
+npm run tauri dev
 ```
 
-Для новой установки: создать виртуальное окружение и установить `requirements.txt`. PySide6 должен включать Qt WebEngine. Node.js при запуске не требуется: официальный `@lichess-org/chessground` 10.4.0 и ассеты уже находятся в `ui/web/vendor`.
+`npm run dev` запускает frontend в браузере: доска доступна, файловые операции
+требуют Tauri. Vite используется при разработке; production HTTP-сервера нет.
 
 ```powershell
-git clone https://github.com/rainfault/chesspush.git
-cd chesspush
-py -m venv .venv
-.venv\Scripts\python.exe -m pip install -r requirements.txt
-.venv\Scripts\python.exe main.py
+npm run tauri build
 ```
 
-Папки данных создаются при первом запуске. Ник, токен и тему нужно указать
-в настройках. Ярлык создаётся отдельно командой
-`powershell -File tools/create_shortcut.ps1`.
+Исполняемый файл: `src-tauri/target/release/chesspush.exe`.
+Установщик: `src-tauri/target/release/bundle/nsis/`.
+Быстрая локальная сборка: `npm run tauri build -- --debug --no-bundle`.
+Ярлык рабочего стола обновляется скриптом `tools/create_shortcut.ps1`.
 
 ## Парсер
 
-1. Открыть PGN или ZST.
-2. Выбрать дебют поиском или разыграть линию на доске. В фильтр попадают ходы до текущей позиции, а не будущие ходы после неё.
-3. Указать рейтинг, контроль и число партий. Дополнительные фильтры раскрываются отдельно.
-4. Нажать «Найти партии». Результат автоматически сохраняется в SQLite и экспортируется в PGN. «Остановить» сохраняет уже найденные партии.
+Откройте «Базы», выберите `.pgn.zst`, `.zst` или `.pgn`, задайте фильтры и нажмите
+«Найти партии». Дебют выбирается поиском или ходами на доске. Ходы до текущей
+позиции становятся префиксом поиска; ECO применяется, если префикса нет.
+Произвольный FEN меняет доску, но не включает поиск позиции по корпусу.
 
-Легальные ходы проверяет python-chess. Доска поддерживает клики, перетаскивание, рокировку (в том числе на ладью), взятие на проходе и выбор фигуры при превращении. Правая кнопка рисует стрелки и кружки; модификаторы Chessground меняют цвет. Стрелки клавиатуры перемещают по линии, Home/End — к её концам, F переворачивает доску. Новый ход после возврата заменяет продолжение текущей линии.
+«Дополнительно»: отдельные рейтинги сторон, минимальная длина, пропуск партий,
+ECO, игрок для определения стороны, Bullet и просрочка времени.
+«Остановить» сохраняет завершённую часть выборки. Счётчики абсолютные;
+полоса прогресса неопределённая, без вымышленного процента распаковки.
 
-На вкладке «Файлы» имя файла открывает Проводник с выделенным файлом, кнопка справа выбирает его базой для следующего поиска. «Импорт PGN» копирует исходный файл в `outputs/imports` и сохраняет партии в SQLite. Список файлов и связи с партиями остаются после перезапуска. Большие ZST запоминаются по исходному пути; целиком они не копируются и не импортируются в SQLite. Отсутствующие файлы остаются в истории.
+В «Файлах» хранится история источников и результатов. Нажатие на имя показывает
+файл в Проводнике; кнопка справа выбирает источник. «Импорт PGN» сохраняет игры
+без фильтров. Импорт нормализуется в отдельный PGN; исходник не изменяется.
 
-## Настройки и данные
+## Данные
 
-На главной странице показываются текущие рейтинги Rapid и Blitz для сохранённого
-ника. При недоступности Lichess остаются только иконки. Шкала до 2000 появляется
-выше 1900: 1950 — 50%, 2000 и выше — 100%.
+Windows: `%APPDATA%/io.github.rainfault.chesspush.v2/chesspush.sqlite3`.
+Identifier сохранён, поэтому уже созданная Tauri-библиотека продолжает использоваться.
+Рядом находятся `exports/`. Используется Tauri `app_data_dir`; сырые огромные корпуса
+остаются внешними файлами. Схема SQLite версионируется через `PRAGMA user_version`;
+SQL migrations находятся в `src-tauri/migrations/`.
 
-Только ник Lichess, токен и тема. Светлая тема используется по умолчанию; сохранённый выбор темы учитывается. Палитра и базовые размеры централизованы в `ui/qml/Theme.qml`.
-
-- `data/settings.json` — локальные настройки; токен хранится здесь и не передаётся доске.
-- `data/chess_training_tool.sqlite3` — партии, прежние сохранённые позиции и каталог файлов. При ранее выбранном пути SQLite продолжает использоваться этот путь.
-- `outputs` — выборки PGN; ранее заданная папка экспорта сохраняется.
-- `data/launch.log` — ошибки оконного запуска.
-
-Статистика и Position Lab исключены из активной оболочки. Их прежние данные и код сохранены. Общая модель партии и потоковая фильтрация используются повторно.
-
-## Проверка
+Старые локальные `data/` и `outputs/` сохраняются и не публикуются в Git.
+Одноразовый перенос старой SQLite-библиотеки выполняется Rust example `migrate_legacy`.
+Он читает прежнюю базу, сохраняет игры и историю в Tauri SQLite и создаёт резервную
+копию целевой базы перед изменениями. Исходная база, экспорты и файлы настроек остаются
+на месте. Ник и токен сохраняются только в локальной SQLite и резервной копии;
+они не выводятся в лог и не публикуются в Git.
 
 ```powershell
-.venv\Scripts\python.exe -m unittest discover -s tests -q
-.venv\Scripts\python.exe tools/smoke_ui.py
+cargo run --manifest-path src-tauri/Cargo.toml --no-default-features --example migrate_legacy -- data/chess_training_tool.sqlite3 data/settings.json "$env:APPDATA/io.github.rainfault.chesspush.v2/chesspush.sqlite3" data/migration-backups
 ```
 
-Вторая команда открывает тестовое окно с отдельной временной базой и проверяет настоящие события мыши, WebChannel, превращение, темы и фоновое извлечение. Снимки — в `outputs/ui-check`. На Windows Chromium должен иметь возможность запускать свои дочерние процессы; в ограниченной среде Codex он может завершаться с кодом 49.
+## Проверки
 
-Повторно создать ярлык: `powershell -File tools/create_shortcut.ps1`.
+```powershell
+npm run check
+npm run format:check
+npm test
+cargo fmt --manifest-path src-tauri/Cargo.toml --check
+cargo check --manifest-path src-tauri/Cargo.toml
+cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
+cargo test --manifest-path src-tauri/Cargo.toml
+```
 
-## Архитектура и лицензии
+Быстрые Rust-тесты без GUI:
+`cargo test --manifest-path src-tauri/Cargo.toml --no-default-features`.
+Снимок исходного поведения сохранён в `tests/fixtures/`: 22 сценария на PGN и ZST.
+Python и Qt для проверок и сборки текущего приложения не требуются.
 
-Текущие границы модулей описаны в `docs/parser-stage.md`. `docs/v2` содержит долгосрочную модель и roadmap; перечень будущих страниц не является составом текущего интерфейса.
+При работающем `npm run dev`: `node tests/ui-smoke.mjs` (установленный Edge).
+Нативная проверка: `npm run test:native`. Команда собирает debug-приложение, генерирует
+тестовый ZST и запускает отдельный процесс с временной SQLite и WebView2-профилем
+в `.qa/`. CDP port выбирается автоматически; рабочая библиотека не используется.
+Результаты UI сохраняются в `.qa/`. Release игнорирует `CHESSPUSH_TEST_DATA`.
 
-Изменения плавности доски, замеры 144 Гц и правила обновления рейтингов описаны
-в `docs/board-performance.md`.
+Синтетический performance input создаётся стандартным Node.js ZST stream:
 
-Chessground — GPL-3.0-or-later, cburnett — GPL-2.0-or-later, доска Lichess — AGPL-3.0-or-later. Исходные ссылки, версии, контрольные суммы и тексты лицензий сохранены в `ui/web/THIRD_PARTY.md` и `ui/web/vendor`. При распространении учитывать условия этих лицензий.
+```powershell
+node tests/benchmark.mjs
+cargo run --manifest-path src-tauri/Cargo.toml --release --no-default-features --example scan -- .qa/benchmark.pgn.zst
+```
+
+По умолчанию генерируются 120 000 игр, ожидаются 90 000 совпадений с фильтрами Rust
+по умолчанию. `node tests/benchmark.mjs 1000` задаёт другое число повторов fixture.
+Измеряется scan/filter; это не benchmark полного экспорта и SQLite-save.
+
+## Каталоги
+
+- `src/` — React, Tauri boundary и CSS tokens; `src/chess/` — BoardSession/Chessground.
+- `src-tauri/src/` — parser, filters, PGN, application, storage, desktop commands.
+- `src-tauri/migrations/` — SQLite schema; `src-tauri/examples/` — консольные инструменты.
+- `tests/`, `src-tauri/tests/` — frozen parity, regression и UI-проверки.
+- `public/` — локальный каталог дебютов и иконка; `licenses/` — сохранённые notices.
+
+[Архитектура](ARCHITECTURE.md) · [Миграция](MIGRATION.md) · [Зависимости и лицензии](THIRD_PARTY.md).
