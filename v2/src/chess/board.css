@@ -1,0 +1,100 @@
+.board-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--radius);
+  box-shadow: 0 2px 5px #0003;
+}
+.cg-wrap {
+  width: 100%;
+  height: 100%;
+}
+cg-board {
+  border-radius: var(--radius);
+  background-image: conic-gradient(
+    var(--board-dark) 25%,
+    var(--board-light) 0 50%,
+    var(--board-dark) 0 75%,
+    var(--board-light) 0
+  );
+  background-size: 25% 25%;
+}
+.cg-wrap piece {
+  image-rendering: auto;
+  backface-visibility: hidden;
+}
+.cg-wrap coords {
+  font-size: clamp(10px, 1.1vw, 14px);
+  font-weight: 600;
+  font-family: var(--font);
+}
+.cg-wrap coords.ranks {
+  right: 0;
+  left: auto;
+  top: 0;
+  width: 16px;
+  height: 100%;
+  align-items: flex-end;
+}
+.cg-wrap coords.ranks coord {
+  padding: 2px 3px 0 0;
+  transform: none;
+}
+.cg-wrap coords.files {
+  left: 0;
+  bottom: 0;
+  height: 20px;
+  text-align: left;
+  text-transform: none;
+}
+.cg-wrap coords.files coord {
+  padding-left: 4px;
+}
+.cg-wrap coords coord {
+  box-sizing: border-box;
+}
+coords.ranks coord:nth-child(odd),
+coords.files coord:nth-child(even) {
+  color: var(--board-light);
+}
+coords.ranks coord:nth-child(even),
+coords.files coord:nth-child(odd) {
+  color: #946f51;
+}
+coords.ranks.black coord:nth-child(odd),
+coords.files.black coord:nth-child(even) {
+  color: #946f51;
+}
+coords.ranks.black coord:nth-child(even),
+coords.files.black coord:nth-child(odd) {
+  color: var(--board-light);
+}
+.promotion {
+  position: absolute;
+  inset: 0;
+  background: #0006;
+  z-index: 300;
+}
+.promotion-choices.cg-wrap {
+  position: absolute;
+  display: flex;
+  width: 12.5%;
+  height: auto;
+}
+.promotion-choices button {
+  padding: 0;
+  width: 100%;
+  aspect-ratio: 1;
+  background: #eee;
+  border-radius: 0;
+}
+.promotion-choices button:hover {
+  background: #b0cb85;
+}
+.promotion-choices piece {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-size: contain;
+}

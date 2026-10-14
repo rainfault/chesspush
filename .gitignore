@@ -33,3 +33,13 @@ node_modules/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Tauri build products; only synthetic migration fixtures are versioned
+/v2/dist/
+/v2/src-tauri/target/
+/v2/test-results/
+/v2/.qa/
+/v2/*.tsbuildinfo
+/v2/src-tauri/gen/
+!v2/tests/fixtures/*.pgn
+!v2/tests/fixtures/*.zst

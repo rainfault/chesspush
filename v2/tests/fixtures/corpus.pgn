@@ -1,0 +1,181 @@
+[Event "Rated Rapid game"]
+[Site "https://lichess.org/AbCd0000"]
+[UTCDate "2026.09.28"]
+[White "Alice"]
+[Black "Bob"]
+[Result "1-0"]
+[WhiteElo "2400"]
+[BlackElo "2350"]
+[ECO "B12"]
+[Opening "Caro-Kann Defense"]
+[TimeControl "600+5"]
+[Termination "Normal"]
+
+1. e4 {note} c6 2. d4 d5 3. Nc3 dxe4 1-0
+
+[Event "Rated Rapid game"]
+[Site "https://lichess.org/AbCd0001"]
+[UTCDate "2026.09.28"]
+[White "Alice"]
+[Black "Bob"]
+[Result "0-1"]
+[WhiteElo "2400"]
+[BlackElo "2350"]
+[ECO "C20"]
+[Opening "King's Pawn"]
+[TimeControl "600+5"]
+[Termination "Normal"]
+
+1.e4 e5 2.Nf3 $1 Nc6 (2... d6) 3.Bb5!? a6 0-1
+
+[Event "Rated Blitz game"]
+[Site "https://lichess.org/AbCd0002"]
+[UTCDate "2026.09.28"]
+[White "Alice"]
+[Black "Bob"]
+[Result "1/2-1/2"]
+[WhiteElo "2400"]
+[BlackElo "2350"]
+[ECO "B12"]
+[Opening "Caro-Kann Defense"]
+[TimeControl "180+2"]
+[Termination "Normal"]
+
+1. e4 {note} c6 2. d4 d5 3. Nc3 dxe4 1/2-1/2
+
+[Event "Rated Bullet game"]
+[Site "https://lichess.org/AbCd0003"]
+[UTCDate "2026.09.28"]
+[White "Alice"]
+[Black "Bob"]
+[Result "1-0"]
+[WhiteElo "2400"]
+[BlackElo "2350"]
+[ECO "B12"]
+[Opening "Caro-Kann Defense"]
+[TimeControl "60+0"]
+[Termination "Normal"]
+
+1. e4 {note} c6 2. d4 d5 3. Nc3 dxe4 1-0
+
+[Event "Rated Rapid game"]
+[Site "https://lichess.org/AbCd0004"]
+[UTCDate "2026.09.28"]
+[White "Alice"]
+[Black "Bob"]
+[Result "1-0"]
+[WhiteElo "2400"]
+[BlackElo "2350"]
+[ECO "B12"]
+[Opening "Caro-Kann Defense"]
+[TimeControl "600+5"]
+[Termination "Time forfeit"]
+
+1. e4 {note} c6 2. d4 d5 3. Nc3 dxe4 1-0
+
+[Event "Rated Rapid game"]
+[Site "https://lichess.org/AbCd0005"]
+[UTCDate "2026.09.28"]
+[White "Alice"]
+[Black "Bob"]
+[Result "1-0"]
+[WhiteElo "1800"]
+[BlackElo "1850"]
+[ECO "B12"]
+[Opening "Caro-Kann Defense"]
+[TimeControl "600+5"]
+[Termination "Normal"]
+
+1. e4 {note} c6 2. d4 d5 3. Nc3 dxe4 1-0
+
+[Event "Rated Rapid game"]
+[Site "Chess.com"]
+[UTCDate "2026.09.28"]
+[White "Alice"]
+[Black "Bob"]
+[Result "1-0"]
+[WhiteElo "?"]
+[BlackElo "2350"]
+[ECO "B12"]
+[Opening "Славянская защита"]
+[TimeControl "600+5"]
+[Termination "Normal"]
+
+1. e4 {note} c6 2. d4 d5 3. Nc3 dxe4 1-0
+
+[Event "Friendly"]
+[Site "https://lichess.org/AbCd0007"]
+[UTCDate "2026.09.28"]
+[White "Alice"]
+[Black "Bob"]
+[Result "*"]
+[WhiteElo "2400"]
+[BlackElo "2350"]
+[ECO "B12"]
+[Opening "Caro-Kann Defense"]
+[TimeControl "180+20"]
+[Termination "Normal"]
+
+1. e4 {note} c6 2. d4 d5 3. Nc3 dxe4 *
+
+[Event "Friendly"]
+[Site "https://lichess.org/AbCd0008"]
+[UTCDate "2026.09.28"]
+[White "Alice"]
+[Black "Bob"]
+[Result "0-1"]
+[WhiteElo "2400"]
+[BlackElo "2350"]
+[ECO "D10"]
+[Opening "Caro-Kann Defense"]
+[TimeControl "0+10"]
+[Termination "Normal"]
+
+1. Nf3 Nf6 2. Nf3 Nf6 3. Nf3 Nf6 4. Nf3 Nf6 5. Nf3 Nf6 6. Nf3 Nf6 7. Nf3 Nf6 8. Nf3 Nf6 9. Nf3 Nf6 10. Nf3 Nf6 11. Nf3 Nf6 12. Nf3 Nf6 13. Nf3 Nf6 14. Nf3 Nf6 15. Nf3 Nf6 16. Nf3 Nf6 17. Nf3 Nf6 18. Nf3 Nf6 19. Nf3 Nf6 20. Nf3 Nf6 21. Nf3 Nf6 22. Nf3 Nf6 23. Nf3 Nf6 24. Nf3 Nf6 25. Nf3 Nf6 26. Nf3 Nf6 0-1
+
+[Event "UltraBullet"]
+[Site "https://lichess.org/AbCd0009"]
+[UTCDate "2026.09.28"]
+[White "Alice"]
+[Black "Bob"]
+[Result "1-0"]
+[WhiteElo "2400"]
+[BlackElo "2350"]
+[ECO "B12"]
+[Opening "Caro-Kann Defense"]
+[TimeControl "15+0"]
+[Termination "Normal"]
+
+1. e4 {note} c6 2. d4 d5 3. Nc3 dxe4 1-0
+
+[Event "Rated Rapid game"]
+[Site "https://lichess.org/study/ABCDEFGH"]
+[UTCDate "2026.09.28"]
+[White "Alice"]
+[Black "Bob"]
+[Result "1-0"]
+[WhiteElo "2400"]
+[BlackElo "2350"]
+[ECO "B12"]
+[Opening "Caro-Kann Defense"]
+[TimeControl "600+5"]
+[Termination "Normal"]
+[LichessURL "https://lichess.org/ZyXw9876/black"]
+
+1. e4 {note} c6 2. d4 d5 3. Nc3 dxe4 1-0
+
+[Event "Friendly"]
+[Site "https://lichess.org/AbCd0011"]
+[UTCDate "2026.09.28"]
+[White ""]
+[Black ""]
+[Result "*"]
+[WhiteElo "2400"]
+[BlackElo "2350"]
+[ECO "B12"]
+[Opening "Caro-Kann Defense"]
+[TimeControl "-"]
+[Termination "Normal"]
+
+1. NOT_A_MOVE ??? *
+
