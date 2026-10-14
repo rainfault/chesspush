@@ -9,8 +9,14 @@ foreach ($requiredPath in @($executablePath,$iconPath)) {
 $shortcutPath = Join-Path $DesktopPath 'ChessPush.lnk'
 $shell = New-Object -ComObject WScript.Shell
 $shortcut = $shell.CreateShortcut($shortcutPath)
-if ((Test-Path -LiteralPath $shortcutPath) -and $shortcut.WorkingDirectory -ne $projectPath) {
-    throw 'An unrelated ChessPush shortcut already exists.'
+if (Test-Path -LiteralPath $shortcutPath) {
+    $existingTarget = [IO.Path]::GetFullPath($shortcut.TargetPath)
+    $installedTarget = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'ChessPush\chesspush.exe'
+    $projectTarget = $existingTarget.StartsWith($projectPath + '\',[StringComparison]::OrdinalIgnoreCase)
+    $installedChessPush = [string]::Equals($existingTarget,$installedTarget,[StringComparison]::OrdinalIgnoreCase)
+    if (-not $projectTarget -and -not $installedChessPush) {
+        throw 'An unrelated ChessPush shortcut already exists.'
+    }
 }
 $shortcut.TargetPath = $executablePath
 $shortcut.Arguments = ''
