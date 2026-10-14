@@ -1,0 +1,118 @@
+@font-face {
+  font-family: "lichess";
+  src: url("/lichess/lichess.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+.home.home-page {
+  align-items: start;
+  padding: clamp(100px, calc(35vh - 80px), 340px) var(--space-5) var(--space-6);
+}
+
+.home-dashboard {
+  width: min(920px, 100%);
+}
+
+.home-dashboard time {
+  display: block;
+  text-align: center;
+  font-size: clamp(80px, 8vw, 112px);
+  line-height: 1.2;
+}
+
+.home-ratings {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-6);
+  margin-top: var(--space-6);
+}
+
+.home-rating {
+  position: relative;
+  display: flex;
+  flex: 0 1 230px;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  height: 170px;
+}
+
+.lichess-icon {
+  font-family: "lichess";
+  font-size: 54px;
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1.2;
+  color: var(--secondary);
+}
+
+.home-rating-value {
+  font-size: 34px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+.home-rating-progress {
+  position: absolute;
+  bottom: 0;
+  width: min(200px, 100%);
+  height: 5px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--border);
+}
+
+.home-rating-progress span {
+  display: block;
+  width: var(--rating-fill);
+  height: 100%;
+  border-radius: inherit;
+  background: color-mix(
+    in hsl,
+    hsl(88 24% 47%),
+    hsl(88 62% 37%) var(--rating-fill)
+  );
+  transition:
+    width 250ms,
+    background-color 250ms;
+}
+
+:root[data-theme="dark"] .home-rating-progress span {
+  background: color-mix(
+    in hsl,
+    hsl(88 24% 30%),
+    hsl(88 62% 45%) var(--rating-fill)
+  );
+}
+
+.home-auth {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.home-auth .primary {
+  min-width: 220px;
+}
+
+.home-account-error {
+  justify-content: center;
+  max-width: 520px;
+  margin: var(--space-5) auto 0;
+}
+
+@media (max-height: 760px) {
+  .home.home-page {
+    padding-top: var(--space-6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-rating-progress span {
+    transition: none;
+  }
+}

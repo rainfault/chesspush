@@ -1,7 +1,20 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { invoke, isTauri } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { Databases } from "./Databases";
+import { Home } from "./Home";
+import { Settings } from "./Settings";
 import { errorMessage } from "./api";
+import {
+  authenticate,
+  cancelAuthentication,
+  connectToken,
+  disconnectAccount,
+  disconnectedAccount,
+  refreshAccount,
+  type AccountStatus,
+} from "./lichess";
+
 const pages = [
   ["databases", "Базы"],
   ["statistics", "Статистика"],
@@ -9,25 +22,79 @@ const pages = [
   ["games", "Мои партии"],
   ["training", "Тренировка"],
 ] as const;
+
 export function App() {
-  const [page, setPage] = useState("databases"),
-    [theme, setTheme] = useState("light"),
-    [settings, setSettings] = useState(false),
-    [error, setError] = useState("");
-  const [now, setNow] = useState(new Date());
-  useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(timer);
+  const [page, setPage] = useState("home");
+  const [theme, setTheme] = useState("light");
+  const [settings, setSettings] = useState(false);
+  const [error, setError] = useState("");
+  const [account, setAccount] = useState<AccountStatus>(disconnectedAccount);
+  const [busy, setBusy] = useState(false);
+  const revision = useRef(0);
+  const refreshing = useRef(false);
+  const closeSettings = useCallback(() => setSettings(false), []);
+
+  const refresh = useCallback(async () => {
+    if (!isTauri() || refreshing.current) return;
+    refreshing.current = true;
+    const current = revision.current;
+    try {
+      const value = await refreshAccount();
+      if (current === revision.current) setAccount(value);
+    } catch {
+      if (current === revision.current)
+        setAccount((previous) => ({
+          ...previous,
+          status: "error",
+          rapid: null,
+          blitz: null,
+          message: "Не удалось проверить подключение Lichess",
+        }));
+    } finally {
+      refreshing.current = false;
+    }
   }, []);
+
   useEffect(() => {
-    if (isTauri())
-      void invoke<string>("get_theme")
-        .then(setTheme)
-        .catch((e) => setError(errorMessage(e)));
-  }, []);
+    if (!isTauri()) return;
+    void invoke<string>("get_theme")
+      .then(setTheme)
+      .catch((e) => setError(errorMessage(e)));
+    let disposed = false;
+    let unsubscribe: (() => void) | undefined;
+    void listen<AccountStatus>("lichess-account-updated", (event) => {
+      if (!disposed) {
+        revision.current++;
+        setAccount(event.payload);
+      }
+    })
+      .then((stop) => {
+        if (disposed) stop();
+        else {
+          unsubscribe = stop;
+          void refresh();
+        }
+      })
+      .catch(() => {
+        if (!disposed) void refresh();
+      });
+    const timer = setInterval(() => void refresh(), 60_000);
+    const onFocus = () => void refresh();
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("online", onFocus);
+    return () => {
+      disposed = true;
+      unsubscribe?.();
+      clearInterval(timer);
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("online", onFocus);
+    };
+  }, [refresh]);
+
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
+
   async function changeTheme(value: string) {
     try {
       if (isTauri()) await invoke("set_theme", { theme: value });
@@ -36,6 +103,33 @@ export function App() {
       setError(errorMessage(e));
     }
   }
+
+  async function runAccountAction(action: () => Promise<AccountStatus>) {
+    setError("");
+    if (!isTauri()) {
+      setAccount((previous) => ({
+        ...previous,
+        status: "error",
+        rapid: null,
+        blitz: null,
+        message: "Вход доступен в приложении ChessPush",
+      }));
+      return;
+    }
+    setBusy(true);
+    const current = ++revision.current;
+    try {
+      const value = await action();
+      if (current === revision.current) setAccount(value);
+    } catch (e) {
+      setError(errorMessage(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+  const onAuthenticate = () => void runAccountAction(authenticate);
+  const onCancel = () => void runAccountAction(cancelAuthentication);
+
   return (
     <>
       <header className="app-header">
@@ -72,7 +166,10 @@ export function App() {
           className="settings-button"
           title="Настройки"
           aria-label="Настройки"
-          onClick={() => setSettings(true)}
+          onClick={() => {
+            setError("");
+            setSettings(true);
+          }}
         >
           <svg
             viewBox="0 0 24 24"
@@ -89,14 +186,12 @@ export function App() {
       </header>
       <Databases active={page === "databases"} />
       {page === "home" && (
-        <main className="home">
-          <time>
-            {now.toLocaleTimeString("ru-RU", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </time>
-        </main>
+        <Home
+          account={account}
+          onAuthenticate={onAuthenticate}
+          onCancel={onCancel}
+          busy={busy}
+        />
       )}
       {page !== "home" && page !== "databases" && (
         <main className="placeholder">
@@ -104,40 +199,28 @@ export function App() {
         </main>
       )}
       {settings && (
-        <div className="modal-backdrop" onMouseDown={() => setSettings(false)}>
-          <section
-            className="settings-dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Настройки"
-            onMouseDown={(e) => e.stopPropagation()}
+        <Settings
+          account={account}
+          theme={theme}
+          busy={busy}
+          error={error}
+          onClose={closeSettings}
+          onTheme={(value) => void changeTheme(value)}
+          onToken={(token) => void runAccountAction(() => connectToken(token))}
+          onAuthenticate={onAuthenticate}
+          onCancel={onCancel}
+          onDisconnect={() => void runAccountAction(disconnectAccount)}
+        />
+      )}
+      {error && !settings && (
+        <div className="global-error error" role="alert">
+          {error}
+          <button
+            aria-label="Закрыть ошибку аккаунта"
+            onClick={() => setError("")}
           >
-            <header>
-              <h2>Настройки</h2>
-              <button
-                aria-label="Закрыть настройки"
-                onClick={() => setSettings(false)}
-              >
-                ×
-              </button>
-            </header>
-            <label>
-              Тема
-              <select
-                aria-label="Тема"
-                value={theme}
-                onChange={(e) => void changeTheme(e.target.value)}
-              >
-                <option value="light">Светлая</option>
-                <option value="dark">Тёмная</option>
-              </select>
-            </label>
-            {error && (
-              <div role="alert" className="error">
-                {error}
-              </div>
-            )}
-          </section>
+            ×
+          </button>
         </div>
       )}
     </>

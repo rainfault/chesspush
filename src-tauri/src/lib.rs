@@ -7,3 +7,6 @@ pub mod legacy_import;
 pub mod parser;
 pub mod pgn;
 pub mod storage;
+
+mod credentials;
+pub mod lichess;

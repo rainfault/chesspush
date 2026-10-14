@@ -13,7 +13,10 @@ Versions are locked in `package-lock.json` and `src-tauri/Cargo.lock`.
 | serde / serde_json | typed IPC and metadata | MIT / Apache-2.0 |
 | regex | reference-compatible tokenization | MIT / Apache-2.0 |
 | sha2 | stable PGN identity | MIT / Apache-2.0 |
-| url | Lichess game URL detection | MIT / Apache-2.0 |
+| url | Lichess game URLs and OAuth URLs | MIT / Apache-2.0 |
+| reqwest / native-tls | Lichess HTTPS via Windows SChannel | MIT / Apache-2.0 |
+| base64 / getrandom / zeroize | PKCE, OS randomness and secret memory cleanup | MIT / Apache-2.0 |
+| windows-sys | Windows credential store and system browser | MIT / Apache-2.0 |
 
 Chessground's official npm CSS includes the cburnett SVG pieces by
 **Colin M. L. Burnett**, licensed GPL-2.0-or-later. Its additional license notice
@@ -37,3 +40,9 @@ uses built-in Node.js streams/zlib; it needs no Python dependency.
 Keep upstream notices and provide corresponding source under the applicable
 copyleft terms when distributing a binary containing Chessground/chessops.
 This attribution does not relicense unrelated historical project code.
+
+The Home Rabbit and Fire icons use the unmodified Lichess icon font restored
+from the previous application, pinned to [lila fa6614fc](https://github.com/lichess-org/lila/tree/fa6614fcd5bc8afdad24bf341dbc6686afa4208d/public/font).
+The font, editable SFD source and glyph map are in `public/lichess/`.
+Its authors and mixed OFL/MIT/CC BY 3.0/AGPLv3+ attribution are retained in
+`public/lichess/licenses/LILA-COPYING.md`, alongside the AGPL license text.

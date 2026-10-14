@@ -25,6 +25,7 @@ process.on("unhandledRejection", async (error) => {
 const errors = [];
 page.on("pageerror", (e) => errors.push(e.message));
 if (!native) await page.goto("http://127.0.0.1:1420");
+await page.getByRole("button", { name: "Базы", exact: true }).click();
 await page.locator("cg-board").waitFor();
 await page.getByRole("button", { name: "Настройки", exact: true }).click();
 await page.getByLabel("Тема", { exact: true }).selectOption("light");

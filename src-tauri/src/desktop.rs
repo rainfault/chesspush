@@ -1,6 +1,7 @@
 use crate::{
     application::{self, ParseRequest, ParseResult},
     domain::AppError,
+    lichess::{self, AccountStatus, LichessService},
     parser::Progress,
     storage,
 };
@@ -154,6 +155,69 @@ fn set_theme(theme: String, directory: State<AppDirectory>) -> Result<(), AppErr
         &theme,
     )
 }
+
+// Blocking network/credential operations run outside the webview/main event loop.
+#[tauri::command]
+async fn account_status(app: tauri::AppHandle) -> Result<AccountStatus, AppError> {
+    tauri::async_runtime::spawn_blocking(move || app.state::<LichessService>().refresh())
+        .await
+        .map_err(|_| AppError::new("state", "Подключение Lichess недоступно"))?
+}
+#[tauri::command]
+async fn connect_lichess_token(
+    app: tauri::AppHandle,
+    token: String,
+) -> Result<AccountStatus, AppError> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let status = app.state::<LichessService>().connect_token(token)?;
+        let _ = app.emit("lichess-account-updated", &status);
+        Ok(status)
+    })
+    .await
+    .map_err(|_| AppError::new("state", "Подключение Lichess недоступно"))?
+}
+#[tauri::command]
+fn start_lichess_auth(
+    app: tauri::AppHandle,
+    service: State<LichessService>,
+) -> Result<AccountStatus, AppError> {
+    let flow = service.begin_auth()?;
+    if lichess::open_browser(&flow.url).is_err() {
+        let status = service.finish_browser_failure(&flow)?;
+        let _ = app.emit("lichess-account-updated", &status);
+        return Ok(status);
+    }
+    let status = service.current()?;
+    let _ = app.emit("lichess-account-updated", &status);
+    tauri::async_runtime::spawn_blocking(move || {
+        let result = app.state::<LichessService>().complete_auth(flow);
+        // Errors are deliberately sanitized by the service and contain no credentials.
+        if let Ok(status) = result {
+            let _ = app.emit("lichess-account-updated", &status);
+        }
+    });
+    Ok(status)
+}
+#[tauri::command]
+fn cancel_lichess_auth(
+    app: tauri::AppHandle,
+    service: State<LichessService>,
+) -> Result<AccountStatus, AppError> {
+    let status = service.cancel_auth()?;
+    let _ = app.emit("lichess-account-updated", &status);
+    Ok(status)
+}
+#[tauri::command]
+async fn disconnect_lichess(app: tauri::AppHandle) -> Result<AccountStatus, AppError> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let status = app.state::<LichessService>().disconnect()?;
+        let _ = app.emit("lichess-account-updated", &status);
+        Ok(status)
+    })
+    .await
+    .map_err(|_| AppError::new("state", "Подключение Lichess недоступно"))?
+}
+
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
@@ -166,6 +230,7 @@ pub fn run() {
                 .map(PathBuf::from)
                 .unwrap_or(directory);
             storage::open(&directory.join("chesspush.sqlite3"))?;
+            app.manage(LichessService::new(&directory)?);
             app.manage(AppDirectory(directory));
             Ok(())
         })
@@ -176,10 +241,16 @@ pub fn run() {
             remember_file,
             reveal_file,
             get_theme,
-            set_theme
+            set_theme,
+            account_status,
+            connect_lichess_token,
+            start_lichess_auth,
+            cancel_lichess_auth,
+            disconnect_lichess
         ])
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                let _ = window.state::<LichessService>().cancel_auth();
                 let jobs = window.state::<Jobs>();
                 if let Ok(active) = jobs.0.lock()
                     && let Some(job) = active.as_ref()

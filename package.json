@@ -1,7 +1,7 @@
 {
   "name": "chesspush",
   "private": true,
-  "version": "0.2.0-alpha.2",
+  "version": "0.2.0-alpha.3",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -12,7 +12,9 @@
     "format:check": "prettier --check src tools/*.mjs tests/*.ts tests/*.mjs *.json *.ts *.html",
     "tauri": "tauri",
     "test:native": "npm run tauri build -- --debug --no-bundle && node tools/check-native.mjs",
-    "benchmark": "node tests/benchmark.mjs && cargo run --manifest-path src-tauri/Cargo.toml --release --no-default-features --example scan -- .qa/benchmark.pgn.zst"
+    "benchmark": "node tests/benchmark.mjs && cargo run --manifest-path src-tauri/Cargo.toml --release --no-default-features --example scan -- .qa/benchmark.pgn.zst",
+    "check:privacy": "node tools/check-privacy.mjs",
+    "test:account-ui": "node tests/account-ui.mjs"
   },
   "dependencies": {
     "@lichess-org/chessground": "10.4.0",

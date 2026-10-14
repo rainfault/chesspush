@@ -102,7 +102,11 @@ try {
     await new Promise((ok) => setTimeout(ok, 200));
   }
   if (!available) throw new Error("Test WebView2 did not become available");
-  for (const script of ["tests/ui-smoke.mjs", "tests/native-smoke.mjs"]) {
+  for (const script of [
+    "tests/ui-smoke.mjs",
+    "tests/native-smoke.mjs",
+    "tests/native-account.mjs",
+  ]) {
     const pending = run(process.execPath, [script], {
       cwd: root,
       env: environment,

@@ -10,5 +10,5 @@ export default defineConfig({
     watch: { ignored: ["**/src-tauri/**"] },
   },
   build: { target: "es2022" },
-  test: { include: ["tests/*.test.ts"] },
+  test: { include: ["tests/*.test.ts", "tests/*.test.mjs"] },
 });

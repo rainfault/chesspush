@@ -33,3 +33,15 @@ __pycache__/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Local connection settings and legacy exports
+/output/
+/output*.ini
+/config.json
+/bot_usernames.txt
+/credentials/
+credentials*.json
+secrets*.json
+token*.json
+*.pem
+*.key

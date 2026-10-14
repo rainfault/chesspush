@@ -1,7 +1,7 @@
-# ChessPush · 0.2.0-alpha.2
+# ChessPush · 0.2.0-alpha.3
 
 Персональная шахматная утилита на **Tauri 2, React, TypeScript и Rust**.
-Рабочие разделы — ZST/PGN-парсер и шахматная доска. Qt/Python исключён из текущей
+Рабочие разделы — главная с рейтингами Lichess, ZST/PGN-парсер и шахматная доска. Qt/Python исключён из текущей
 версии; прежняя реализация сохранена в Git под tag `v0.1.0-alpha.1`.
 
 ## Подготовка и запуск
@@ -27,6 +27,22 @@ npm run tauri build
 Установщик: `src-tauri/target/release/bundle/nsis/`.
 Быстрая локальная сборка: `npm run tauri build -- --debug --no-bundle`.
 Ярлык рабочего стола обновляется скриптом `tools/create_shortcut.ps1`.
+
+## Lichess и главная страница
+
+Главная открывается при запуске: часы, Rapid и Blitz. Рейтинги обновляются раз в
+минуту. Шкала до 2000 видна только выше 1900; без связи остаются иконки и кнопка входа.
+
+Нажмите «Войти через Lichess» на главной или в настройках. Откроется системный браузер
+с OAuth PKCE S256; дополнительные права аккаунта не запрашиваются. Для возврата
+приложение временно слушает случайный порт только на 127.0.0.1, максимум 3 минуты.
+Вход можно отменить. Обычный HTTP backend не создаётся.
+
+Другой способ: вставьте персональный токен в поле «Токен» и нажмите «Подключить».
+Ник берётся из проверенного аккаунта. Поле очищается после отправки; сохранённый
+токен находится в Windows Credential Manager, вне репозитория и SQLite.
+«Отключить аккаунт» удаляет локальный доступ, но не отзывает токен на Lichess.
+Интеграция хранилища учётных данных сейчас поддерживает Windows.
 
 ## Парсер
 
@@ -56,8 +72,9 @@ SQL migrations находятся в `src-tauri/migrations/`.
 Одноразовый перенос старой SQLite-библиотеки выполняется Rust example `migrate_legacy`.
 Он читает прежнюю базу, сохраняет игры и историю в Tauri SQLite и создаёт резервную
 копию целевой базы перед изменениями. Исходная база, экспорты и файлы настроек остаются
-на месте. Ник и токен сохраняются только в локальной SQLite и резервной копии;
-они не выводятся в лог и не публикуются в Git.
+на месте. При первом запуске токен из прежних настроек переносится в Windows Credential
+Manager и удаляется из активной SQLite, включая архив настроек. Старые резервные
+копии остаются локальными; токен не возвращается frontend и не выводится в лог.
 
 ```powershell
 cargo run --manifest-path src-tauri/Cargo.toml --no-default-features --example migrate_legacy -- data/chess_training_tool.sqlite3 data/settings.json "$env:APPDATA/io.github.rainfault.chesspush.v2/chesspush.sqlite3" data/migration-backups
@@ -67,6 +84,7 @@ cargo run --manifest-path src-tauri/Cargo.toml --no-default-features --example m
 
 ```powershell
 npm run check
+npm run check:privacy
 npm run format:check
 npm test
 cargo fmt --manifest-path src-tauri/Cargo.toml --check
@@ -80,7 +98,8 @@ cargo test --manifest-path src-tauri/Cargo.toml
 Снимок исходного поведения сохранён в `tests/fixtures/`: 22 сценария на PGN и ZST.
 Python и Qt для проверок и сборки текущего приложения не требуются.
 
-При работающем `npm run dev`: `node tests/ui-smoke.mjs` (установленный Edge).
+При работающем `npm run dev`: `node tests/ui-smoke.mjs` и `npm run test:account-ui`
+(установленный Edge). Account UI использует синтетическую IPC-модель без личного аккаунта.
 Нативная проверка: `npm run test:native`. Команда собирает debug-приложение, генерирует
 тестовый ZST и запускает отдельный процесс с временной SQLite и WebView2-профилем
 в `.qa/`. CDP port выбирается автоматически; рабочая библиотека не используется.
@@ -106,3 +125,21 @@ cargo run --manifest-path src-tauri/Cargo.toml --release --no-default-features -
 - `public/` — локальный каталог дебютов и иконка; `licenses/` — сохранённые notices.
 
 [Архитектура](ARCHITECTURE.md) · [Миграция](MIGRATION.md) · [Зависимости и лицензии](THIRD_PARTY.md).
+
+## Приватность Git
+
+Не добавляйте локальные настройки, партии, базы, экспорты и секреты в Git.
+`npm run check:privacy` проверяет отслеживаемые файлы, а `node tools/check-privacy.mjs --history`
+— все локальные ветки и теги. Проверка сообщает только пути и категории нарушений.
+Она не заменяет проверку состава коммита и не может распознать все виды личных данных.
+
+Включите проверку индекса перед коммитом:
+
+```powershell
+git config core.hooksPath .githooks
+```
+
+История старых веток и alpha-тегов очищена от локальных данных. Для старой копии
+репозитория рекомендуется новое клонирование, чтобы случайно не вернуть удалённую историю.
+Переписывание Git не удаляет чужие копии и кэш старых коммитов на GitHub;
+для серверной очистки может понадобиться обращение в GitHub Support.

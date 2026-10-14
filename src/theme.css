@@ -417,3 +417,40 @@ h2 {
     padding: 16px;
   }
 }
+
+.settings-dialog > label,
+.settings-dialog form {
+  margin-bottom: var(--space-4);
+}
+.settings-dialog form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--space-2);
+}
+.settings-dialog input[readonly] {
+  background: var(--surface-muted);
+}
+.token-connect {
+  padding: 10px 12px;
+  color: var(--accent);
+}
+.settings-dialog .auth-button {
+  width: 100%;
+  margin: 0 0 var(--space-5);
+}
+.disconnect-button {
+  color: var(--secondary);
+  padding-left: 0;
+}
+.global-error {
+  position: fixed;
+  bottom: var(--space-5);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface);
+  padding: var(--space-3) var(--space-4);
+  box-shadow: 0 1px 5px #0003;
+  max-width: 80vw;
+  z-index: 1001;
+}

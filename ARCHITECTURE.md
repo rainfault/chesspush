@@ -1,7 +1,7 @@
 # Архитектура ChessPush
 
 ```text
-React: App / Databases / ChessBoard
+React: App / Home / Settings / Databases / ChessBoard
   ├─ BoardSession → chessops → Chessground
   └─ invoke / listen
        ↓
@@ -72,10 +72,33 @@ brown/cburnett стили официального npm-пакета; сетка 
 
 ## Границы текущего этапа
 
-Home показывает часы; Databases содержит рабочую вертикаль. Остальные разделы —
-пустые страницы с заголовком; Settings содержит тему. Lichess API, engine, Knowledge,
-SRS, индексы корпусов, Pattern Matcher и полное PGN tree отложены.
+Home показывает часы и текущие Rapid/Blitz; Databases содержит парсер и доску.
+Settings: проверенный ник, токен, вход через браузер, тема и отключение аккаунта.
+Остальные разделы — пустые страницы с заголовком. Engine, Knowledge, SRS, индексы
+корпусов, Pattern Matcher и полное PGN tree отложены.
 Redux, generic repositories/traits и framework поверх React отсутствуют.
 
 Прежний Qt/Python-код находится только в Git history (`v0.1.0-alpha.1`).
 Сборка, тесты и запуск текущего проекта используют Node.js/Rust/Tauri.
+
+## Аккаунт Lichess
+
+`lichess.rs` владеет сетевой логикой, состоянием подключения и OAuth PKCE.
+`credentials.rs` хранит токен через Windows Credential Manager; в SQLite остаётся ник.
+При старте прежний plaintext-токен переносится и удаляется из активной БД и архива
+настроек. Существующие локальные резервные копии не изменяются.
+
+Commands: `account_status`, `connect_lichess_token`, `start_lichess_auth`,
+`cancel_lichess_auth`, `disconnect_lichess`. Event: `lichess-account-updated`.
+DTO содержит status, username, rapid, blitz, message, hasToken; токен не возвращается.
+Длительные операции выполняются через spawn_blocking, отдельно от парсера.
+Сетевые запросы сериализованы, refresh ограничен 15 секундами, UI обновляется раз
+в минуту; HTTP429 учитывает Retry-After с минимумом 60 секунд.
+
+OAuth использует системный браузер, случайные state/verifier, S256, public client
+без client_secret и дополнительных scopes. Callback — временный loopback listener
+на случайном 127.0.0.1-порту (180 секунд), проверяющий state и путь. Отмена и смена
+поколения не позволяют старому ответу переподключить аккаунт.
+Ошибки не включают URL callback, заголовки, token или содержимое ответов API.
+При offline рейтинги скрыты, сохранённый доступ остаётся. На других ОС адаптер
+защищённого хранилища пока не реализован; plaintext fallback отсутствует.

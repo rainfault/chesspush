@@ -1,0 +1,3 @@
+#!/bin/sh
+# Only filenames and categories are reported; token values never enter hook output.
+node tools/check-privacy.mjs --staged

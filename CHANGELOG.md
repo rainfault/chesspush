@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0-alpha.3 — 2026-10-14
+
+- Restored Home clock, Lichess Rapid/Blitz ratings and offline authentication button.
+- Added browser OAuth PKCE and manual token connection in compact settings.
+- Tokens use Windows Credential Manager; old SQLite copies are migrated and removed.
+- Sanitized published Git history and added a privacy check before commits.
+- Added account/network/OAuth and Home interaction regression checks.
+
 ## 0.2.0-alpha.2 — 2026-10-14
 
 - Tauri 2 / React / TypeScript / Rust is now the main project at repository root.

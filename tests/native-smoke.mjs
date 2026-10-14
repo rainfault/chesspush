@@ -81,6 +81,7 @@ try {
   await page.waitForFunction(
     () => document.documentElement.dataset.theme === "dark",
   );
+  await page.getByRole("button", { name: "Базы", exact: true }).click();
   await page.getByRole("button", { name: "Файлы", exact: true }).click();
   await page.locator(".file-row").first().waitFor();
   await page.screenshot({ path: ".qa/native.png" });
