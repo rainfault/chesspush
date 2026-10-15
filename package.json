@@ -11,10 +11,12 @@
     "format": "prettier --write src tools/*.mjs tests/*.ts tests/*.mjs *.json *.ts *.html",
     "format:check": "prettier --check src tools/*.mjs tests/*.ts tests/*.mjs *.json *.ts *.html",
     "tauri": "tauri",
+    "test:statistics-native": "npm run tauri build -- --debug --no-bundle && node tools/check-statistics-native.mjs",
     "test:native": "npm run tauri build -- --debug --no-bundle && node tools/check-native.mjs",
     "benchmark": "node tests/benchmark.mjs && cargo run --manifest-path src-tauri/Cargo.toml --release --no-default-features --example scan -- .qa/benchmark.pgn.zst",
     "check:privacy": "node tools/check-privacy.mjs",
-    "test:account-ui": "node tests/account-ui.mjs"
+    "test:account-ui": "node tests/account-ui.mjs",
+    "test:statistics-flow": "npm run tauri build -- --debug --no-bundle && node tools/check-statistics-flow.mjs"
   },
   "dependencies": {
     "@lichess-org/chessground": "10.4.0",

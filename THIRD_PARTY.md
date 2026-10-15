@@ -46,3 +46,21 @@ from the previous application, pinned to [lila fa6614fc](https://github.com/lich
 The font, editable SFD source and glyph map are in `public/lichess/`.
 Its authors and mixed OFL/MIT/CC BY 3.0/AGPLv3+ attribution are retained in
 `public/lichess/licenses/LILA-COPYING.md`, alongside the AGPL license text.
+
+Statistics legal replay uses [shakmaty 0.30.0](https://github.com/niklasf/shakmaty)
+and [pgn-reader 0.29.1](https://github.com/niklasf/rust-pgn-reader), both
+GPL-3.0-or-later; GPL text is retained in `licenses/GPL-3.0.txt`.
+
+`src-tauri/src/statistics/chess.rs` adapts the board phase Divider from
+[scalachess e3f7eb8](https://github.com/lichess-org/scalachess/blob/e3f7eb8f73a268f668d70e594e8f2426d8614881/core/src/main/scala/Divider.scala),
+Copyright (c) 2012-2014 Thibault Duplessis, MIT. The complete notice is retained
+in `licenses/SCALACHESS-MIT.txt`. The adaptation was made on 2026-10-15.
+
+`src-tauri/src/statistics/metrics.rs` adapts Accuracy aggregation/alignment from
+[Lichess lila ad760137](https://github.com/lichess-org/lila/blob/ad760137cf9941cadd93126433695d6933209b0a/modules/analyse/src/main/AccuracyPercent.scala)
+(AGPL-3.0-or-later), with WinPercent and initial score from
+[scalachess e3f7eb8](https://github.com/lichess-org/scalachess/blob/e3f7eb8f73a268f668d70e594e8f2426d8614881/core/src/main/scala/eval.scala).
+The AGPL text is retained in `licenses/LILA-AGPL-3.0.txt`. The Rust adaptation,
+including missing-data and analysis-profile handling, was made on 2026-10-15.
+The metric method records these revisions; local Stockfish evidence does not
+promise identical values to a different Lichess cloud analysis.

@@ -5,7 +5,7 @@ use reqwest::{StatusCode, blocking::Client};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
-    io::{Read, Write},
+    io::{BufRead, BufReader, Read, Write},
     net::{TcpListener, TcpStream},
     path::{Path, PathBuf},
     sync::{
@@ -28,6 +28,7 @@ const AUTH_TIMEOUT: Duration = Duration::from_secs(180);
 pub struct AccountStatus {
     pub status: String,
     pub username: Option<String>,
+    pub id: Option<String>,
     pub blitz: Option<i64>,
     pub rapid: Option<i64>,
     pub message: Option<String>,
@@ -38,6 +39,7 @@ impl AccountStatus {
         Self {
             status: status.into(),
             username,
+            id: None,
             blitz: None,
             rapid: None,
             message: None,
@@ -62,6 +64,12 @@ pub struct LichessService {
     account_url: String,
     token_url: String,
 }
+#[derive(Clone, Debug)]
+pub struct VerifiedIdentity {
+    pub id: String,
+    pub username: String,
+    pub generation: u64,
+}
 pub struct AuthFlow {
     pub url: String,
     generation: u64,
@@ -73,6 +81,8 @@ pub struct AuthFlow {
 }
 #[derive(Deserialize)]
 struct Account {
+    #[serde(default)]
+    id: Option<String>,
     username: String,
     #[serde(default)]
     perfs: Perfs,
@@ -81,6 +91,8 @@ struct Account {
 struct Perfs {
     blitz: Option<Perf>,
     rapid: Option<Perf>,
+    #[serde(flatten)]
+    others: std::collections::BTreeMap<String, serde_json::Value>,
 }
 #[derive(Deserialize)]
 struct Perf {
@@ -143,7 +155,30 @@ impl LichessService {
                 initial.message = Some(error.message);
             }
         }
-        Self::with_store(credentials, database, initial, ACCOUNT_URL, TOKEN_URL)
+        let service = Self::with_store(credentials, database, initial, ACCOUNT_URL, TOKEN_URL)?;
+        #[cfg(debug_assertions)]
+        let service = if let Some(endpoint) = std::env::var_os("CHESSPUSH_TEST_API") {
+            let test_directory = std::env::var_os("CHESSPUSH_TEST_DATA").ok_or_else(|| {
+                AppError::new(
+                    "test_source",
+                    "Тестовый API требует изолированную test data directory",
+                )
+            })?;
+            let (account_url, token_url) = debug_source_urls(
+                directory,
+                Path::new(&test_directory),
+                &std::env::current_dir()?,
+                &endpoint.to_string_lossy(),
+            )?;
+            Self {
+                account_url,
+                token_url,
+                ..service
+            }
+        } else {
+            service
+        };
+        Ok(service)
     }
     fn with_store(
         credentials: Credentials,
@@ -175,6 +210,25 @@ impl LichessService {
             account_url: account_url.into(),
             token_url: token_url.into(),
         })
+    }
+    #[cfg(test)]
+    pub(crate) fn synthetic(database: &Path, endpoint: &str) -> Self {
+        storage::open(database).unwrap();
+        let service = Self::with_store(
+            Credentials::memory(),
+            database.into(),
+            AccountStatus::empty("disconnected", None, false),
+            &format!("{endpoint}/api/account"),
+            &format!("{endpoint}/api/token"),
+        )
+        .unwrap();
+        let account: Account =
+            serde_json::from_str(r#"{"id":"syntheticplayer","username":"SyntheticPlayer"}"#)
+                .unwrap();
+        service
+            .commit_account(0, "synthetic_fixture_token", account)
+            .unwrap();
+        service
     }
     pub fn current(&self) -> Result<AccountStatus, AppError> {
         Ok(self
@@ -210,7 +264,10 @@ impl LichessService {
             return Ok(session.status.clone());
         }
         match response {
-            Ok(account) => session.status = account_status(account),
+            Ok(account) => {
+                self.remember_observation(&account, session.generation)?;
+                session.status = account_status(account);
+            }
             Err(error) => set_failure(&mut session, error),
         }
         Ok(session.status.clone())
@@ -317,6 +374,7 @@ impl LichessService {
         self.credentials.delete()?;
         let conn = storage::open(&self.database)?;
         conn.execute("DELETE FROM settings WHERE key IN ('lichess_username','lichess_api_token','lichess_token')", [])?;
+        crate::statistics::store::disable_accounts(&conn)?;
         session.status = AccountStatus::empty("disconnected", None, false);
         session.retry_after = None;
         Ok(session.status.clone())
@@ -346,6 +404,7 @@ impl LichessService {
         // A refresh may have read the previous credential while this login was being validated.
         // Invalidate that snapshot before publishing the newly committed account.
         session.generation += 1;
+        self.remember_observation(&account, session.generation)?;
         session.active = None;
         session.status = account_status(account);
         Ok(session.status.clone())
@@ -401,6 +460,264 @@ impl LichessService {
         }
         Ok(account)
     }
+    fn remember_observation(&self, account: &Account, generation: u64) -> Result<(), AppError> {
+        if let Some(id) = account.id.as_ref().filter(|id| {
+            !id.is_empty()
+                && id.len() <= 64
+                && id
+                    .bytes()
+                    .all(|c| c.is_ascii_alphanumeric() || c == b'_' || c == b'-')
+        }) {
+            let identity = VerifiedIdentity {
+                id: id.clone(),
+                username: account.username.clone(),
+                generation,
+            };
+            let conn = storage::open(&self.database)?;
+            let mut ratings = Vec::new();
+            for (pool, perf) in [
+                ("blitz", account.perfs.blitz.as_ref()),
+                ("rapid", account.perfs.rapid.as_ref()),
+            ] {
+                if let Some(perf) = perf.filter(|p| p.games > 0 && p.rating > 0) {
+                    ratings.push((pool, perf.rating));
+                }
+            }
+            for pool in ["ultraBullet", "bullet", "classical", "correspondence"] {
+                if let Some(perf) = account
+                    .perfs
+                    .others
+                    .get(pool)
+                    .and_then(|v| serde_json::from_value::<Perf>(v.clone()).ok())
+                    .filter(|p| p.games > 0 && p.rating > 0)
+                {
+                    ratings.push((pool, perf.rating));
+                }
+            }
+            crate::statistics::store::observe_with_ratings(
+                &conn,
+                &identity,
+                crate::statistics::store::now_ms(),
+                &ratings,
+            )?;
+        }
+        Ok(())
+    }
+    /// A verified stable ID and generation, never an API token.
+    pub fn verified_identity(&self) -> Result<Option<VerifiedIdentity>, AppError> {
+        let session = self.session.lock().map_err(|_| state_error())?;
+        if session.status.status != "connected" {
+            return Ok(None);
+        }
+        Ok(session
+            .status
+            .id
+            .as_ref()
+            .zip(session.status.username.as_ref())
+            .map(|(id, username)| VerifiedIdentity {
+                id: id.clone(),
+                username: username.clone(),
+                generation: session.generation,
+            }))
+    }
+    pub fn is_current_identity(&self, identity: &VerifiedIdentity) -> bool {
+        self.session.lock().is_ok_and(|s| {
+            s.generation == identity.generation
+                && s.status.status == "connected"
+                && s.status.id.as_deref() == Some(identity.id.as_str())
+        })
+    }
+    pub fn retry_after_seconds(&self) -> u64 {
+        self.session
+            .lock()
+            .ok()
+            .and_then(|s| s.retry_after)
+            .map(|t| t.saturating_duration_since(Instant::now()).as_secs() + 1)
+            .unwrap_or(60)
+            .max(60)
+    }
+    pub fn export_user_games<F>(
+        &self,
+        identity: &VerifiedIdentity,
+        query: &[(&str, String)],
+        cancel: &AtomicBool,
+        consume: F,
+    ) -> Result<(), AppError>
+    where
+        F: FnMut(serde_json::Value) -> Result<(), AppError>,
+    {
+        let mut url = Url::parse(&self.account_url).map_err(|_| state_error())?;
+        {
+            let mut path = url.path_segments_mut().map_err(|_| state_error())?;
+            path.clear()
+                .extend(["api", "games", "user", identity.username.as_str()]);
+        }
+        self.export_json(identity, url, query, cancel, false, consume)
+    }
+    pub fn export_game<F>(
+        &self,
+        identity: &VerifiedIdentity,
+        id: &str,
+        cancel: &AtomicBool,
+        consume: F,
+    ) -> Result<(), AppError>
+    where
+        F: FnMut(serde_json::Value) -> Result<(), AppError>,
+    {
+        if id.len() != 8 || !id.bytes().all(|c| c.is_ascii_alphanumeric()) {
+            return Err(AppError::new("validation", "Некорректный ID партии"));
+        }
+        let mut url = Url::parse(&self.account_url).map_err(|_| state_error())?;
+        {
+            let mut path = url.path_segments_mut().map_err(|_| state_error())?;
+            path.clear().extend(["game", "export", id]);
+        }
+        let query = [
+            ("moves", "true".into()),
+            ("pgnInJson", "true".into()),
+            ("clocks", "true".into()),
+            ("evals", "true".into()),
+            ("accuracy", "true".into()),
+            ("opening", "true".into()),
+            ("division", "true".into()),
+        ];
+        self.export_json(identity, url, &query, cancel, true, consume)
+    }
+    pub fn export_game_metadata<F>(
+        &self,
+        identity: &VerifiedIdentity,
+        id: &str,
+        cancel: &AtomicBool,
+        consume: F,
+    ) -> Result<(), AppError>
+    where
+        F: FnMut(serde_json::Value) -> Result<(), AppError>,
+    {
+        if id.len() != 8 || !id.bytes().all(|c| c.is_ascii_alphanumeric()) {
+            return Err(AppError::new("validation", "Некорректный ID партии"));
+        }
+        let mut url = Url::parse(&self.account_url).map_err(|_| state_error())?;
+        {
+            let mut path = url.path_segments_mut().map_err(|_| state_error())?;
+            path.clear().extend(["game", "export", id]);
+        }
+        self.export_json(
+            identity,
+            url,
+            &[
+                ("moves", "false".into()),
+                ("clocks", "false".into()),
+                ("evals", "false".into()),
+            ],
+            cancel,
+            true,
+            consume,
+        )
+    }
+    fn export_json<F>(
+        &self,
+        identity: &VerifiedIdentity,
+        mut url: Url,
+        query: &[(&str, String)],
+        cancel: &AtomicBool,
+        single: bool,
+        mut consume: F,
+    ) -> Result<(), AppError>
+    where
+        F: FnMut(serde_json::Value) -> Result<(), AppError>,
+    {
+        let _request = self.requests.lock().map_err(|_| state_error())?;
+        let token = {
+            let session = self.session.lock().map_err(|_| state_error())?;
+            if session.generation != identity.generation
+                || session.status.id.as_deref() != Some(&identity.id)
+                || cancel.load(Ordering::Relaxed)
+            {
+                return Err(cancelled());
+            }
+            if session.retry_after.is_some_and(|t| Instant::now() < t) {
+                return Err(http_error(StatusCode::TOO_MANY_REQUESTS));
+            }
+            self.credentials.read()?.ok_or_else(cancelled)?
+        };
+        url.query_pairs_mut()
+            .extend_pairs(query.iter().map(|(key, value)| (*key, value.as_str())));
+        let response = self
+            .client
+            .get(url)
+            .header(
+                reqwest::header::ACCEPT,
+                if single {
+                    "application/json"
+                } else {
+                    "application/x-ndjson"
+                },
+            )
+            .bearer_auth(&*token)
+            .send()
+            .map_err(transport_error)?;
+        if response.status() == StatusCode::NOT_FOUND {
+            return Err(AppError::new(
+                "not_found",
+                "Партия пока недоступна в Lichess",
+            ));
+        }
+        if !response.status().is_success() {
+            return Err(self.response_error(&response));
+        }
+        let mut reader = BufReader::new(response);
+        let mut line = String::new();
+        let mut single_count = 0;
+        loop {
+            if cancel.load(Ordering::Relaxed) {
+                return Err(cancelled());
+            }
+            line.clear();
+            let length = reader
+                .by_ref()
+                .take(16 * 1024 * 1024 + 1)
+                .read_line(&mut line)
+                .map_err(|_| {
+                    AppError::new(
+                        "partial",
+                        "Поток Lichess прерван; диапазон будет проверен повторно",
+                    )
+                })?;
+            if length == 0 {
+                break;
+            }
+            if length > 16 * 1024 * 1024 {
+                return Err(AppError::new("response", "Слишком большой объект Lichess"));
+            }
+            if line.trim().is_empty() {
+                continue;
+            }
+            let value: serde_json::Value = serde_json::from_str(line.trim()).map_err(|_| {
+                AppError::new("partial", "Некорректный или неполный объект Lichess")
+            })?;
+            let session = self.session.lock().map_err(|_| state_error())?;
+            if session.generation != identity.generation
+                || session.status.id.as_deref() != Some(&identity.id)
+                || cancel.load(Ordering::Relaxed)
+            {
+                return Err(cancelled());
+            }
+            // Keep the generation lock only for the local commit, never for a DB transaction across HTTP.
+            consume(value)?;
+            drop(session);
+            single_count += 1;
+        }
+        if single && single_count != 1 {
+            return Err(AppError::new(
+                "partial",
+                "Lichess не вернул запрошенную партию",
+            ));
+        }
+        if !self.is_current_identity(identity) {
+            return Err(cancelled());
+        }
+        Ok(())
+    }
     fn exchange_code(
         &self,
         code: &str,
@@ -449,6 +766,7 @@ fn account_status(account: Account) -> AccountStatus {
     AccountStatus {
         status: "connected".into(),
         username: Some(account.username),
+        id: account.id,
         blitz: rating(account.perfs.blitz),
         rapid: rating(account.perfs.rapid),
         message: None,
@@ -1119,5 +1437,125 @@ mod tests {
         assert!(service.credentials.read().unwrap().is_some());
         requests.recv().unwrap();
         server.join().unwrap();
+    }
+}
+
+#[cfg(test)]
+mod statistics_identity_tests {
+    use super::*;
+    #[test]
+    fn verified_t0_rating_snapshot_does_not_follow_refresh_or_reconnect() {
+        let temp = tempfile::tempdir().unwrap();
+        let database = temp.path().join("db.sqlite3");
+        storage::open(&database).unwrap();
+        let service = LichessService::with_store(
+            Credentials::memory(),
+            database.clone(),
+            AccountStatus::empty("disconnected", None, false),
+            "http://127.0.0.1:1/api/account",
+            "http://127.0.0.1:1/api/token",
+        )
+        .unwrap();
+        let first:Account=serde_json::from_str(r#"{"id":"stablefixture","username":"DisplayName","perfs":{"blitz":{"rating":1550,"games":1},"rapid":{"rating":1600,"games":2}}}"#).unwrap();
+        service
+            .commit_account(0, "synthetic_fixture_token", first)
+            .unwrap();
+        let conn = storage::open(&database).unwrap();
+        let observation = crate::statistics::store::active_account(&conn)
+            .unwrap()
+            .unwrap();
+        let snapshots = crate::statistics::store::rating_snapshots(&conn, &observation.id).unwrap();
+        assert_eq!(snapshots.len(), 2);
+        assert_eq!(snapshots[0].rating, 1550);
+        assert_eq!(snapshots[0].timestamp_ms, observation.t0_ms);
+        let generation = service.verified_identity().unwrap().unwrap().generation;
+        let renamed:Account=serde_json::from_str(r#"{"id":"stablefixture","username":"RenamedDisplay","perfs":{"blitz":{"rating":1800,"games":3}}}"#).unwrap();
+        service
+            .commit_account(generation, "synthetic_fixture_token", renamed)
+            .unwrap();
+        let saved = crate::statistics::store::active_account(&conn)
+            .unwrap()
+            .unwrap();
+        assert_eq!(saved.t0_ms, observation.t0_ms);
+        assert_eq!(saved.username, "RenamedDisplay");
+        assert_eq!(
+            crate::statistics::store::rating_snapshots(&conn, &observation.id).unwrap()[0].rating,
+            1550
+        );
+        assert!(
+            !serde_json::to_string(&service.current().unwrap())
+                .unwrap()
+                .contains("synthetic_fixture_token")
+        );
+    }
+}
+
+#[cfg(debug_assertions)]
+fn debug_source_urls(
+    directory: &Path,
+    test_directory: &Path,
+    workspace: &Path,
+    endpoint: &str,
+) -> Result<(String, String), AppError> {
+    let rejected = || {
+        AppError::new(
+            "test_source",
+            "Тестовый API разрешён только в изолированной .qa и на HTTP 127.0.0.1",
+        )
+    };
+    let directory = directory.canonicalize().map_err(|_| rejected())?;
+    let test_directory = test_directory.canonicalize().map_err(|_| rejected())?;
+    let qa = workspace
+        .join(".qa")
+        .canonicalize()
+        .map_err(|_| rejected())?;
+    let base = Url::parse(endpoint).map_err(|_| rejected())?;
+    if directory != test_directory
+        || !directory.starts_with(qa)
+        || base.scheme() != "http"
+        || base.host_str() != Some("127.0.0.1")
+        || base.port().is_none()
+        || !base.username().is_empty()
+        || base.password().is_some()
+        || base.query().is_some()
+        || base.fragment().is_some()
+        || base.path() != "/"
+    {
+        return Err(rejected());
+    }
+    Ok((
+        base.join("api/account")
+            .map_err(|_| rejected())?
+            .to_string(),
+        base.join("api/token").map_err(|_| rejected())?.to_string(),
+    ))
+}
+#[cfg(all(test, debug_assertions))]
+mod debug_source_tests {
+    use super::*;
+    #[test]
+    fn source_override_requires_loopback_and_canonical_isolated_data() {
+        let temp = tempfile::tempdir().unwrap();
+        let dir = temp.path().join(".qa/profile");
+        std::fs::create_dir_all(&dir).unwrap();
+        assert!(debug_source_urls(&dir, &dir, temp.path(), "http://127.0.0.1:43210").is_ok());
+        for url in [
+            "https://lichess.org",
+            "http://localhost:43210",
+            "http://127.0.0.1:43210/api",
+            "http://user@127.0.0.1:43210",
+            "http://127.0.0.1:43210/?secret=1",
+        ] {
+            assert!(debug_source_urls(&dir, &dir, temp.path(), url).is_err());
+        }
+        assert!(
+            debug_source_urls(
+                temp.path(),
+                temp.path(),
+                temp.path(),
+                "http://127.0.0.1:43210"
+            )
+            .is_err()
+        );
     }
 }

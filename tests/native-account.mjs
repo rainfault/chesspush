@@ -48,6 +48,10 @@ try {
   const disconnected = await invoke("disconnect_lichess");
   if (disconnected.hasToken || disconnected.username !== null)
     throw new Error("Native disconnect failed");
+  await page.getByRole("button", { name: "Статистика", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Подключить Lichess", exact: true }),
+  ).toBeVisible();
   console.log(
     "PASS: native account IPC, fresh profile, Home, masked token validation/clearing, cancellation and disconnect; no personal credentials used",
   );

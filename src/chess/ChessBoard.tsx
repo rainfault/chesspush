@@ -13,12 +13,18 @@ interface Props {
   session: BoardSession;
   revision: number;
   onChange: () => void;
+  readOnly?: boolean;
 }
-export function ChessBoard({ session, revision, onChange }: Props) {
+export function ChessBoard({
+  session,
+  revision,
+  onChange,
+  readOnly = false,
+}: Props) {
   const element = useRef<HTMLDivElement>(null);
   const api = useRef<Api | null>(null);
-  const current = useRef({ session, onChange });
-  current.current = { session, onChange };
+  const current = useRef({ session, onChange, readOnly });
+  current.current = { session, onChange, readOnly };
   const [promotion, setPromotion] = useState<{
     orig: SquareName;
     dest: SquareName;
@@ -34,7 +40,12 @@ export function ChessBoard({ session, revision, onChange }: Props) {
       turnColor: s.position.turn,
       check: s.position.isCheck(),
       lastMove: s.lastMove,
-      movable: { free: false, color: s.position.turn, dests: s.destinations },
+      movable: {
+        free: false,
+        color: current.current.readOnly ? undefined : s.position.turn,
+        dests: current.current.readOnly ? new Map() : s.destinations,
+      },
+      draggable: { enabled: !current.current.readOnly },
       drawable: { shapes: s.shapes },
     };
     // Preserve the reference fix: do not restart an already painted move animation.
@@ -50,13 +61,13 @@ export function ChessBoard({ session, revision, onChange }: Props) {
       ranksPosition: "right",
       disableContextMenu: true,
       animation: { enabled: true, duration: 200 },
-      draggable: { enabled: true, showGhost: true },
+      draggable: { enabled: !readOnly, showGhost: true },
       selectable: { enabled: true },
       premovable: { enabled: false },
       movable: {
         free: false,
-        color: session.position.turn,
-        dests: session.destinations,
+        color: readOnly ? undefined : session.position.turn,
+        dests: readOnly ? new Map() : session.destinations,
         events: {
           after: (origin, destination) => {
             if (
@@ -97,7 +108,7 @@ export function ChessBoard({ session, revision, onChange }: Props) {
   useLayoutEffect(() => {
     sync();
     if (promotion && promotion.revision !== revision) setPromotion(null);
-  }, [revision]);
+  }, [revision, readOnly]);
   function cancelPromotion() {
     setPromotion(null);
     sync(true);

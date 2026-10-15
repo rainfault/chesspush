@@ -15,3 +15,19 @@ UI не должен содержать бизнес-логику работы �
 Особое внимание уделяй расширяемости Knowledge Base. `KnowledgeItem` может содержать FEN, PGN-фрагмент или целую партию, варианты, текст, стрелки/кружки, системные категории, пользовательские теги, источник, `Theory/Self-study`, связанные партии и другие знания. Не считай любое знание автоматически формализуемым паттерном: сложный Pattern Matcher, автоматическое распознавание стратегических идей, embeddings и поиск модельных партий по семантике — будущие задачи и не должны имитироваться упрощёнными эвристиками без явного запроса.
 
 При любом новом решении проверяй, усиливает ли оно основной цикл приложения или просто добавляет очередную функцию. Основные разделы будущей v2: Home, Databases/Parsers, Statistics, Knowledge, My Games/Analysis, Position/Calculation Training и Settings. Новые функции должны по возможности усиливать связь между этими разделами: статистика должна вести к конкретным партиям и знаниям, анализ партии — позволять создавать/привязывать знания, а парсеры — снабжать систему практически значимыми данными и модельными примерами.
+
+## Architecture
+
+The authoritative architecture document is `ARCHITECTURE.md`.
+
+Before making architectural decisions or implementing
+new modules, read `ARCHITECTURE.md` and follow its
+Knowledge-first principles.
+
+Reuse the shared chess domain model across Statistics,
+Repertoire, Game Graph, Knowledge, and Training.
+
+Do not introduce incompatible PGN trees, position models,
+or parallel storage systems.
+
+Preserve existing functionality and user data.

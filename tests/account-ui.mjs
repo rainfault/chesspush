@@ -58,6 +58,16 @@ await page.addInitScript(() => {
           return;
         case "library_files":
           return [];
+        case "statistics_engine_config":
+          return {
+            path: "",
+            threads: 1,
+            hash_mb: 128,
+            profile: "standard",
+            custom_nodes: null,
+            custom_movetime_ms: null,
+            syzygy_path: null,
+          };
         case "account_status":
           return account;
         case "start_lichess_auth":

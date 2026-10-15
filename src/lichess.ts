@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 
 export interface AccountStatus {
+  id?: string | null;
   status:
     | "disconnected"
     | "connected"

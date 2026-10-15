@@ -1,7 +1,7 @@
 import { Chess, normalizeMove } from "chessops/chess";
 import { parseFen, makeFen, INITIAL_FEN } from "chessops/fen";
 import { parseSan, makeSan } from "chessops/san";
-import { parseSquare, makeSquare } from "chessops/util";
+import { parseSquare, makeSquare, makeUci } from "chessops/util";
 import { chessgroundDests } from "chessops/compat";
 import { parsePgn } from "chessops/pgn";
 import type { Color, Move, Role, SquareName } from "chessops/types";
@@ -50,6 +50,9 @@ export class BoardSession {
       const pos = this.positions[i];
       return `${pos.turn === "white" ? `${pos.fullmoves}. ` : i === 0 ? `${pos.fullmoves}... ` : ""}${makeSan(pos, move)}`;
     });
+  }
+  get uciMoves() {
+    return this.moves.slice(0, this.cursor).map(makeUci);
   }
   get pgn() {
     return this.sanMoves.slice(0, this.cursor).join(" ");

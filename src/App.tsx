@@ -1,3 +1,4 @@
+import { Statistics } from "./statistics/Statistics";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
@@ -185,6 +186,13 @@ export function App() {
         </button>
       </header>
       <Databases active={page === "databases"} />
+      <Statistics
+        active={page === "statistics" || page === "games"}
+        initialSection={page === "games" ? "games" : undefined}
+        account={account}
+        onAuthenticate={onAuthenticate}
+        busy={busy}
+      />
       {page === "home" && (
         <Home
           account={account}
@@ -193,11 +201,14 @@ export function App() {
           busy={busy}
         />
       )}
-      {page !== "home" && page !== "databases" && (
-        <main className="placeholder">
-          <h1>{pages.find(([id]) => id === page)?.[1]}</h1>
-        </main>
-      )}
+      {page !== "home" &&
+        page !== "databases" &&
+        page !== "statistics" &&
+        page !== "games" && (
+          <main className="placeholder">
+            <h1>{pages.find(([id]) => id === page)?.[1]}</h1>
+          </main>
+        )}
       {settings && (
         <Settings
           account={account}

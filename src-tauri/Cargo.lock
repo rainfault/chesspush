@@ -48,6 +48,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "330a5ed07fa54e4702c9d6c4174f74427fc0ef6e214bbd677ae50a5099946470"
 
 [[package]]
+name = "arrayvec"
+version = "0.7.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d3fb67a6e08acf24fdeccbac2cb6ac4305825bd1f117462e0e6f2f193345ad56"
+
+[[package]]
 name = "atk"
 version = "0.18.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -176,6 +182,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bf88ba1141d185c399bee5288d850d63b8369520c1eafc32a0430b5b6c287bf4"
 dependencies = [
  "tinyvec",
+]
+
+[[package]]
+name = "btoi"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3b5ab9db53bcda568284df0fd39f6eac24ad6f7ba7ff1168b9e76eba6576b976"
+dependencies = [
+ "num-traits",
 ]
 
 [[package]]
@@ -324,12 +339,15 @@ version = "0.2.0-alpha.3"
 dependencies = [
  "base64 0.22.1",
  "getrandom 0.3.4",
+ "pgn-reader",
  "regex",
  "reqwest",
  "rusqlite",
  "serde",
  "serde_json",
  "sha2",
+ "shakmaty",
+ "shakmaty-syzygy",
  "tauri",
  "tauri-build",
  "tauri-plugin-dialog",
@@ -1993,6 +2011,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "650eef8c711430f1a879fdd01d4745a7deea475becfb90269c06775983bbf086"
 
 [[package]]
+name = "nohash-hasher"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2bf50223579dc7cdcfb3bfcacf7069ff68243f8c363f62ffa99cf000a6b9c451"
+
+[[package]]
 name = "num-conv"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2334,6 +2358,17 @@ name = "percent-encoding"
 version = "2.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b4f627cb1b25917193a259e49bdad08f671f8d9708acfd5fe0a8c1455d87220"
+
+[[package]]
+name = "pgn-reader"
+version = "0.29.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "50e9c8c7d9654b31768477ec2712b9e40682ad1dd323db2867dfeefa94651c6a"
+dependencies = [
+ "btoi",
+ "memchr",
+ "shakmaty",
+]
 
 [[package]]
 name = "phf"
@@ -3075,6 +3110,35 @@ dependencies = [
  "cfg-if",
  "cpufeatures",
  "digest",
+]
+
+[[package]]
+name = "shakmaty"
+version = "0.30.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "41cef923c4ad8bf68e6f52a3091499108b8fec71ea8c4ba27d1acfb263f53241"
+dependencies = [
+ "arrayvec",
+ "bitflags 2.13.2",
+ "btoi",
+ "nohash-hasher",
+ "serde",
+]
+
+[[package]]
+name = "shakmaty-syzygy"
+version = "0.28.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "24b16b1750dfcbbdee863037af8bebdc37e8f66fbb988e48c6e3e1576b2934fb"
+dependencies = [
+ "arrayvec",
+ "bitflags 2.13.2",
+ "byteorder",
+ "libc",
+ "once_cell",
+ "rustc-hash",
+ "shakmaty",
+ "tracing",
 ]
 
 [[package]]
@@ -3898,7 +3962,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "63e71662fa4b2a2c3a26f570f037eb95bb1f85397f3cd8076caed2f026a6d100"
 dependencies = [
  "pin-project-lite",
+ "tracing-attributes",
  "tracing-core",
+]
+
+[[package]]
+name = "tracing-attributes"
+version = "0.1.31"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7490cfa5ec963746568740651ac6781f701c9c5ea257c58e057f3ba8cf69e8da"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
 ]
 
 [[package]]

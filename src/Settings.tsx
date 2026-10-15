@@ -1,3 +1,4 @@
+import { EngineSettings } from "./statistics/EngineSettings";
 import { useEffect, useState } from "react";
 import type { AccountStatus } from "./lichess";
 
@@ -112,6 +113,7 @@ export function Settings({
             <option value="dark">Тёмная</option>
           </select>
         </label>
+        <EngineSettings />
         {account.hasToken && (
           <button
             className="disconnect-button"

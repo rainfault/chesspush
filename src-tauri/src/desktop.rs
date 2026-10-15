@@ -12,7 +12,6 @@ use std::{
         Arc, Mutex,
         atomic::{AtomicBool, Ordering},
     },
-    time::Instant,
 };
 use tauri::{Emitter, Manager, State};
 
@@ -231,7 +230,8 @@ pub fn run() {
                 .unwrap_or(directory);
             storage::open(&directory.join("chesspush.sqlite3"))?;
             app.manage(LichessService::new(&directory)?);
-            app.manage(AppDirectory(directory));
+            app.manage(AppDirectory(directory.clone()));
+            crate::statistics::desktop::install(app, directory.join("chesspush.sqlite3"))?;
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -246,39 +246,52 @@ pub fn run() {
             connect_lichess_token,
             start_lichess_auth,
             cancel_lichess_auth,
-            disconnect_lichess
+            disconnect_lichess,
+            crate::statistics::desktop::statistics_state,
+            crate::statistics::desktop::statistics_report,
+            crate::statistics::desktop::statistics_evidence,
+            crate::statistics::desktop::statistics_game,
+            crate::statistics::desktop::statistics_sync,
+            crate::statistics::desktop::statistics_engine_config,
+            crate::statistics::desktop::statistics_engine_validate,
+            crate::statistics::desktop::statistics_engine_save,
+            crate::statistics::desktop::statistics_engine_enqueue,
+            crate::statistics::desktop::statistics_engine_pause,
+            crate::statistics::desktop::statistics_engine_cancel,
+            crate::statistics::desktop::statistics_quarantine_retry
         ])
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                let _ = window.state::<LichessService>().cancel_auth();
-                let jobs = window.state::<Jobs>();
-                if let Ok(active) = jobs.0.lock()
-                    && let Some(job) = active.as_ref()
-                {
-                    job.cancel.store(true, Ordering::Relaxed);
-                    api.prevent_close();
-                    let handle = window.app_handle().clone();
-                    // Let the worker flush its partial PGN and SQLite batch before exiting.
-                    std::thread::spawn(move || {
-                        let started = Instant::now();
-                        loop {
-                            let idle = handle
-                                .state::<Jobs>()
-                                .0
-                                .lock()
-                                .map(|j| j.is_none())
-                                .unwrap_or(true);
-                            if idle {
-                                handle.exit(0);
-                                break;
-                            }
-                            if started.elapsed().as_secs() > 30 {
-                                break;
-                            }
-                            std::thread::sleep(std::time::Duration::from_millis(50));
-                        }
-                    });
+                // Prevent immediately. Credential/session and parser locks may wait for a
+                // committed SQLite batch, and must never be acquired on the window thread.
+                api.prevent_close();
+                if !crate::statistics::desktop::stop(window.app_handle()) {
+                    return;
                 }
+                let handle = window.app_handle().clone();
+                std::thread::spawn(move || {
+                    let _ = handle.state::<LichessService>().cancel_auth();
+                    if let Ok(active) = handle.state::<Jobs>().0.lock()
+                        && let Some(job) = active.as_ref()
+                    {
+                        job.cancel.store(true, Ordering::Relaxed);
+                    }
+                    loop {
+                        let parser_idle = handle
+                            .state::<Jobs>()
+                            .0
+                            .lock()
+                            .map(|j| j.is_none())
+                            .unwrap_or(true);
+                        // Never bypass owned UCI task cleanup with process::exit. Each
+                        // external wait has its own deadline; its guard includes child Drop.
+                        if parser_idle && crate::statistics::desktop::idle(&handle) {
+                            handle.exit(0);
+                            break;
+                        }
+                        std::thread::sleep(std::time::Duration::from_millis(50));
+                    }
+                });
             }
         })
         .run(tauri::generate_context!())

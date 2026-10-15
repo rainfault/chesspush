@@ -10,3 +10,4 @@ pub mod storage;
 
 mod credentials;
 pub mod lichess;
+pub mod statistics;
