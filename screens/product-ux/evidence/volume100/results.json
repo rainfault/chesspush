@@ -1,0 +1,247 @@
+{
+  "provenance": "100 factual IDs selected from diverse1000 fixture via saved UI filter; actual production frontend + real isolated native backend",
+  "samples": [
+    84.82209999999986,
+    96.9964,
+    119.29149999999981,
+    118.14390000000003,
+    114.42790000000014,
+    128.4123999999997,
+    112.04840000000013,
+    143.8447000000001,
+    100.80960000000005,
+    85.90639999999985,
+    90.38459999999986,
+    87.31460000000015,
+    79.07380000000012,
+    71.81660000000056,
+    72.23739999999998,
+    80.19200000000001,
+    77.10720000000038,
+    73.89210000000003,
+    73.10719999999947,
+    74.22230000000036
+  ],
+  "screens": [
+    {
+      "file": ".qa/ux-statistics/volume100/light-1440.png",
+      "width": 1440,
+      "height": 960,
+      "dpr": 1
+    },
+    {
+      "file": ".qa/ux-statistics/volume100/light-900.png",
+      "width": 900,
+      "height": 700,
+      "dpr": 1
+    },
+    {
+      "file": ".qa/ux-statistics/volume100/dark-1440.png",
+      "width": 1440,
+      "height": 960,
+      "dpr": 1
+    },
+    {
+      "file": ".qa/ux-statistics/volume100/dark-900.png",
+      "width": 900,
+      "height": 700,
+      "dpr": 1
+    }
+  ],
+  "lightFirst": {
+    "firstQueryReady": 582.5,
+    "requests": [
+      {
+        "command": "plugin:event|unlisten",
+        "start": 162.3999999910593,
+        "elapsed": 0.10000000894069672
+      },
+      {
+        "command": "plugin:event|unlisten",
+        "start": 162.3999999910593,
+        "elapsed": 0.20000000298023224
+      },
+      {
+        "command": "plugin:event|listen",
+        "start": 162.5,
+        "elapsed": 0.09999999403953552
+      },
+      {
+        "command": "plugin:event|listen",
+        "start": 162.5,
+        "elapsed": 0.09999999403953552
+      },
+      {
+        "command": "knowledge_list",
+        "start": 162.5,
+        "elapsed": 19.799999997019768
+      },
+      {
+        "command": "plugin:event|unlisten",
+        "start": 211.19999998807907,
+        "elapsed": 0.800000011920929
+      },
+      {
+        "command": "plugin:event|unlisten",
+        "start": 211.19999998807907,
+        "elapsed": 0.800000011920929
+      },
+      {
+        "command": "plugin:event|listen",
+        "start": 212,
+        "elapsed": 0
+      },
+      {
+        "command": "plugin:event|unlisten",
+        "start": 234.19999998807907,
+        "elapsed": 0.800000011920929
+      },
+      {
+        "command": "plugin:event|listen",
+        "start": 234.5,
+        "elapsed": 0.5
+      },
+      {
+        "command": "statistics_recent",
+        "start": 162.3999999910593,
+        "elapsed": 295
+      },
+      {
+        "command": "statistics_recent",
+        "start": 211.5,
+        "elapsed": 305
+      },
+      {
+        "command": "plugin:event|listen",
+        "start": 581,
+        "elapsed": 0.29999999701976776
+      },
+      {
+        "command": "statistics_controls",
+        "start": 211.29999999701977,
+        "elapsed": 379.29999999701977
+      },
+      {
+        "command": "knowledge_list",
+        "start": 581,
+        "elapsed": 27.399999991059303
+      },
+      {
+        "command": "game_graph_load_state",
+        "start": 580.7999999970198,
+        "elapsed": 28
+      },
+      {
+        "command": "game_graph_query",
+        "start": 619.0999999940395,
+        "elapsed": 171.70000000298023
+      }
+    ]
+  },
+  "positions": 5808,
+  "visits": 6002,
+  "firstMoves": 20,
+  "darkFirst": {
+    "firstQueryReady": 447,
+    "requests": [
+      {
+        "command": "plugin:event|unlisten",
+        "start": 104.8999999910593,
+        "elapsed": 0.30000001192092896
+      },
+      {
+        "command": "plugin:event|unlisten",
+        "start": 104.8999999910593,
+        "elapsed": 0.30000001192092896
+      },
+      {
+        "command": "plugin:event|listen",
+        "start": 105.09999999403954,
+        "elapsed": 0.10000000894069672
+      },
+      {
+        "command": "plugin:event|listen",
+        "start": 105.09999999403954,
+        "elapsed": 0.10000000894069672
+      },
+      {
+        "command": "knowledge_list",
+        "start": 105,
+        "elapsed": 12.299999997019768
+      },
+      {
+        "command": "plugin:event|unlisten",
+        "start": 144.09999999403954,
+        "elapsed": 0.6000000089406967
+      },
+      {
+        "command": "plugin:event|unlisten",
+        "start": 144.09999999403954,
+        "elapsed": 0.6000000089406967
+      },
+      {
+        "command": "plugin:event|listen",
+        "start": 144.70000000298023,
+        "elapsed": 0
+      },
+      {
+        "command": "plugin:event|unlisten",
+        "start": 175.09999999403954,
+        "elapsed": 0.7999999970197678
+      },
+      {
+        "command": "plugin:event|listen",
+        "start": 175.3999999910593,
+        "elapsed": 0.5
+      },
+      {
+        "command": "statistics_recent",
+        "start": 105,
+        "elapsed": 279.8999999910593
+      },
+      {
+        "command": "statistics_recent",
+        "start": 144.29999999701977,
+        "elapsed": 277.09999999403954
+      },
+      {
+        "command": "plugin:event|listen",
+        "start": 470.8999999910593,
+        "elapsed": 0.4000000059604645
+      },
+      {
+        "command": "knowledge_list",
+        "start": 470.79999999701977,
+        "elapsed": 14.200000002980232
+      },
+      {
+        "command": "game_graph_load_state",
+        "start": 470.79999999701977,
+        "elapsed": 15.400000005960464
+      },
+      {
+        "command": "statistics_controls",
+        "start": 144.20000000298023,
+        "elapsed": 345.79999999701977
+      },
+      {
+        "command": "game_graph_query",
+        "start": 488.70000000298023,
+        "elapsed": 100.69999998807907
+      },
+      {
+        "command": "game_graph_save_state",
+        "start": 839.3999999910593,
+        "elapsed": 8.900000005960464
+      }
+    ]
+  },
+  "apiWarmSummary": {
+    "n": 20,
+    "p50": 87.31460000000015,
+    "p95": 143.8447000000001,
+    "min": 71.81660000000056,
+    "max": 143.8447000000001,
+    "scope": "native command roundtrip; not UI navigation latency"
+  }
+}

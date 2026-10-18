@@ -1,0 +1,211 @@
+{
+  "results": [
+    {
+      "theme": "light",
+      "scenario": "two regions; SVG pieces; first/reply vertices; exact trail; keyboard replay; board e4; back; flip preserves statistics",
+      "result": "PASS"
+    },
+    {
+      "scenario": "four real plies remain explicit history vertices and restore after frontend restart from persisted native graph state",
+      "result": "PASS"
+    },
+    {
+      "scenario": "attached-fragment union automatically marks both branches, prepared branch navigates, factual N/visits unchanged",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "result": "PASS",
+      "bounds": {
+        "board": {
+          "x": 24,
+          "y": 132.75,
+          "width": 500,
+          "height": 560,
+          "top": 132.75,
+          "right": 524,
+          "bottom": 692.75,
+          "left": 24
+        },
+        "graph": {
+          "x": 548,
+          "y": 132.75,
+          "width": 868,
+          "height": 782,
+          "top": 132.75,
+          "right": 1416,
+          "bottom": 914.75,
+          "left": 548
+        },
+        "page": 1440,
+        "viewport": 1440,
+        "cols": "500px 868px"
+      }
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "result": "PASS",
+      "bounds": {
+        "board": {
+          "x": 12,
+          "y": 132.75,
+          "width": 315.359375,
+          "height": 375.359375,
+          "top": 132.75,
+          "right": 327.359375,
+          "bottom": 508.109375,
+          "left": 12
+        },
+        "graph": {
+          "x": 343.359375,
+          "y": 132.75,
+          "width": 544.640625,
+          "height": 526,
+          "top": 132.75,
+          "right": 888,
+          "bottom": 658.75,
+          "left": 343.359375
+        },
+        "page": 900,
+        "viewport": 900,
+        "cols": "315.359px 544.641px"
+      }
+    },
+    {
+      "theme": "dark",
+      "scenario": "two regions; SVG pieces; first/reply vertices; exact trail; keyboard replay; board e4; back; flip preserves statistics",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "result": "PASS",
+      "bounds": {
+        "board": {
+          "x": 24,
+          "y": 132.75,
+          "width": 500,
+          "height": 560,
+          "top": 132.75,
+          "right": 524,
+          "bottom": 692.75,
+          "left": 24
+        },
+        "graph": {
+          "x": 548,
+          "y": 132.75,
+          "width": 868,
+          "height": 782,
+          "top": 132.75,
+          "right": 1416,
+          "bottom": 914.75,
+          "left": 548
+        },
+        "page": 1440,
+        "viewport": 1440,
+        "cols": "500px 868px"
+      }
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "result": "PASS",
+      "bounds": {
+        "board": {
+          "x": 12,
+          "y": 132.75,
+          "width": 315.359375,
+          "height": 375.359375,
+          "top": 132.75,
+          "right": 327.359375,
+          "bottom": 508.109375,
+          "left": 12
+        },
+        "graph": {
+          "x": 343.359375,
+          "y": 132.75,
+          "width": 544.640625,
+          "height": 526,
+          "top": 132.75,
+          "right": 888,
+          "bottom": 658.75,
+          "left": 343.359375
+        },
+        "page": 900,
+        "viewport": 900,
+        "cols": "315.359px 544.641px"
+      }
+    },
+    {
+      "scenario": "125% DPI emulation",
+      "theme": "light",
+      "cssViewport": {
+        "width": 1421,
+        "height": 954
+      },
+      "expectedPhysical": {
+        "width": 1776,
+        "height": 1193
+      },
+      "result": "PASS",
+      "size": {
+        "css": {
+          "x": 24,
+          "y": 132.75,
+          "width": 1373,
+          "height": 780,
+          "top": 132.75,
+          "right": 1397,
+          "bottom": 912.75,
+          "left": 24
+        },
+        "pageWidth": 1421,
+        "innerWidth": 1421,
+        "dpr": 1.25
+      }
+    },
+    {
+      "scenario": "125% DPI emulation",
+      "theme": "dark",
+      "cssViewport": {
+        "width": 1421,
+        "height": 954
+      },
+      "expectedPhysical": {
+        "width": 1776,
+        "height": 1193
+      },
+      "result": "PASS",
+      "size": {
+        "css": {
+          "x": 24,
+          "y": 132.75,
+          "width": 1373,
+          "height": 780,
+          "top": 132.75,
+          "right": 1397,
+          "bottom": 912.75,
+          "left": 24
+        },
+        "pageWidth": 1421,
+        "innerWidth": 1421,
+        "dpr": 1.25
+      }
+    }
+  ],
+  "errors": []
+}

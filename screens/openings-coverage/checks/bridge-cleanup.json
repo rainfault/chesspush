@@ -1,0 +1,43 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "round": 0,
+      "name": "native event reaches production renderer before close",
+      "passed": true
+    },
+    {
+      "round": 0,
+      "name": "fresh CDP events after close have no stale forwarding callback or unhandled rejection",
+      "passed": true,
+      "unlistens": 6
+    },
+    {
+      "round": 1,
+      "name": "native event reaches production renderer before close",
+      "passed": true
+    },
+    {
+      "round": 1,
+      "name": "fresh CDP events after close have no stale forwarding callback or unhandled rejection",
+      "passed": true,
+      "unlistens": 12
+    },
+    {
+      "name": "games, memberships, account boundary, documents and revisions unchanged",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "factual_before": "46cf7e78196b7e52c443ebcba5a3dfd1b6c723b9bba8987a6fb32817b16f8def",
+  "factual_after": "46cf7e78196b7e52c443ebcba5a3dfd1b6c723b9bba8987a6fb32817b16f8def",
+  "note": "The fixed failure was harness cleanup noise; production page errors remain zero.",
+  "warnings": [],
+  "qa_host_closed": true,
+  "vite_closed": true,
+  "installed_app_preserved": {
+    "pid": 54580,
+    "path": "C:\\Users\\<user>\\AppData\\Local\\ChessPush\\chesspush.exe"
+  },
+  "personal_details_redacted": true
+}

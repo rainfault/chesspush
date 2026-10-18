@@ -1,0 +1,87 @@
+{
+  "results": [
+    {
+      "theme": "light",
+      "scenario": "restored clock+ratings Home, bounded clock typography, no recent-game blocks, Parser ZST label",
+      "result": "PASS"
+    },
+    {
+      "scenario": "actual ZST decode→filtered PGN→stored file→shared game replay and seek",
+      "result": "PASS",
+      "controlledBoundary": "native source file-picker choice only"
+    },
+    {
+      "theme": "light",
+      "scenario": "account settings and Escape, no obsolete diagnostics route",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "scenario": "restored clock+ratings Home, bounded clock typography, no recent-game blocks, Parser ZST label",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "scenario": "account settings and Escape, no obsolete diagnostics route",
+      "result": "PASS"
+    }
+  ],
+  "shots": [
+    {
+      "path": "screens/simplification/home-parser/light-1440x960-home.png",
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1
+    },
+    {
+      "path": "screens/simplification/home-parser/light-900x700-home.png",
+      "theme": "light",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "dpr": 1
+    },
+    {
+      "path": "screens/simplification/home-parser/light-1920x1080-home.png",
+      "theme": "light",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "dpr": 1
+    },
+    {
+      "path": "screens/simplification/home-parser/dark-1440x960-home.png",
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1
+    },
+    {
+      "path": "screens/simplification/home-parser/dark-900x700-home.png",
+      "theme": "dark",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "dpr": 1
+    },
+    {
+      "path": "screens/simplification/home-parser/dark-1920x1080-home.png",
+      "theme": "dark",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "dpr": 1
+    }
+  ],
+  "errors": [],
+  "provenance": "production frontend + actual isolated Rust/SQLite/PGN/ZST; two themes; only native file chooser controlled"
+}

@@ -1,0 +1,92 @@
+[
+  {
+    "theme": "light",
+    "pairs": [
+      {
+        "fg": "--text",
+        "bg": "--background",
+        "contrast": 7.1090767209884715
+      },
+      {
+        "fg": "--secondary",
+        "bg": "--background",
+        "contrast": 4.686282539424995
+      },
+      {
+        "fg": "--accent",
+        "bg": "--surface",
+        "contrast": 5.509243402812889
+      },
+      {
+        "fg": "--accent",
+        "bg": "--selected",
+        "contrast": 4.542036674185692
+      },
+      {
+        "fg": "--selection-text",
+        "bg": "--accent",
+        "contrast": 5.509243402812889
+      },
+      {
+        "fg": "--repertoire",
+        "bg": "--surface",
+        "contrast": 6.1339987799591045
+      },
+      {
+        "fg": "--error",
+        "bg": "--surface",
+        "contrast": 5.1359715339391965
+      },
+      {
+        "fg": "--control-border",
+        "bg": "--surface",
+        "contrast": 3.89572516903623
+      }
+    ]
+  },
+  {
+    "theme": "dark",
+    "pairs": [
+      {
+        "fg": "--text",
+        "bg": "--background",
+        "contrast": 9.40811510854895
+      },
+      {
+        "fg": "--secondary",
+        "bg": "--background",
+        "contrast": 7.859695204655528
+      },
+      {
+        "fg": "--accent",
+        "bg": "--surface",
+        "contrast": 7.488891431947154
+      },
+      {
+        "fg": "--accent",
+        "bg": "--selected",
+        "contrast": 4.7816016519748255
+      },
+      {
+        "fg": "--selection-text",
+        "bg": "--accent",
+        "contrast": 8.83421812445937
+      },
+      {
+        "fg": "--repertoire",
+        "bg": "--surface",
+        "contrast": 8.387418506698593
+      },
+      {
+        "fg": "--error",
+        "bg": "--surface",
+        "contrast": 4.526229183952645
+      },
+      {
+        "fg": "--control-border",
+        "bg": "--surface",
+        "contrast": 4.223689680478122
+      }
+    ]
+  }
+]

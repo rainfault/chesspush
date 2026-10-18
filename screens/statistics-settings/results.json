@@ -1,0 +1,28 @@
+{
+  "result": "PASS",
+  "resetExecuted": true,
+  "checks": [
+    {
+      "scenario": "light: real native preference validation, Enter, persistence across settings remount",
+      "result": "PASS"
+    },
+    {
+      "scenario": "light: named default-Cancel confirmation and injected transport failure preserve all native data",
+      "result": "PASS"
+    },
+    {
+      "scenario": "dark: real native preference validation, Enter, persistence across settings remount",
+      "result": "PASS"
+    },
+    {
+      "scenario": "dark: named default-Cancel confirmation and injected transport failure preserve all native data",
+      "result": "PASS"
+    },
+    {
+      "scenario": "Actual native reset: explicit account, graph returns to root, empty white/black tables, T0 persisted across reload/sync; primary games/PGN/evaluations/documents/other accounts unchanged",
+      "result": "PASS"
+    }
+  ],
+  "pageErrors": [],
+  "boundary": "production frontend -> isolated native profile; only transport failure is injected"
+}

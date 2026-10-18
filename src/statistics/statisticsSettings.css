@@ -1,0 +1,44 @@
+.statistics-settings {
+  display: grid;
+  gap: 28px;
+}
+.statistics-settings form,
+.statistics-reset {
+  display: grid;
+  gap: 16px;
+  justify-items: start;
+}
+.statistics-settings label {
+  display: grid;
+  gap: 8px;
+}
+.statistics-settings input[type="number"] {
+  width: 100px;
+}
+.statistics-reset {
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+  width: 100%;
+}
+.statistics-reset h3 {
+  margin-bottom: 0;
+}
+.statistics-reset-confirm {
+  width: 100%;
+  padding: 16px;
+  border: 1px solid var(--border);
+  background: var(--background);
+}
+.statistics-reset-confirm p {
+  margin: 12px 0 16px;
+  line-height: 1.5;
+}
+.statistics-settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.statistics-settings .danger-button {
+  color: var(--error, #c33);
+  border: 1px solid currentColor;
+}

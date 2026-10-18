@@ -15,7 +15,7 @@
   width: min(920px, 100%);
 }
 
-.home-dashboard time {
+.home-dashboard > .home-clock {
   display: block;
   text-align: center;
   font-size: clamp(80px, 8vw, 112px);

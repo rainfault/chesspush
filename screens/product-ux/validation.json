@@ -1,0 +1,50 @@
+{
+  "status": "PASS",
+  "png": 117,
+  "before": 6,
+  "after": 111,
+  "nativeRegistered": 24,
+  "pngBytes": 7929650,
+  "decodedBytes": 463265098,
+  "pngAggregateSha256": "b6f8fc38659f22abc963ce8ba7b9d055c0e7db616cde4478e553488af5aaa163",
+  "pngErrors": [],
+  "missingLinks": [],
+  "htmlReferencesChecked": 237,
+  "markdownReferencesChecked": 41,
+  "oldAtlasPngPreserved": 374,
+  "temporaryArtifactsRemaining": [],
+  "method": "PNG signature/chunks CRC/IEND, zlib decode, scanline/filter/dimensions; exact manifest/file set; HTML and README/native-performance links; old atlas count. Browser gallery and video checks appended separately.",
+  "gallery": {
+    "result": "PASS",
+    "renderedArticles": 117,
+    "beforeFilter": 6,
+    "nativeDark900MapFilter": 1,
+    "stateFilter": 9,
+    "firstImageDecoded": true,
+    "method": "headless Edge local file gallery, actual search UI"
+  },
+  "videos": [
+    {
+      "path": "videos/map-board-game.webm",
+      "bytes": 463792,
+      "ebmlHeader": true,
+      "status": "end-frame-decoded",
+      "duration": 3.56,
+      "width": 1440,
+      "height": 960,
+      "readyState": 4,
+      "error": null
+    },
+    {
+      "path": "videos/context-repertoire-navigation.webm",
+      "bytes": 647228,
+      "ebmlHeader": true,
+      "status": "end-frame-decoded",
+      "duration": 4.88,
+      "width": 1440,
+      "height": 960,
+      "readyState": 4,
+      "error": null
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 import { Chess, normalizeMove } from "chessops/chess";
 import { parseFen, makeFen, INITIAL_FEN } from "chessops/fen";
 import { parseSan, makeSan } from "chessops/san";
-import { parseSquare, makeSquare, makeUci } from "chessops/util";
+import { parseSquare, makeSquare, makeUci, parseUci } from "chessops/util";
 import { chessgroundDests } from "chessops/compat";
 import { parsePgn } from "chessops/pgn";
 import type { Color, Move, Role, SquareName } from "chessops/types";
@@ -110,6 +110,23 @@ export class BoardSession {
   }
   reset() {
     this.loadFen(INITIAL_FEN);
+  }
+  // Presentation adapter over authoritative Rust replay, shared by factual viewers and graph.
+  loadReplay(nodes: { fen: string; uci?: string | null }[]) {
+    if (!nodes.length) throw new Error("Нет позиций для просмотра");
+    const positions = nodes.map((node) =>
+      Chess.fromSetup(parseFen(node.fen).unwrap()).unwrap(),
+    );
+    const moves = nodes.slice(1).map((node, i) => {
+      const move = node.uci ? parseUci(node.uci) : undefined;
+      if (!move) throw new Error("Нет хода в проверенной линии");
+      return normalizeMove(positions[i], move);
+    });
+    this.positions = positions;
+    this.moves = moves;
+    this.notes.clear();
+    this.cursor = moves.length;
+    this.revision++;
   }
   loadPgn(text: string) {
     if (!text.trim()) {

@@ -1,0 +1,32 @@
+{
+  "passed": true,
+  "previousPid": 48480,
+  "newPid": 55192,
+  "sameQaProfile": true,
+  "t0Ms": 1792281724428,
+  "accountConnected": true,
+  "memberships": 0,
+  "personalGamesWhite": 0,
+  "personalGamesBlack": 0,
+  "primaryHashBefore": "46030ee74e11b385f83a07e515de25552a8c85437a295523cc35a5fec57389eb",
+  "primaryHashAfter": "46030ee74e11b385f83a07e515de25552a8c85437a295523cc35a5fec57389eb",
+  "sourceCounts": {
+    "games": 4,
+    "statistics_games": 4,
+    "statistics_payloads": 4,
+    "statistics_analysis_jobs": 8,
+    "statistics_analysis_runs": 8,
+    "statistics_engine_observations": 150,
+    "statistics_move_evaluations": 98,
+    "statistics_engine_state": 1,
+    "game_graph_games": 4,
+    "game_graph_revisions": 4,
+    "game_occurrences": 53,
+    "knowledge_documents": 3,
+    "knowledge_document_versions": 3,
+    "knowledge_node_index": 31,
+    "statistics_quarantine_history": 1,
+    "statistics_rating_snapshots": 1
+  },
+  "errors": []
+}

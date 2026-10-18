@@ -3,6 +3,222 @@
   margin: 0 auto;
   padding: 14px 24px 36px;
 }
+.practice .stats-header h1 {
+  font-size: 24px;
+  font-weight: 400;
+}
+.practice .stats-header {
+  margin-bottom: 0;
+}
+.practice-navigation,
+.practice-sync,
+.practice-section-title,
+.practice-summary,
+.practice-detail-tools,
+.practice-analysis-prompt {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.practice-navigation {
+  border-bottom: 1px solid var(--border);
+  justify-content: space-between;
+}
+.practice-navigation .stats-tabs {
+  margin: 0;
+  border: 0;
+}
+.practice-navigation .stats-tabs button {
+  padding: 10px 15px;
+}
+.practice-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.practice-sync,
+.practice-context,
+.practice-rating {
+  color: var(--secondary);
+}
+.practice-filters {
+  margin: 10px 0;
+  gap: 8px 12px;
+}
+.practice-filters > label {
+  width: auto;
+  min-width: 132px;
+}
+.practice-filters label {
+  font-size: 14px;
+}
+.practice-side {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+.practice-side button {
+  border-radius: 0;
+}
+.practice-filters .stats-extra {
+  margin: 0 0 8px;
+}
+.practice-filters .stats-extra-fields {
+  right: auto;
+  left: 0;
+  max-width: min(520px, 90vw);
+  max-height: 65vh;
+  overflow: auto;
+}
+.practice-summary {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 17px;
+}
+.practice-summary .primary {
+  margin-left: auto;
+}
+.practice-section-title {
+  justify-content: space-between;
+  margin: 22px 0 8px;
+}
+.practice-section-title h2,
+.practice-review h2 {
+  font-size: 19px;
+  font-weight: 400;
+  margin: 0;
+}
+.practice-review {
+  padding: 20px 0;
+}
+.practice-review .practice-context {
+  margin: 6px 0 10px;
+}
+.practice-review ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.practice-review li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  line-height: 1.55;
+}
+.practice-review li span {
+  color: var(--secondary);
+}
+.practice-review li button {
+  flex: 0 0 auto;
+}
+.practice-analysis-prompt,
+.practice-queue {
+  background: var(--surface-muted);
+  padding: 12px;
+}
+.practice-analysis-prompt {
+  justify-content: space-between;
+}
+.practice-games {
+  margin: 8px 0 16px;
+}
+.practice .practice-games th,
+.practice .practice-games td {
+  padding: 10px;
+}
+.practice .practice-games td {
+  white-space: normal;
+}
+.practice .practice-games td:first-child {
+  white-space: nowrap;
+}
+.practice-rating {
+  margin-left: 5px;
+}
+.practice-topic {
+  margin-top: 18px;
+}
+.practice-topic > h2 {
+  font-size: 21px;
+  font-weight: 400;
+}
+.practice-topic-details {
+  margin-top: 16px;
+}
+.practice-topic-details > summary {
+  padding: 12px 0;
+}
+.practice-detail-tools {
+  margin: 12px 0;
+}
+.practice-diagnostics {
+  overflow-wrap: anywhere;
+}
+.practice-diagnostics details {
+  margin: 16px 0;
+}
+.practice-diagnostics pre {
+  white-space: pre-wrap;
+}
+.practice .stats-game-view {
+  margin-top: 0;
+  padding-top: 8px;
+}
+.practice .stats-view-header h2 {
+  font-weight: 400;
+  font-size: 21px;
+}
+.practice .stats-board-layout {
+  grid-template-columns: minmax(300px, min(64vh, 520px)) minmax(280px, 1fr);
+  gap: 20px;
+  margin-top: 16px;
+}
+.practice .stats-game-panel .stats-game-technical {
+  margin-top: 16px;
+}
+@media (max-width: 1000px) {
+  .practice {
+    padding: 10px 16px 24px;
+  }
+  .practice-sync {
+    gap: 6px;
+    font-size: 14px;
+  }
+  .practice-summary {
+    font-size: 16px;
+  }
+  .practice .practice-games th,
+  .practice .practice-games td {
+    padding: 8px 6px;
+  }
+  .practice .stats-board-layout {
+    grid-template-columns: minmax(270px, min(61vh, 430px)) minmax(230px, 1fr);
+    gap: 14px;
+  }
+}
+@media (max-width: 760px) {
+  .practice .stats-board-layout {
+    grid-template-columns: 1fr;
+  }
+  .practice .stats-board-layout > div:first-child {
+    max-width: min(86vw, 520px);
+    width: 100%;
+  }
+  .practice-filters .stats-extra-fields {
+    left: auto;
+    right: 0;
+    min-width: min(420px, 88vw);
+  }
+  .practice .practice-games td:first-child {
+    white-space: normal;
+  }
+}
 .stats-header,
 .stats-view-header,
 .stats-top-actions,

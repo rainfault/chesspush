@@ -1,0 +1,29 @@
+{
+  "checks": [
+    {
+      "scenario": "Multi-file attach, automatic exact-position ECO, untrusted headers, explicit side and raw PGN preservation",
+      "result": "PASS"
+    },
+    {
+      "scenario": "Shared-prefix merge + FEN fragment graft, board navigation, source node edit and rebuilt union",
+      "result": "PASS"
+    },
+    {
+      "scenario": "Native save PGN + reimport preserves all leaf lines, RAV, NAG 220, comments and FEN context",
+      "result": "PASS"
+    },
+    {
+      "scenario": "Detach/reattach keeps source and node identities; repeated file idempotent; malformed PGN reports error without partial document",
+      "result": "PASS"
+    },
+    {
+      "scenario": "Separate white/black coverage, reload restores attached files and selected side, factual games/T0/engine runs remain byte-equivalent",
+      "result": "PASS",
+      "beforeHash": "9e47c6d0527d8ab78e784eef954b9e3c39acd8a17b3eca8354e0e4bd4fd990ed",
+      "afterHash": "9e47c6d0527d8ab78e784eef954b9e3c39acd8a17b3eca8354e0e4bd4fd990ed"
+    }
+  ],
+  "fixtureProfile": "C:\\projects\\chess_training_tool\\.qa\\ui-atlas-DqbYp1",
+  "controlledBoundary": "Native open/save dialog selection only; file reads, legal PGN parse, classification, merge, save, export, graph projection and SQLite are actual Rust commands.",
+  "result": "PASS"
+}

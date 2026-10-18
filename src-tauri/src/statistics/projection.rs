@@ -10,6 +10,27 @@ use std::collections::BTreeMap;
 pub const PREVIEW_LIMIT: usize = 20;
 pub const PAGE_LIMIT: usize = 100;
 
+/// Daily workspace projection of the same calculated snapshot. Full analytics
+/// stay in the report cache and are requested explicitly by detailed screens.
+/// Keep complete game summaries: their outcomes are the overview denominator.
+pub fn practice(report: StatisticsReport) -> StatisticsReport {
+    StatisticsReport {
+        evidence_revision: report.evidence_revision,
+        filter: report.filter,
+        generated_at_ms: report.generated_at_ms,
+        total_games: report.total_games,
+        excluded_games: report.excluded_games,
+        total_decisions: report.total_decisions,
+        analysed_decisions: report.analysed_decisions,
+        profile_ids: report.profile_ids,
+        profile_labels: report.profile_labels,
+        selected_profile_id: report.selected_profile_id,
+        games: report.games,
+        events: report.events,
+        ..Default::default()
+    }
+}
+
 fn count_and_cap<T>(
     values: &mut Vec<T>,
     counts: &mut BTreeMap<String, usize>,
@@ -677,6 +698,49 @@ mod tests {
         assert_eq!(report.evidence_counts["sessions:30"], 37);
         assert!(page(&StatisticsReport::default(), "sessions", "45", 0, 10).is_err());
     }
+    #[test]
+    fn practice_keeps_snapshot_outcomes_profiles_and_event_evidence() {
+        let full = fixture();
+        let before = serde_json::to_value(&full).unwrap();
+        let mut daily = practice(full.clone());
+        for key in [
+            "evidence_revision",
+            "filter",
+            "total_games",
+            "excluded_games",
+            "total_decisions",
+            "analysed_decisions",
+            "games",
+            "events",
+            "profile_ids",
+            "profile_labels",
+            "selected_profile_id",
+        ] {
+            assert_eq!(
+                serde_json::to_value(&daily).unwrap()[key],
+                before[key],
+                "{key}"
+            );
+        }
+        assert!(daily.opening_analysis.hierarchy.is_empty());
+        assert!(daily.analysis.cases.is_empty());
+        assert!(daily.opening_tree.edges.is_empty());
+        compact(&mut daily);
+        assert_eq!(daily.events.len(), PREVIEW_LIMIT);
+        assert_eq!(daily.evidence_counts["events:all"], N);
+        assert_eq!(daily.games.len(), full.games.len());
+        assert_eq!(serde_json::to_value(&full).unwrap(), before);
+        // Paging still resolves against the unprojected cached snapshot.
+        assert_eq!(
+            page(&full, "events", "all", 20, PAGE_LIMIT).unwrap()["total"],
+            N
+        );
+        assert_eq!(
+            page(&full, "hierarchy", "family", 0, PAGE_LIMIT).unwrap()["total"],
+            N
+        );
+    }
+
     #[test]
     fn all_evidence_kinds_page_complete_original_cases() {
         let report = fixture();

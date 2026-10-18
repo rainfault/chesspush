@@ -1,0 +1,201 @@
+{
+  "inventory": {
+    "games": 1000,
+    "indexedGames": 1000,
+    "positions": 57827,
+    "visits": 60566,
+    "firstMoves": 20,
+    "analysed": 0
+  },
+  "performance": {
+    "artifact": "validated-light-results.json",
+    "method": "DOM input timestamp; matching native command response then two settled RAFs. Includes IPC bridge instrumentation. First versus revisited branches, not a promised network/DTO cache.",
+    "buildScope": "Performance samples were collected before the final contextPending/state hydration guards. Latest frontend interaction recheck passed after both guards. Use the final native harness for final-build performance claims.",
+    "firstVisits": {
+      "n": 20,
+      "p50": 100.09999999403954,
+      "p95": 176.20000000298023,
+      "min": 91,
+      "max": 176.20000000298023
+    },
+    "revisits": {
+      "n": 20,
+      "p50": 98.80000001192093,
+      "p95": 122.6000000089407,
+      "min": 90.29999999701977,
+      "max": 122.6000000089407
+    },
+    "feedbackFirst": {
+      "n": 20,
+      "p50": 3.5,
+      "p95": 6.200000002980232,
+      "min": 2.4000000059604645,
+      "max": 6.200000002980232
+    },
+    "feedbackRevisit": {
+      "n": 20,
+      "p50": 3,
+      "p95": 4.600000008940697,
+      "min": 2.2000000029802322,
+      "max": 4.600000008940697
+    },
+    "evidence": {
+      "n": 10,
+      "p50": 79.59999999403954,
+      "p95": 86.5,
+      "min": 73.20000000298023,
+      "max": 86.5
+    },
+    "layer": {
+      "n": 20,
+      "p50": 256.69999998807907,
+      "p95": 297.59999999403954,
+      "min": 235.8999999910593,
+      "max": 297.59999999403954
+    },
+    "fullReportRequests": 0,
+    "memory": {
+      "Documents": 14,
+      "Nodes": 1912,
+      "JSHeapUsedSize": 20703672,
+      "JSHeapTotalSize": 41017344
+    }
+  },
+  "latestFrontendInteractions": {
+    "provenance": "actual production frontend, actual native1000-game index; refresh event controlled on IPC boundary, no new games inserted by this check",
+    "rare": {
+      "uci": "f2f3",
+      "san": "f3",
+      "games": 51,
+      "frequency": 5.1,
+      "rootGames": 1000
+    },
+    "moreDenominatorInvariant": true,
+    "rareViaMore": true,
+    "rareViaBoard": true,
+    "refresh": {
+      "before": "Белые: Na3",
+      "after": "Белые: Na3",
+      "orderPreserved": true,
+      "path": ""
+    }
+  },
+  "screens": [
+    {
+      "file": ".qa/ux-statistics/volume/light-1440-ready.png",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1
+    },
+    {
+      "file": ".qa/ux-statistics/volume/light-900-ready.png",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "dpr": 1
+    },
+    {
+      "file": ".qa/ux-statistics/volume/light-900-effective-scale-1.25.png",
+      "viewport": {
+        "width": 720,
+        "height": 560
+      },
+      "dpr": 1.25
+    },
+    {
+      "file": ".qa/ux-statistics/volume/light-900-effective-scale-1.5.png",
+      "viewport": {
+        "width": 600,
+        "height": 467
+      },
+      "dpr": 1.5
+    },
+    {
+      "file": ".qa/ux-statistics/volume/dark-1440-ready.png",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1
+    },
+    {
+      "file": ".qa/ux-statistics/volume/dark-900-ready.png",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "dpr": 1
+    },
+    {
+      "file": ".qa/ux-statistics/volume/dark-900-effective-scale-1.25.png",
+      "viewport": {
+        "width": 720,
+        "height": 560
+      },
+      "dpr": 1.25
+    },
+    {
+      "file": ".qa/ux-statistics/volume/dark-900-effective-scale-1.5.png",
+      "viewport": {
+        "width": 600,
+        "height": 467
+      },
+      "dpr": 1.5
+    }
+  ],
+  "hundred": {
+    "artifact": "../volume100/results.json",
+    "games": 100,
+    "positions": 5808,
+    "visits": 6002,
+    "firstMoves": 20,
+    "actualGuiScreens": [
+      {
+        "file": ".qa/ux-statistics/volume100/light-1440.png",
+        "width": 1440,
+        "height": 960,
+        "dpr": 1
+      },
+      {
+        "file": ".qa/ux-statistics/volume100/light-900.png",
+        "width": 900,
+        "height": 700,
+        "dpr": 1
+      },
+      {
+        "file": ".qa/ux-statistics/volume100/dark-1440.png",
+        "width": 1440,
+        "height": 960,
+        "dpr": 1
+      },
+      {
+        "file": ".qa/ux-statistics/volume100/dark-900.png",
+        "width": 900,
+        "height": 700,
+        "dpr": 1
+      }
+    ],
+    "apiOnlyWarm": {
+      "n": 20,
+      "p50": 87.31460000000015,
+      "p95": 143.8447000000001,
+      "min": 71.81660000000056,
+      "max": 143.8447000000001,
+      "scope": "native command roundtrip; not UI navigation latency"
+    }
+  },
+  "limitations": [
+    "Windows scaling was emulated by effective CSS viewport and DPR; native OS 125–150% was not changed or verified.",
+    "Controlled statistics-updated refresh rechecked focus/order against the unchanged native index. Separate real API native flow verifies actual publication and automatic graph growth.",
+    "Ignore light-results.json, light-progress.json and generic results.json for timing claims; the validated files use the corrected readiness gate."
+  ],
+  "cleanup": {
+    "directory": "C:\\projects\\chess_training_tool\\.qa\\ui-atlas-aBfuwO",
+    "pid": 2584,
+    "disconnected": "disconnected",
+    "closeStatus": 200
+  }
+}

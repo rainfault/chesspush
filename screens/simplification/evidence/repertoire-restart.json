@@ -1,0 +1,13 @@
+{
+  "result": "PASS",
+  "oldPid": 52612,
+  "newPid": 50696,
+  "profile": "C:\\projects\\chess_training_tool\\.qa\\ui-atlas-DqbYp1",
+  "checks": [
+    "Actual native process identity changed; the same SQLite profile was reopened",
+    "All four attachment IDs/revisions/active flags/original PGNs/node IDs/document hashes are unchanged",
+    "White merged Ruy/Sicilian/FEN branches and black French union match exactly",
+    "Native tiles and board navigation to Bb5/Bc4 work after process restart"
+  ],
+  "pageErrors": []
+}

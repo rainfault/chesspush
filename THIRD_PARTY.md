@@ -64,3 +64,9 @@ The AGPL text is retained in `licenses/LILA-AGPL-3.0.txt`. The Rust adaptation,
 including missing-data and analysis-profile handling, was made on 2026-10-15.
 The metric method records these revisions; local Stockfish evidence does not
 promise identical values to a different Lichess cloud analysis.
+
+GameGraph uses [Cytoscape.js 3.34.3](https://js.cytoscape.org/), MIT.
+The full notice is retained in `licenses/CYTOSCAPE-MIT.txt`.
+The renderer comparison under `tools/graph-renderer-prototype.tsx` uses development-only
+React Flow 12.12.0 (MIT), Sigma 4.0.3 (MIT), Graphology 0.26.0 (MIT), and ELK.js 0.12.0
+(EPL-2.0 OR GPL-3.0-or-later). These comparison packages are not imported by the product bundle.

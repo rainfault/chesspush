@@ -1,0 +1,34 @@
+{
+  "version": "0.2.0-alpha.4",
+  "date": "2026-10-17",
+  "states": 182,
+  "entries": 364,
+  "png": 374,
+  "totalBytes": 35616788,
+  "defaultViewport": {
+    "width": 1440,
+    "height": 960
+  },
+  "sizes": [
+    {
+      "width": 900,
+      "height": 700
+    },
+    {
+      "width": 1440,
+      "height": 960
+    },
+    {
+      "width": 1920,
+      "height": 1080
+    }
+  ],
+  "themes": [
+    "light",
+    "dark"
+  ],
+  "frontend": {
+    "indexSha256": "8d2ec1dd06e6bc0aa62fc8bb2f07fc4c4c6e506166bc4eaba83374e172a99b94"
+  },
+  "notes": "Product source unchanged; test profile and explicitly recorded controlled IPC states."
+}

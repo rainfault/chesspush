@@ -1,9 +1,9 @@
 param([string]$DesktopPath = [Environment]::GetFolderPath('Desktop'))
 $ErrorActionPreference = 'Stop'
 $projectPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
-$executablePath = Join-Path $projectPath 'src-tauri\target\release\chesspush.exe'
-$iconPath = Join-Path $projectPath 'src-tauri\icons\icon.ico'
-foreach ($requiredPath in @($executablePath,$iconPath)) {
+$executablePath = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'ChessPush\chesspush.exe'
+$installationPath = Split-Path -Parent $executablePath
+foreach ($requiredPath in @($executablePath)) {
     if (-not (Test-Path -LiteralPath $requiredPath -PathType Leaf)) { throw "Missing: $requiredPath" }
 }
 $shortcutPath = Join-Path $DesktopPath 'ChessPush.lnk'
@@ -20,13 +20,13 @@ if (Test-Path -LiteralPath $shortcutPath) {
 }
 $shortcut.TargetPath = $executablePath
 $shortcut.Arguments = ''
-$shortcut.WorkingDirectory = $projectPath
-$shortcut.IconLocation = "$iconPath,0"
+$shortcut.WorkingDirectory = $installationPath
+$shortcut.IconLocation = "$executablePath,0"
 $shortcut.Description = 'ChessPush'
 $shortcut.WindowStyle = 1
 $shortcut.Save()
 $verified = $shell.CreateShortcut($shortcutPath)
-if ($verified.TargetPath -ne $executablePath -or $verified.WorkingDirectory -ne $projectPath) {
+if ($verified.TargetPath -ne $executablePath -or $verified.WorkingDirectory -ne $installationPath) {
     throw 'Shortcut verification failed'
 }
 Write-Output $shortcutPath

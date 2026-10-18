@@ -455,6 +455,7 @@ pub fn save_game(
     let payload_revision = previous.as_ref().map_or(1, |(_, _, revision)| {
         revision + if known_payload { 0 } else { 1 }
     });
+    game.movetext_revision = revision;
     tx.execute("INSERT INTO statistics_games(game_id,id,source,external_id,data,movetext_hash,movetext_revision,payload_revision,updated_at_ms) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9) ON CONFLICT(game_id) DO UPDATE SET data=excluded.data,movetext_hash=excluded.movetext_hash,movetext_revision=excluded.movetext_revision,payload_revision=excluded.payload_revision,updated_at_ms=excluded.updated_at_ms",params![game_id,game.id,game.source,game.external_id,serde_json::to_string(&game)?,context_hash,revision,payload_revision,now_ms()])?;
     tx.execute("INSERT INTO statistics_account_games(account_id,game_id,user_color,eligibility,evidence) VALUES(?1,?2,?3,?4,?5) ON CONFLICT(account_id,game_id) DO UPDATE SET user_color=excluded.user_color,eligibility=excluded.eligibility,evidence=excluded.evidence",params![account_id,game_id,game.own_color,eligibility,raw_json])?;
     tx.execute("INSERT OR IGNORE INTO statistics_payloads(game_id,payload_hash,payload_revision,movetext_revision,received_at_ms,raw_json,raw_pgn) VALUES(?1,?2,?3,?4,?5,?6,?7)",params![game_id,payload_hash,payload_revision,revision,now_ms(),raw_json,game.raw_pgn])?;
@@ -467,17 +468,31 @@ pub fn save_game(
         "DELETE FROM statistics_quarantine WHERE account_id=?1 AND external_id=?2",
         params![account_id, game.external_id],
     )?;
+    let indexed_updated_at: i64 = tx.query_row(
+        "SELECT updated_at_ms FROM statistics_games WHERE game_id=?1",
+        [game_id],
+        |r| r.get(0),
+    )?;
+    crate::game_graph::index_game(
+        &tx,
+        game_id,
+        &game,
+        revision,
+        payload_revision,
+        indexed_updated_at,
+    )?;
     tx.commit()?;
     Ok(previous.is_none())
 }
 pub fn games(conn: &Connection, account_id: Option<&str>) -> Result<Vec<StoredGame>, AppError> {
-    let rows=conn.prepare("SELECT sg.data,ag.account_id,ag.user_color,ag.eligibility FROM statistics_games sg JOIN statistics_account_games ag ON ag.game_id=sg.game_id WHERE (?1 IS NULL OR ag.account_id=?1) ORDER BY sg.updated_at_ms DESC")?.query_map([account_id],|r|Ok((r.get::<_,String>(0)?,r.get::<_,String>(1)?,r.get::<_,String>(2)?,r.get::<_,String>(3)?)))?.collect::<Result<Vec<_>,_>>()?;
+    let rows=conn.prepare("SELECT sg.data,ag.account_id,ag.user_color,ag.eligibility,sg.movetext_revision FROM statistics_games sg JOIN statistics_account_games ag ON ag.game_id=sg.game_id WHERE (?1 IS NULL OR ag.account_id=?1) ORDER BY sg.updated_at_ms DESC")?.query_map([account_id],|r|Ok((r.get::<_,String>(0)?,r.get::<_,String>(1)?,r.get::<_,String>(2)?,r.get::<_,String>(3)?,r.get::<_,i64>(4)?)))?.collect::<Result<Vec<_>,_>>()?;
     rows.into_iter()
-        .map(|(data, account, color, eligibility)| {
+        .map(|(data, account, color, eligibility, revision)| {
             let mut game: StoredGame = serde_json::from_str(&data)?;
             game.account_id = account;
             game.own_color = color;
             game.eligibility = eligibility;
+            game.movetext_revision = revision;
             Ok(game)
         })
         .collect()
@@ -485,15 +500,18 @@ pub fn games(conn: &Connection, account_id: Option<&str>) -> Result<Vec<StoredGa
 /// A canonical game is analyzable if any account has confirmed eligible membership.
 /// Explicit account-specific views continue to use games(conn,Some(account_id)).
 pub fn game(conn: &Connection, id: &str) -> Result<Option<StoredGame>, AppError> {
-    let data: Option<String> = conn
-        .query_row("SELECT data FROM statistics_games WHERE id=?1", [id], |r| {
-            r.get(0)
-        })
+    let data: Option<(String, i64)> = conn
+        .query_row(
+            "SELECT data,movetext_revision FROM statistics_games WHERE id=?1",
+            [id],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        )
         .optional()?;
-    let Some(data) = data else {
+    let Some((data, revision)) = data else {
         return Ok(None);
     };
     let mut game: StoredGame = serde_json::from_str(&data)?;
+    game.movetext_revision = revision;
     let membership: Option<(String,String,String)> = conn.query_row(
         "SELECT a.account_id,a.user_color,a.eligibility FROM statistics_account_games a JOIN statistics_games g ON g.game_id=a.game_id JOIN statistics_accounts o ON o.id=a.account_id WHERE g.id=?1 ORDER BY CASE a.eligibility WHEN 'eligible' THEN 0 WHEN 'boundary_uncertain' THEN 1 ELSE 2 END,o.enabled DESC,a.account_id LIMIT 1",
         [id], |r| Ok((r.get(0)?,r.get(1)?,r.get(2)?)),

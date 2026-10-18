@@ -1,0 +1,127 @@
+{
+  "longtasks": [
+    {
+      "start": 44574.80000001192,
+      "duration": 312
+    },
+    {
+      "start": 44947.40000000596,
+      "duration": 93
+    }
+  ],
+  "fixture": "1000 legal synthetic games; no Stockfish runs",
+  "checks": {
+    "explicit_practice_overview": true,
+    "full_results_nonempty": true,
+    "returned_overview": true,
+    "same_graph_prefix": true
+  },
+  "overview_ready_ms": 10462.527100000001,
+  "full_results_ready_ms": 13710.0827,
+  "result_rows": 1006,
+  "previousLine": "g2g4",
+  "commands": [
+    {
+      "command": "statistics_report",
+      "view": "practice",
+      "startedAt": 22276.40000000596,
+      "headersAt": 31283.60000000894,
+      "contentLength": null,
+      "parseStartedAt": 31283.70000000298,
+      "endedAt": 31287.70000000298,
+      "summary": {
+        "keys": [
+          "evidence_revision",
+          "evidence_counts",
+          "opening_analysis",
+          "extended",
+          "analysis",
+          "filter",
+          "generated_at_ms",
+          "total_games",
+          "excluded_games",
+          "total_decisions",
+          "analysed_decisions",
+          "profile_ids",
+          "profile_labels",
+          "selected_profile_id",
+          "metrics",
+          "results",
+          "openings",
+          "problems",
+          "opening_tree",
+          "phases",
+          "time",
+          "time_spent",
+          "endings",
+          "trend",
+          "games",
+          "events",
+          "comparison"
+        ],
+        "games": 1000,
+        "total_games": 1000,
+        "events": 0
+      },
+      "decodedBodyBytes": 657798,
+      "jsonElapsedMs": 4
+    },
+    {
+      "command": "statistics_report",
+      "view": "full",
+      "startedAt": 32931.80000001192,
+      "headersAt": 44574.80000001192,
+      "contentLength": null,
+      "parseStartedAt": 44574.80000001192,
+      "endedAt": 44889.5,
+      "summary": {
+        "keys": [
+          "evidence_revision",
+          "evidence_counts",
+          "opening_analysis",
+          "extended",
+          "analysis",
+          "filter",
+          "generated_at_ms",
+          "total_games",
+          "excluded_games",
+          "total_decisions",
+          "analysed_decisions",
+          "profile_ids",
+          "profile_labels",
+          "selected_profile_id",
+          "metrics",
+          "results",
+          "openings",
+          "problems",
+          "opening_tree",
+          "phases",
+          "time",
+          "time_spent",
+          "endings",
+          "trend",
+          "games",
+          "events",
+          "comparison"
+        ],
+        "games": 1000,
+        "total_games": 1000,
+        "events": 0
+      },
+      "decodedBodyBytes": 52480587,
+      "jsonElapsedMs": 314.69999998807907
+    }
+  ],
+  "errors": [],
+  "actual_result_rows_sample": [
+    "Р‘РµР»С‹Рµ10000 / 1000 / 050вЂ”0",
+    "Lichess В· Р Р°РїРёРґ В· 600+510000 / 1000 / 050вЂ”0",
+    "10000 / 1000 / 050вЂ”0",
+    "Р Р°Р·РЅРёС†Р° СЂРµР№С‚РёРЅРіРѕРІ: -50вЂ¦5010000 / 1000 / 050вЂ”0",
+    "РќРёС‡СЊСЏ10000 / 1000 / 050вЂ”0",
+    "РћР±С‹С‡РЅС‹Рµ С€Р°С…РјР°С‚С‹10000 / 1000 / 050вЂ”0",
+    "РџР°СЂС‚РёСЏ 1 РІ РЅР°Р±Р»СЋРґР°РµРјРѕР№ СЃРµСЃСЃРёРё10 / 1 / 050вЂ”0",
+    "РџР°СЂС‚РёСЏ 2 РІ РЅР°Р±Р»СЋРґР°РµРјРѕР№ СЃРµСЃСЃРёРё10 / 1 / 050вЂ”0"
+  ],
+  "full_rows_source_in_qa": ".qa/game-graph-volume-O1KG2Q/data/graph-report-results.json"
+}

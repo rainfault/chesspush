@@ -1,0 +1,66 @@
+{
+  "kind": "Final native debug Tauri/WebView2; actual1000 legal synthetic games via native SQLite, no Stockfish runs",
+  "source_run": ".qa/game-graph-volume-O1KG2Q/data",
+  "production_frontend": "index-BqiFGG2Z",
+  "binary_sha256": "05bd2d188d3263fbeb3da566d47e6286e87d1ee992919fc5298457a54d064580",
+  "checks": {
+    "native_backend_1000_games": true,
+    "first3_continuations_and_board_visible": true,
+    "rare_move_reachable_from_board": true,
+    "all20_actual_continuations_reachable": true,
+    "expanding_moves_preserves_counts_and_frequencies": true,
+    "bounded_secondary_overview": true,
+    "overview_nodes_not_draggable": true,
+    "light_dark_and_compact_layout": true,
+    "reduced_motion": true,
+    "forty_prefix_transitions": true,
+    "no_disposed_overview_report": true,
+    "explicit_practice_overview": true,
+    "full_results_nonempty": true,
+    "returned_overview": true,
+    "same_graph_prefix": true
+  },
+  "observed_continuations": 20,
+  "rare_move": "a2a4",
+  "rare_games": 37,
+  "expansions": 3,
+  "overview": {
+    "nodes": 100,
+    "edges": 99,
+    "dragEnabled": false
+  },
+  "measurement_scope": {
+    "steps": 40,
+    "browser_start_ms": 4380.5,
+    "browser_end_ms": 17129.20000000298,
+    "statistics_report_requests_during_map_series": 0,
+    "longtasks_overlapping_series": 0,
+    "buffered_longtasks_outside_series": [
+      {
+        "start": 90.40000000596046,
+        "duration": 51,
+        "name": "self",
+        "attribution": [
+          {
+            "name": "unknown",
+            "containerType": "window",
+            "containerName": ""
+          }
+        ]
+      }
+    ],
+    "max_click_to_busy_ms": 2.5,
+    "max_click_to_accepted_projection_ms": 86.5
+  },
+  "raw_artifacts_retained_in_qa": [
+    "graph-volume-cpu.cpuprofile",
+    "graph-volume-timeline.json",
+    "graph-volume-profile.json",
+    "graph-report-results.json"
+  ],
+  "limits": [
+    "Native debug build on one Windows machine. Synthetic legal history with no saved engine runs.",
+    "Accepted projection is a matching DOM route with aria-busy=false; this is not the end of animation or a paint/FPS measurement.",
+    "Explicit full detail still parses52.48MB and renders1006 group rows; its measured longtasks are retained in report-projections.json."
+  ]
+}

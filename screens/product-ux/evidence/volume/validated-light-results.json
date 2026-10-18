@@ -1,0 +1,1780 @@
+{
+  "provenance": "production frontend over instrumented IPC bridge to real isolated Rust/SQLite backend; 1000 synthetic, all distinct legal games; all own-white; no engine evaluations",
+  "conditions": {
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1,
+    "backend": "debug",
+    "frontend": "production dist",
+    "headless": "Microsoft Edge",
+    "cacheMeaning": "first UI visits versus revisits of same 20 branches; native index and OS caches can already be warm. This is not an asserted network/DTO cache."
+  },
+  "samples": {
+    "lightFirstScreen": {
+      "line": "",
+      "kind": "branch",
+      "documentId": "",
+      "started": 286.8999999910593,
+      "feedback": 306.70000000298023,
+      "responseAt": 864.5,
+      "rpcDuration": 245.70000000298023,
+      "done": 597.2999999970198,
+      "readyLine": "",
+      "requests": [
+        {
+          "command": "statistics_controls",
+          "line": null,
+          "start": 288.59999999403954,
+          "duration": 330.09999999403954
+        },
+        {
+          "command": "game_graph_query",
+          "line": [],
+          "start": 618.7999999970198,
+          "duration": 245.70000000298023
+        }
+      ]
+    },
+    "lightGeometry": {
+      "width": 1440,
+      "height": 960,
+      "dpr": 1,
+      "board": {
+        "x": 24,
+        "y": 293.796875,
+        "width": 496,
+        "height": 496,
+        "top": 293.796875,
+        "right": 520,
+        "bottom": 789.796875,
+        "left": 24
+      },
+      "chips": [
+        {
+          "x": 562.33251953125,
+          "y": 369.890625,
+          "width": 92,
+          "height": 48,
+          "top": 369.890625,
+          "right": 654.33251953125,
+          "bottom": 417.890625,
+          "left": 562.33251953125
+        },
+        {
+          "x": 562.33251953125,
+          "y": 460.1875,
+          "width": 92,
+          "height": 48,
+          "top": 460.1875,
+          "right": 654.33251953125,
+          "bottom": 508.1875,
+          "left": 562.33251953125
+        },
+        {
+          "x": 562.33251953125,
+          "y": 550.484375,
+          "width": 92,
+          "height": 48,
+          "top": 550.484375,
+          "right": 654.33251953125,
+          "bottom": 598.484375,
+          "left": 562.33251953125
+        }
+      ],
+      "documentWidth": 1440,
+      "documentHeight": 1089
+    },
+    "firstVisits": {
+      "raw": [
+        {
+          "line": "g2g4",
+          "kind": "branch",
+          "documentId": "",
+          "started": 1617.0999999940395,
+          "feedback": 6.200000002980232,
+          "responseAt": 1776.3999999910593,
+          "rpcDuration": 155.8999999910593,
+          "done": 176.20000000298023,
+          "readyLine": "g2g4"
+        },
+        {
+          "line": "b1a3",
+          "kind": "branch",
+          "documentId": "",
+          "started": 2872.5999999940395,
+          "feedback": 4.5,
+          "responseAt": 2967,
+          "rpcDuration": 92.40000000596046,
+          "done": 104.5,
+          "readyLine": "b1a3"
+        },
+        {
+          "line": "e2e4",
+          "kind": "branch",
+          "documentId": "",
+          "started": 3471.3999999910593,
+          "feedback": 3.6000000089406967,
+          "responseAt": 3575.2999999970198,
+          "rpcDuration": 102.20000000298023,
+          "done": 117.29999999701977,
+          "readyLine": "e2e4"
+        },
+        {
+          "line": "b2b4",
+          "kind": "branch",
+          "documentId": "",
+          "started": 4138.899999991059,
+          "feedback": 2.4000000059604645,
+          "responseAt": 4229.899999991059,
+          "rpcDuration": 89.8999999910593,
+          "done": 102.20000000298023,
+          "readyLine": "b2b4"
+        },
+        {
+          "line": "f2f4",
+          "kind": "branch",
+          "documentId": "",
+          "started": 4747.199999988079,
+          "feedback": 3.4000000059604645,
+          "responseAt": 4842.5,
+          "rpcDuration": 93.80000001192093,
+          "done": 105,
+          "readyLine": "f2f4"
+        },
+        {
+          "line": "e2e3",
+          "kind": "branch",
+          "documentId": "",
+          "started": 5359.5,
+          "feedback": 4.0999999940395355,
+          "responseAt": 5469.699999988079,
+          "rpcDuration": 108.3999999910593,
+          "done": 119,
+          "readyLine": "e2e3"
+        },
+        {
+          "line": "h2h3",
+          "kind": "branch",
+          "documentId": "",
+          "started": 6455.5999999940395,
+          "feedback": 3.7999999970197678,
+          "responseAt": 6548.699999988079,
+          "rpcDuration": 91.5,
+          "done": 105.09999999403954,
+          "readyLine": "h2h3"
+        },
+        {
+          "line": "d2d4",
+          "kind": "branch",
+          "documentId": "",
+          "started": 7079.899999991059,
+          "feedback": 2.7000000029802322,
+          "responseAt": 7170.29999999702,
+          "rpcDuration": 89.40000000596046,
+          "done": 99.5,
+          "readyLine": "d2d4"
+        },
+        {
+          "line": "h2h4",
+          "kind": "branch",
+          "documentId": "",
+          "started": 7677.399999991059,
+          "feedback": 2.6000000089406967,
+          "responseAt": 7761.5,
+          "rpcDuration": 83,
+          "done": 98.40000000596046,
+          "readyLine": "h2h4"
+        },
+        {
+          "line": "c2c3",
+          "kind": "branch",
+          "documentId": "",
+          "started": 8236.29999999702,
+          "feedback": 3.5,
+          "responseAt": 8322.79999999702,
+          "rpcDuration": 85.1000000089407,
+          "done": 95.79999999701977,
+          "readyLine": "c2c3"
+        },
+        {
+          "line": "f2f3",
+          "kind": "branch",
+          "documentId": "",
+          "started": 8830.59999999404,
+          "feedback": 3,
+          "responseAt": 8914.29999999702,
+          "rpcDuration": 82.5,
+          "done": 98,
+          "readyLine": "f2f3"
+        },
+        {
+          "line": "g1f3",
+          "kind": "branch",
+          "documentId": "",
+          "started": 9434,
+          "feedback": 2.8999999910593033,
+          "responseAt": 9517.89999999106,
+          "rpcDuration": 82.8999999910593,
+          "done": 92.29999999701977,
+          "readyLine": "g1f3"
+        },
+        {
+          "line": "g1h3",
+          "kind": "branch",
+          "documentId": "",
+          "started": 9985.199999988079,
+          "feedback": 3.9000000059604645,
+          "responseAt": 10070.89999999106,
+          "rpcDuration": 83.8999999910593,
+          "done": 96.20000000298023,
+          "readyLine": "g1h3"
+        },
+        {
+          "line": "b1c3",
+          "kind": "branch",
+          "documentId": "",
+          "started": 10546.89999999106,
+          "feedback": 3.6000000089406967,
+          "responseAt": 10641.89999999106,
+          "rpcDuration": 93.29999999701977,
+          "done": 104,
+          "readyLine": "b1c3"
+        },
+        {
+          "line": "g2g3",
+          "kind": "branch",
+          "documentId": "",
+          "started": 11142.699999988079,
+          "feedback": 2.7000000029802322,
+          "responseAt": 11229.29999999702,
+          "rpcDuration": 85.70000000298023,
+          "done": 98.5,
+          "readyLine": "g2g3"
+        },
+        {
+          "line": "b2b3",
+          "kind": "branch",
+          "documentId": "",
+          "started": 11738.29999999702,
+          "feedback": 2.8999999910593033,
+          "responseAt": 11825,
+          "rpcDuration": 85.80000001192093,
+          "done": 100.09999999403954,
+          "readyLine": "b2b3"
+        },
+        {
+          "line": "d2d3",
+          "kind": "branch",
+          "documentId": "",
+          "started": 12295,
+          "feedback": 2.5,
+          "responseAt": 12373.59999999404,
+          "rpcDuration": 77.70000000298023,
+          "done": 92,
+          "readyLine": "d2d3"
+        },
+        {
+          "line": "a2a3",
+          "kind": "branch",
+          "documentId": "",
+          "started": 12858.59999999404,
+          "feedback": 3,
+          "responseAt": 12943.199999988079,
+          "rpcDuration": 83.19999998807907,
+          "done": 98,
+          "readyLine": "a2a3"
+        },
+        {
+          "line": "c2c4",
+          "kind": "branch",
+          "documentId": "",
+          "started": 13465,
+          "feedback": 3.5999999940395355,
+          "responseAt": 13570.5,
+          "rpcDuration": 103.70000000298023,
+          "done": 116.59999999403954,
+          "readyLine": "c2c4"
+        },
+        {
+          "line": "a2a4",
+          "kind": "branch",
+          "documentId": "",
+          "started": 14067.09999999404,
+          "feedback": 3.5999999940395355,
+          "responseAt": 14149.29999999702,
+          "rpcDuration": 80.6000000089407,
+          "done": 91,
+          "readyLine": "a2a4"
+        }
+      ],
+      "ready": {
+        "n": 20,
+        "p50": 100.09999999403954,
+        "p95": 176.20000000298023,
+        "min": 91,
+        "max": 176.20000000298023
+      },
+      "feedback": {
+        "n": 20,
+        "p50": 3.5,
+        "p95": 6.200000002980232,
+        "min": 2.4000000059604645,
+        "max": 6.200000002980232
+      }
+    },
+    "revisits": {
+      "raw": [
+        {
+          "line": "g2g4",
+          "kind": "branch",
+          "documentId": "",
+          "started": 14629.39999999106,
+          "feedback": 3,
+          "responseAt": 14715.29999999702,
+          "rpcDuration": 84.40000000596046,
+          "done": 98,
+          "readyLine": "g2g4"
+        },
+        {
+          "line": "b1a3",
+          "kind": "branch",
+          "documentId": "",
+          "started": 15191,
+          "feedback": 2.2999999970197678,
+          "responseAt": 15277.89999999106,
+          "rpcDuration": 86.09999999403954,
+          "done": 98.69999998807907,
+          "readyLine": "b1a3"
+        },
+        {
+          "line": "e2e4",
+          "kind": "branch",
+          "documentId": "",
+          "started": 15747.5,
+          "feedback": 3.8999999910593033,
+          "responseAt": 15839,
+          "rpcDuration": 89.80000001192093,
+          "done": 104.8999999910593,
+          "readyLine": "e2e4"
+        },
+        {
+          "line": "b2b4",
+          "kind": "branch",
+          "documentId": "",
+          "started": 16351.09999999404,
+          "feedback": 2.9000000059604645,
+          "responseAt": 16437.59999999404,
+          "rpcDuration": 85.40000000596046,
+          "done": 98.40000000596046,
+          "readyLine": "b2b4"
+        },
+        {
+          "line": "f2f4",
+          "kind": "branch",
+          "documentId": "",
+          "started": 16906.69999998808,
+          "feedback": 2.9000000059604645,
+          "responseAt": 16993.5,
+          "rpcDuration": 85.80000001192093,
+          "done": 98.30000001192093,
+          "readyLine": "f2f4"
+        },
+        {
+          "line": "e2e3",
+          "kind": "branch",
+          "documentId": "",
+          "started": 17501.5,
+          "feedback": 3.0999999940395355,
+          "responseAt": 17598.19999998808,
+          "rpcDuration": 95.5,
+          "done": 107.8999999910593,
+          "readyLine": "e2e3"
+        },
+        {
+          "line": "h2h3",
+          "kind": "branch",
+          "documentId": "",
+          "started": 18122.29999999702,
+          "feedback": 2.7999999970197678,
+          "responseAt": 18213.69999998808,
+          "rpcDuration": 90.09999999403954,
+          "done": 105,
+          "readyLine": "h2h3"
+        },
+        {
+          "line": "d2d4",
+          "kind": "branch",
+          "documentId": "",
+          "started": 18740.19999998808,
+          "feedback": 3,
+          "responseAt": 18831.59999999404,
+          "rpcDuration": 90.29999999701977,
+          "done": 105.1000000089407,
+          "readyLine": "d2d4"
+        },
+        {
+          "line": "h2h4",
+          "kind": "branch",
+          "documentId": "",
+          "started": 19331.39999999106,
+          "feedback": 3.9000000059604645,
+          "responseAt": 19432.79999999702,
+          "rpcDuration": 99.5,
+          "done": 111.5,
+          "readyLine": "h2h4"
+        },
+        {
+          "line": "c2c3",
+          "kind": "branch",
+          "documentId": "",
+          "started": 19956,
+          "feedback": 3.0999999940395355,
+          "responseAt": 20061.39999999106,
+          "rpcDuration": 103.70000000298023,
+          "done": 118.29999999701977,
+          "readyLine": "c2c3"
+        },
+        {
+          "line": "f2f3",
+          "kind": "branch",
+          "documentId": "",
+          "started": 20590.69999998808,
+          "feedback": 4.600000008940697,
+          "responseAt": 20704.39999999106,
+          "rpcDuration": 112.09999999403954,
+          "done": 122.6000000089407,
+          "readyLine": "f2f3"
+        },
+        {
+          "line": "g1f3",
+          "kind": "branch",
+          "documentId": "",
+          "started": 21695.09999999404,
+          "feedback": 3.5999999940395355,
+          "responseAt": 21799.29999999702,
+          "rpcDuration": 102.79999999701977,
+          "done": 118.59999999403954,
+          "readyLine": "g1f3"
+        },
+        {
+          "line": "g1h3",
+          "kind": "branch",
+          "documentId": "",
+          "started": 22344.29999999702,
+          "feedback": 2.5999999940395355,
+          "responseAt": 22432.5,
+          "rpcDuration": 87.30000001192093,
+          "done": 98.09999999403954,
+          "readyLine": "g1h3"
+        },
+        {
+          "line": "b1c3",
+          "kind": "branch",
+          "documentId": "",
+          "started": 22914.79999999702,
+          "feedback": 3,
+          "responseAt": 23009.5,
+          "rpcDuration": 93.30000001192093,
+          "done": 107.20000000298023,
+          "readyLine": "b1c3"
+        },
+        {
+          "line": "g2g3",
+          "kind": "branch",
+          "documentId": "",
+          "started": 23541.19999998808,
+          "feedback": 3,
+          "responseAt": 23627.89999999106,
+          "rpcDuration": 85.3999999910593,
+          "done": 95.70000000298023,
+          "readyLine": "g2g3"
+        },
+        {
+          "line": "b2b3",
+          "kind": "branch",
+          "documentId": "",
+          "started": 24141.09999999404,
+          "feedback": 2.7999999970197678,
+          "responseAt": 24222.79999999702,
+          "rpcDuration": 80.79999999701977,
+          "done": 93,
+          "readyLine": "b2b3"
+        },
+        {
+          "line": "d2d3",
+          "kind": "branch",
+          "documentId": "",
+          "started": 24691.5,
+          "feedback": 3.0999999940395355,
+          "responseAt": 24772.29999999702,
+          "rpcDuration": 79.79999999701977,
+          "done": 91.29999999701977,
+          "readyLine": "d2d3"
+        },
+        {
+          "line": "a2a3",
+          "kind": "branch",
+          "documentId": "",
+          "started": 25253.19999998808,
+          "feedback": 2.2000000029802322,
+          "responseAt": 25333.69999998808,
+          "rpcDuration": 79.69999998807907,
+          "done": 92.20000000298023,
+          "readyLine": "a2a3"
+        },
+        {
+          "line": "c2c4",
+          "kind": "branch",
+          "documentId": "",
+          "started": 25838.39999999106,
+          "feedback": 2.6000000089406967,
+          "responseAt": 25918.29999999702,
+          "rpcDuration": 78.79999999701977,
+          "done": 90.29999999701977,
+          "readyLine": "c2c4"
+        },
+        {
+          "line": "a2a4",
+          "kind": "branch",
+          "documentId": "",
+          "started": 26386.19999998808,
+          "feedback": 4.200000002980232,
+          "responseAt": 26476.39999999106,
+          "rpcDuration": 88.29999999701977,
+          "done": 98.80000001192093,
+          "readyLine": "a2a4"
+        }
+      ],
+      "ready": {
+        "n": 20,
+        "p50": 98.80000001192093,
+        "p95": 122.6000000089407,
+        "min": 90.29999999701977,
+        "max": 122.6000000089407
+      },
+      "feedback": {
+        "n": 20,
+        "p50": 3,
+        "p95": 4.600000008940697,
+        "min": 2.2000000029802322,
+        "max": 4.600000008940697
+      }
+    },
+    "evidence": {
+      "raw": [
+        {
+          "line": "",
+          "kind": "evidence",
+          "documentId": "",
+          "started": 26835.39999999106,
+          "feedback": 3.1000000089406967,
+          "responseAt": 26909.19999998808,
+          "rpcDuration": 72.8999999910593,
+          "done": 86.5,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "evidence",
+          "documentId": "",
+          "started": 26966.59999999404,
+          "feedback": 3.7999999970197678,
+          "responseAt": 27033.39999999106,
+          "rpcDuration": 65.70000000298023,
+          "done": 80.09999999403954,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "evidence",
+          "documentId": "",
+          "started": 27084.59999999404,
+          "feedback": 3.7999999970197678,
+          "responseAt": 27147.39999999106,
+          "rpcDuration": 61.599999994039536,
+          "done": 73.20000000298023,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "evidence",
+          "documentId": "",
+          "started": 27195.39999999106,
+          "feedback": 4.5,
+          "responseAt": 27262,
+          "rpcDuration": 65.20000000298023,
+          "done": 80.6000000089407,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "evidence",
+          "documentId": "",
+          "started": 27313.59999999404,
+          "feedback": 4,
+          "responseAt": 27377.09999999404,
+          "rpcDuration": 62.20000000298023,
+          "done": 73.29999999701977,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "evidence",
+          "documentId": "",
+          "started": 27425.39999999106,
+          "feedback": 4.9000000059604645,
+          "responseAt": 27494.19999998808,
+          "rpcDuration": 67.19999998807907,
+          "done": 79.79999999701977,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "evidence",
+          "documentId": "",
+          "started": 27542.69999998808,
+          "feedback": 4,
+          "responseAt": 27608.5,
+          "rpcDuration": 64.30000001192093,
+          "done": 73.30000001192093,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "evidence",
+          "documentId": "",
+          "started": 27655.19999998808,
+          "feedback": 4.4000000059604645,
+          "responseAt": 27720.79999999702,
+          "rpcDuration": 63.79999999701977,
+          "done": 79,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "evidence",
+          "documentId": "",
+          "started": 27772.59999999404,
+          "feedback": 4.299999997019768,
+          "responseAt": 27839.39999999106,
+          "rpcDuration": 65.09999999403954,
+          "done": 79.59999999403954,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "evidence",
+          "documentId": "",
+          "started": 27890.79999999702,
+          "feedback": 5,
+          "responseAt": 27960.39999999106,
+          "rpcDuration": 67.79999999701977,
+          "done": 79.5,
+          "readyLine": ""
+        }
+      ],
+      "ready": {
+        "n": 10,
+        "p50": 79.59999999403954,
+        "p95": 86.5,
+        "min": 73.20000000298023,
+        "max": 86.5
+      }
+    },
+    "layer": {
+      "raw": [
+        {
+          "line": "",
+          "kind": "layer",
+          "documentId": "knowledge-9d6609356a55caebad314a9fc41c9d50",
+          "started": 27998.69999998808,
+          "feedback": 1.9000000059604645,
+          "responseAt": 28244.79999999702,
+          "rpcDuration": 244.70000000298023,
+          "done": 263.5,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "layer",
+          "documentId": "",
+          "started": 28273.19999998808,
+          "feedback": 1.2000000029802322,
+          "responseAt": 28513.69999998808,
+          "rpcDuration": 239.5,
+          "done": 252.80000001192093,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "layer",
+          "documentId": "knowledge-9d6609356a55caebad314a9fc41c9d50",
+          "started": 28535.19999998808,
+          "feedback": 1,
+          "responseAt": 28778.09999999404,
+          "rpcDuration": 242.09999999403954,
+          "done": 254.5,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "layer",
+          "documentId": "",
+          "started": 28798,
+          "feedback": 0.7999999970197678,
+          "responseAt": 29036.39999999106,
+          "rpcDuration": 237.70000000298023,
+          "done": 248.69999998807907,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "layer",
+          "documentId": "knowledge-9d6609356a55caebad314a9fc41c9d50",
+          "started": 29054.29999999702,
+          "feedback": 0.7999999970197678,
+          "responseAt": 29291,
+          "rpcDuration": 236,
+          "done": 249.29999999701977,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "layer",
+          "documentId": "",
+          "started": 29312.29999999702,
+          "feedback": 1,
+          "responseAt": 29553.39999999106,
+          "rpcDuration": 240.3999999910593,
+          "done": 249.09999999403954,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "layer",
+          "documentId": "knowledge-9d6609356a55caebad314a9fc41c9d50",
+          "started": 29575.5,
+          "feedback": 7.0999999940395355,
+          "responseAt": 29827.29999999702,
+          "rpcDuration": 250.79999999701977,
+          "done": 262.79999999701977,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "layer",
+          "documentId": "",
+          "started": 29845.5,
+          "feedback": 0.7999999970197678,
+          "responseAt": 30089.59999999404,
+          "rpcDuration": 243.5,
+          "done": 256.69999998807907,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "layer",
+          "documentId": "knowledge-9d6609356a55caebad314a9fc41c9d50",
+          "started": 30109.29999999702,
+          "feedback": 1.2000000029802322,
+          "responseAt": 30369.79999999702,
+          "rpcDuration": 259.5,
+          "done": 270.79999999701977,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "layer",
+          "documentId": "",
+          "started": 30388.89999999106,
+          "feedback": 1.4000000059604645,
+          "responseAt": 30656.19999998808,
+          "rpcDuration": 266.19999998807907,
+          "done": 275.90000000596046,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "layer",
+          "documentId": "knowledge-9d6609356a55caebad314a9fc41c9d50",
+          "started": 30672.79999999702,
+          "feedback": 1.2000000029802322,
+          "responseAt": 30961.69999998808,
+          "rpcDuration": 287.8999999910593,
+          "done": 297.59999999403954,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "layer",
+          "documentId": "",
+          "started": 30980.39999999106,
+          "feedback": 1,
+          "responseAt": 31249.09999999404,
+          "rpcDuration": 267.90000000596046,
+          "done": 281.6000000089407,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "layer",
+          "documentId": "knowledge-9d6609356a55caebad314a9fc41c9d50",
+          "started": 31271.5,
+          "feedback": 1.2999999970197678,
+          "responseAt": 31538,
+          "rpcDuration": 265.6000000089407,
+          "done": 275.19999998807907,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "layer",
+          "documentId": "",
+          "started": 31553.79999999702,
+          "feedback": 1.0999999940395355,
+          "responseAt": 31778.89999999106,
+          "rpcDuration": 224.20000000298023,
+          "done": 235.8999999910593,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "layer",
+          "documentId": "knowledge-9d6609356a55caebad314a9fc41c9d50",
+          "started": 31796.89999999106,
+          "feedback": 1,
+          "responseAt": 32027.59999999404,
+          "rpcDuration": 229.90000000596046,
+          "done": 242.90000000596046,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "layer",
+          "documentId": "",
+          "started": 32046.89999999106,
+          "feedback": 1.1000000089406967,
+          "responseAt": 32279,
+          "rpcDuration": 231.30000001192093,
+          "done": 242.79999999701977,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "layer",
+          "documentId": "knowledge-9d6609356a55caebad314a9fc41c9d50",
+          "started": 32297.19999998808,
+          "feedback": 0.9000000059604645,
+          "responseAt": 32536,
+          "rpcDuration": 238.1000000089407,
+          "done": 249.70000000298023,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "layer",
+          "documentId": "",
+          "started": 32555.39999999106,
+          "feedback": 0.9000000059604645,
+          "responseAt": 32802.69999998808,
+          "rpcDuration": 246.59999999403954,
+          "done": 255.79999999701977,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "layer",
+          "documentId": "knowledge-9d6609356a55caebad314a9fc41c9d50",
+          "started": 32820.29999999702,
+          "feedback": 1.7000000029802322,
+          "responseAt": 33084.69999998808,
+          "rpcDuration": 263.69999998807907,
+          "done": 275,
+          "readyLine": ""
+        },
+        {
+          "line": "",
+          "kind": "layer",
+          "documentId": "",
+          "started": 33105.39999999106,
+          "feedback": 1.9000000059604645,
+          "responseAt": 33358.5,
+          "rpcDuration": 252.30000001192093,
+          "done": 261.1000000089407,
+          "readyLine": ""
+        }
+      ],
+      "ready": {
+        "n": 20,
+        "p50": 256.69999998807907,
+        "p95": 297.59999999403954,
+        "min": 235.8999999910593,
+        "max": 297.59999999403954
+      }
+    },
+    "lightPageErrors": []
+  },
+  "screens": [
+    {
+      "file": ".qa/ux-statistics/volume/light-1440-ready.png",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1
+    },
+    {
+      "file": ".qa/ux-statistics/volume/light-900-ready.png",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "dpr": 1
+    },
+    {
+      "file": ".qa/ux-statistics/volume/light-900-effective-scale-1.25.png",
+      "viewport": {
+        "width": 720,
+        "height": 560
+      },
+      "dpr": 1.25
+    },
+    {
+      "file": ".qa/ux-statistics/volume/light-900-effective-scale-1.5.png",
+      "viewport": {
+        "width": 600,
+        "height": 467
+      },
+      "dpr": 1.5
+    }
+  ],
+  "inventory": {
+    "games": 1000,
+    "indexedGames": 1000,
+    "positions": 57827,
+    "visits": 60566,
+    "firstMoves": 20,
+    "analysed": 0
+  },
+  "memory": {
+    "Documents": 14,
+    "Nodes": 1912,
+    "JSHeapUsedSize": 20703672,
+    "JSHeapTotalSize": 41017344
+  },
+  "requests": [
+    {
+      "command": "statistics_controls",
+      "line": null,
+      "start": 288.59999999403954,
+      "duration": 330.09999999403954
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 618.7999999970198,
+      "duration": 245.70000000298023
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "g2g4"
+      ],
+      "start": 1620.5,
+      "duration": 155.8999999910593
+    },
+    {
+      "command": "statistics_state",
+      "line": null,
+      "start": 288.69999998807907,
+      "duration": 1610.6000000089407
+    },
+    {
+      "command": "statistics_state",
+      "line": null,
+      "start": 307,
+      "duration": 1667.5999999940395
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 1857.699999988079,
+      "duration": 510.5
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 2050.0999999940395,
+      "duration": 466.40000000596046
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 1987.699999988079,
+      "duration": 536.6000000089407
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "b1a3"
+      ],
+      "start": 2874.5999999940395,
+      "duration": 92.40000000596046
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 3003.199999988079,
+      "duration": 263.1000000089407
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "e2e4"
+      ],
+      "start": 3473.0999999940395,
+      "duration": 102.20000000298023
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 3614.2999999970198,
+      "duration": 295.59999999403954
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "b2b4"
+      ],
+      "start": 4140,
+      "duration": 89.8999999910593
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 4266.699999988079,
+      "duration": 259.70000000298023
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "f2f4"
+      ],
+      "start": 4748.699999988079,
+      "duration": 93.80000001192093
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 4878,
+      "duration": 273.79999999701977
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "e2e3"
+      ],
+      "start": 5361.29999999702,
+      "duration": 108.3999999910593
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 5503.0999999940395,
+      "duration": 323.40000000596046
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "h2h3"
+      ],
+      "start": 6457.199999988079,
+      "duration": 91.5
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 6586.5999999940395,
+      "duration": 270.29999999701977
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "d2d4"
+      ],
+      "start": 7080.899999991059,
+      "duration": 89.40000000596046
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 7203.899999991059,
+      "duration": 262.29999999701977
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "h2h4"
+      ],
+      "start": 7678.5,
+      "duration": 83
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 7800.899999991059,
+      "duration": 237.6000000089407
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "c2c3"
+      ],
+      "start": 8237.699999988079,
+      "duration": 85.1000000089407
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 8356.89999999106,
+      "duration": 277.20000000298023
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "f2f3"
+      ],
+      "start": 8831.79999999702,
+      "duration": 82.5
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 8961.5,
+      "duration": 249.59999999403954
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "g1f3"
+      ],
+      "start": 9435,
+      "duration": 82.8999999910593
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 9551.09999999404,
+      "duration": 232.5
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "g1h3"
+      ],
+      "start": 9987,
+      "duration": 83.8999999910593
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 10106.699999988079,
+      "duration": 246
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "b1c3"
+      ],
+      "start": 10548.59999999404,
+      "duration": 93.29999999701977
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 10676.79999999702,
+      "duration": 262.09999999403954
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "g2g3"
+      ],
+      "start": 11143.59999999404,
+      "duration": 85.70000000298023
+    },
+    {
+      "command": "statistics_state",
+      "line": null,
+      "start": 10307.5,
+      "duration": 1091.699999988079
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 11266.199999988079,
+      "duration": 258.30000001192093
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "b2b3"
+      ],
+      "start": 11739.199999988079,
+      "duration": 85.80000001192093
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 11870.29999999702,
+      "duration": 227.79999999701977
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "d2d3"
+      ],
+      "start": 12295.89999999106,
+      "duration": 77.70000000298023
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 12411.89999999106,
+      "duration": 237.6000000089407
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "a2a3"
+      ],
+      "start": 12860,
+      "duration": 83.19999998807907
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 12982.09999999404,
+      "duration": 245
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "c2c4"
+      ],
+      "start": 13466.79999999702,
+      "duration": 103.70000000298023
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 13609.199999988079,
+      "duration": 253.40000000596046
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "a2a4"
+      ],
+      "start": 14068.699999988079,
+      "duration": 80.6000000089407
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 14182.89999999106,
+      "duration": 236.90000000596046
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "g2g4"
+      ],
+      "start": 14630.89999999106,
+      "duration": 84.40000000596046
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 14753,
+      "duration": 240.79999999701977
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "b1a3"
+      ],
+      "start": 15191.79999999702,
+      "duration": 86.09999999403954
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 15315.09999999404,
+      "duration": 240.29999999701977
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "e2e4"
+      ],
+      "start": 15749.199999988079,
+      "duration": 89.80000001192093
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 15878.59999999404,
+      "duration": 266.20000000298023
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "b2b4"
+      ],
+      "start": 16352.199999988079,
+      "duration": 85.40000000596046
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 16474.89999999106,
+      "duration": 240.70000000298023
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "f2f4"
+      ],
+      "start": 16907.69999998808,
+      "duration": 85.80000001192093
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 17030.69999998808,
+      "duration": 272.80000001192093
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "e2e3"
+      ],
+      "start": 17502.69999998808,
+      "duration": 95.5
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 17634.39999999106,
+      "duration": 268.90000000596046
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "h2h3"
+      ],
+      "start": 18123.59999999404,
+      "duration": 90.09999999403954
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 18252.79999999702,
+      "duration": 283.29999999701977
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "d2d4"
+      ],
+      "start": 18741.29999999702,
+      "duration": 90.29999999701977
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 18870.79999999702,
+      "duration": 268.09999999403954
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "h2h4"
+      ],
+      "start": 19333.29999999702,
+      "duration": 99.5
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 19468.5,
+      "duration": 260.59999999403954
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "c2c3"
+      ],
+      "start": 19957.69999998808,
+      "duration": 103.70000000298023
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 20100.09999999404,
+      "duration": 272.70000000298023
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "f2f3"
+      ],
+      "start": 20592.29999999702,
+      "duration": 112.09999999403954
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 20740.09999999404,
+      "duration": 414.90000000596046
+    },
+    {
+      "command": "statistics_state",
+      "line": null,
+      "start": 20310.89999999106,
+      "duration": 1353.6000000089407
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "g1f3"
+      ],
+      "start": 21696.5,
+      "duration": 102.79999999701977
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 21846.29999999702,
+      "duration": 297.29999999701977
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "g1h3"
+      ],
+      "start": 22345.19999998808,
+      "duration": 87.30000001192093
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 22467.69999998808,
+      "duration": 253.40000000596046
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "b1c3"
+      ],
+      "start": 22916.19999998808,
+      "duration": 93.30000001192093
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 23051.39999999106,
+      "duration": 265.29999999701977
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "g2g3"
+      ],
+      "start": 23542.5,
+      "duration": 85.3999999910593
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 23663.39999999106,
+      "duration": 259.29999999701977
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "b2b3"
+      ],
+      "start": 24142,
+      "duration": 80.79999999701977
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 24259.09999999404,
+      "duration": 230.40000000596046
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "d2d3"
+      ],
+      "start": 24692.5,
+      "duration": 79.79999999701977
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 24809.19999998808,
+      "duration": 247
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "a2a3"
+      ],
+      "start": 25254,
+      "duration": 79.69999998807907
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 25372.29999999702,
+      "duration": 253.20000000298023
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "c2c4"
+      ],
+      "start": 25839.5,
+      "duration": 78.79999999701977
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 25953.5,
+      "duration": 239.3999999910593
+    },
+    {
+      "command": "game_graph_query",
+      "line": [
+        "a2a4"
+      ],
+      "start": 26388.09999999404,
+      "duration": 88.29999999701977
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 26509.19999998808,
+      "duration": 233
+    },
+    {
+      "command": "game_graph_evidence",
+      "line": [],
+      "start": 26836.29999999702,
+      "duration": 72.8999999910593
+    },
+    {
+      "command": "game_graph_evidence",
+      "line": [],
+      "start": 26967.69999998808,
+      "duration": 65.70000000298023
+    },
+    {
+      "command": "game_graph_evidence",
+      "line": [],
+      "start": 27085.79999999702,
+      "duration": 61.599999994039536
+    },
+    {
+      "command": "game_graph_evidence",
+      "line": [],
+      "start": 27196.79999999702,
+      "duration": 65.20000000298023
+    },
+    {
+      "command": "game_graph_evidence",
+      "line": [],
+      "start": 27314.89999999106,
+      "duration": 62.20000000298023
+    },
+    {
+      "command": "game_graph_evidence",
+      "line": [],
+      "start": 27427,
+      "duration": 67.19999998807907
+    },
+    {
+      "command": "game_graph_evidence",
+      "line": [],
+      "start": 27544.19999998808,
+      "duration": 64.30000001192093
+    },
+    {
+      "command": "game_graph_evidence",
+      "line": [],
+      "start": 27657,
+      "duration": 63.79999999701977
+    },
+    {
+      "command": "game_graph_evidence",
+      "line": [],
+      "start": 27774.29999999702,
+      "duration": 65.09999999403954
+    },
+    {
+      "command": "game_graph_evidence",
+      "line": [],
+      "start": 27892.59999999404,
+      "duration": 67.79999999701977
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 28000.09999999404,
+      "duration": 244.70000000298023
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 28274.19999998808,
+      "duration": 239.5
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 28536,
+      "duration": 242.09999999403954
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 28798.69999998808,
+      "duration": 237.70000000298023
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 29055,
+      "duration": 236
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 29313,
+      "duration": 240.3999999910593
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 29576.5,
+      "duration": 250.79999999701977
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 29846.09999999404,
+      "duration": 243.5
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 30110.29999999702,
+      "duration": 259.5
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 30390,
+      "duration": 266.19999998807907
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 30673.79999999702,
+      "duration": 287.8999999910593
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 30981.19999998808,
+      "duration": 267.90000000596046
+    },
+    {
+      "command": "statistics_state",
+      "line": null,
+      "start": 30307.69999998808,
+      "duration": 1163.9000000059605
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 31272.39999999106,
+      "duration": 265.6000000089407
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 31554.69999998808,
+      "duration": 224.20000000298023
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 31797.69999998808,
+      "duration": 229.90000000596046
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 32047.69999998808,
+      "duration": 231.30000001192093
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 32297.89999999106,
+      "duration": 238.1000000089407
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 32556.09999999404,
+      "duration": 246.59999999403954
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 32821,
+      "duration": 263.69999998807907
+    },
+    {
+      "command": "game_graph_query",
+      "line": [],
+      "start": 33106.19999998808,
+      "duration": 252.30000001192093
+    }
+  ],
+  "requestSummary": {
+    "graphQuery": {
+      "n": 103,
+      "p50": 237.70000000298023,
+      "p95": 297.29999999701977,
+      "min": 77.70000000298023,
+      "max": 536.6000000089407
+    },
+    "evidence": {
+      "n": 10,
+      "p50": 65.20000000298023,
+      "p95": 72.8999999910593,
+      "min": 61.599999994039536,
+      "max": 72.8999999910593
+    },
+    "fullStatisticsReportCount": 0
+  }
+}

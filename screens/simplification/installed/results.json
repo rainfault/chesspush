@@ -1,0 +1,77 @@
+{
+  "installed": {
+    "url": "http://tauri.localhost/",
+    "title": "ChessPush",
+    "viewport": {
+      "width": 1440,
+      "height": 960,
+      "dpr": 1.25
+    },
+    "theme": "light",
+    "scripts": [
+      "http://tauri.localhost/assets/index-lNrMoo5U.js"
+    ],
+    "homeSizes": {
+      "clock": 112,
+      "ratings": [
+        34,
+        34
+      ],
+      "overflow": false
+    }
+  },
+  "account": {
+    "status": "connected",
+    "username": "<local-account>",
+    "hasToken": true
+  },
+  "data": {
+    "whiteGames": 8,
+    "blackGames": 7,
+    "existingDocuments": 1
+  },
+  "results": [
+    {
+      "scenario": "Installed alpha.6 from Desktop shortcut: restored Home and bounded typography",
+      "result": "PASS"
+    },
+    {
+      "scenario": "Own real games: white/black opening totals and sortable columns",
+      "result": "PASS"
+    },
+    {
+      "scenario": "Real game graph: two regions, exact factual root count and SVG pieces",
+      "result": "PASS"
+    },
+    {
+      "scenario": "Real graph: click nodes, exact history, board synchronization and back",
+      "result": "PASS"
+    },
+    {
+      "scenario": "Existing user KnowledgeDocument remains accessible; no files or documents modified",
+      "result": "PASS"
+    },
+    {
+      "scenario": "Parser ZST restored in installed navigation and screen",
+      "result": "PASS"
+    }
+  ],
+  "errors": [],
+  "timings": [
+    {
+      "command": "statistics_openings",
+      "color": "white",
+      "elapsedMs": 13,
+      "games": 8
+    },
+    {
+      "command": "statistics_openings",
+      "color": "black",
+      "elapsedMs": 14,
+      "games": 7
+    }
+  ],
+  "testDataInjected": false,
+  "realUserDocumentsEdited": false,
+  "personal_details_redacted": true
+}

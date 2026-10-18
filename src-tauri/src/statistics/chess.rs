@@ -8,7 +8,7 @@ use shakmaty::{
 };
 use std::{collections::HashMap, ops::ControlFlow, sync::OnceLock};
 
-pub const INITIAL_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+pub use crate::chess_domain::{INITIAL_FEN, position_key};
 pub fn color_name(c: Color) -> &'static str {
     if c == Color::White { "white" } else { "black" }
 }
@@ -24,14 +24,7 @@ pub fn terminal_outcome(fen: &str) -> Option<String> {
             .unwrap_or_else(|| "draw".into())
     })
 }
-pub fn position_key(pos: &Chess) -> String {
-    // Legal EP, rather than pseudo-legal/FEN EP, gives identical keys for actual transpositions.
-    let fen = Fen::from_position(pos, EnPassantMode::Legal).to_string();
-    format!(
-        "standard|{}",
-        fen.split_whitespace().take(4).collect::<Vec<_>>().join(" ")
-    )
-}
+
 fn material(pos: &Chess) -> MaterialSnapshot {
     let mut m = MaterialSnapshot::default();
     for (i, role) in [
@@ -337,33 +330,90 @@ fn catalogue_version() -> &'static str {
         )
     })
 }
-fn catalogue() -> &'static HashMap<String, Vec<OpeningMatch>> {
-    static MAP: OnceLock<HashMap<String, Vec<OpeningMatch>>> = OnceLock::new();
-    MAP.get_or_init(|| {
+/// A defining position replayed from the pinned CC0 opening catalogue.
+/// This is a board preview, never a fabricated personal game or an observed path.
+#[derive(Debug, Clone)]
+pub struct OpeningPreview {
+    pub fen: String,
+    pub last_move: Option<[String; 2]>,
+    pub pgn: String,
+}
+#[derive(Default)]
+struct OpeningCatalogue {
+    positions: HashMap<String, Vec<OpeningMatch>>,
+    previews: HashMap<(String, String), (u32, OpeningPreview)>,
+}
+fn opening_catalogue() -> &'static OpeningCatalogue {
+    static CATALOGUE: OnceLock<OpeningCatalogue> = OnceLock::new();
+    CATALOGUE.get_or_init(|| {
         let entries: Vec<CatalogueEntry> =
             serde_json::from_str(include_str!("../../../public/openings.json"))
                 .expect("bundled CC0 opening catalogue");
-        let mut map: HashMap<String, Vec<OpeningMatch>> = HashMap::new();
+        let mut catalogue = OpeningCatalogue::default();
         for entry in entries {
-            if let Ok(r) = replay_pgn(&(entry.pgn + " *"))
+            if let Ok(r) = replay_pgn(&(entry.pgn.clone() + " *"))
                 && let Some(n) = r.nodes.last()
             {
                 let (family, variation) = entry.name.split_once(": ").unwrap_or((&entry.name, ""));
-                map.entry(n.position_key.clone())
+                catalogue
+                    .positions
+                    .entry(n.position_key.clone())
                     .or_default()
                     .push(OpeningMatch {
-                        eco: entry.eco,
+                        eco: entry.eco.clone(),
                         name: entry.name.clone(),
                         family: family.into(),
                         variation: variation.into(),
                         ply: n.ply,
                         position_key: n.position_key.clone(),
                     });
+                // Repeated ECO/name labels may have several defining lines.
+                // Prefer the shortest, with PGN as a stable tie-breaker.
+                let key = (entry.eco, entry.name);
+                let replace = catalogue.previews.get(&key).is_none_or(|(ply, preview)| {
+                    (n.ply, entry.pgn.as_str()) < (*ply, preview.pgn.as_str())
+                });
+                if replace {
+                    let last_move = n.uci.as_ref().and_then(|uci| {
+                        (uci.len() >= 4).then(|| [uci[..2].to_owned(), uci[2..4].to_owned()])
+                    });
+                    catalogue.previews.insert(
+                        key,
+                        (
+                            n.ply,
+                            OpeningPreview {
+                                fen: n.fen.clone(),
+                                last_move,
+                                pgn: entry.pgn,
+                            },
+                        ),
+                    );
+                }
             }
         }
-        map
+        catalogue
     })
 }
+fn catalogue() -> &'static HashMap<String, Vec<OpeningMatch>> {
+    &opening_catalogue().positions
+}
+/// Exact ECO + exact label, rather than a broad ECO family's arbitrary position.
+pub fn opening_preview(eco: &str, name: &str) -> Option<OpeningPreview> {
+    opening_catalogue()
+        .previews
+        .get(&(eco.to_owned(), name.to_owned()))
+        .map(|(_, preview)| preview.clone())
+}
+
+/// Exact-position lookup in the same versioned catalogue used by observed games.
+/// Callers retain their own path/history; this lookup does not infer missing moves.
+pub fn opening_for_position(position_key: &str) -> Option<OpeningMatch> {
+    catalogue()
+        .get(position_key)
+        .and_then(|values| values.iter().max_by_key(|value| value.ply))
+        .cloned()
+}
+
 pub fn classify_opening(replay: &Replay) -> Option<OpeningMatch> {
     replay.nodes.iter().rev().find_map(|n| {
         catalogue()
@@ -517,6 +567,7 @@ pub fn from_lichess(
     restore_times(&mut replay, increment_seconds, v, status);
     replay.opening = classify_opening(&replay);
     Ok(StoredGame {
+        movetext_revision: 0,
         id: format!("lichess:{external_id}"),
         external_id: external_id.into(),
         account_id: account_id.into(),
@@ -948,4 +999,31 @@ pub fn opening_label_matches(game: &StoredGame, id: &str) -> bool {
         .map(|o| opening_name_path(&o.name))
         .unwrap_or_else(|| vec!["Не классифицировано".into()]);
     (1..=path.len()).any(|n| opening_label_id(&game.own_color, &path[..n]) == id)
+}
+
+/// Normalized legal navigation path shared by factual graph and board viewers.
+/// Occurrence identity remains separate; these nodes are a presentation projection.
+pub fn line_nodes_from(initial_fen: &str, line: &[String]) -> Result<Vec<ReplayNode>, String> {
+    if line.len() > 2048 {
+        return Err("Line too long".into());
+    }
+    let mut pos: Chess = initial_fen
+        .parse::<Fen>()
+        .map_err(|e| e.to_string())?
+        .into_position(CastlingMode::Standard)
+        .map_err(|e| e.to_string())?;
+    let mut nodes = vec![node(&pos, 0)];
+    for (index, text) in line.iter().enumerate() {
+        let uci = text.parse::<UciMove>().map_err(|e| e.to_string())?;
+        let mv = uci.to_move(&pos).map_err(|e| e.to_string())?;
+        let san = shakmaty::san::SanPlus::from_move(pos.clone(), mv).to_string();
+        let actor = color_name(pos.turn()).to_owned();
+        pos.play_unchecked(mv);
+        let mut next = node(&pos, index as u32 + 1);
+        next.uci = Some(UciMove::from_move(mv, CastlingMode::Standard).to_string());
+        next.san = Some(san);
+        next.actor = Some(actor);
+        nodes.push(next);
+    }
+    Ok(nodes)
 }

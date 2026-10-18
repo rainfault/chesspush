@@ -10,8 +10,12 @@ pub mod types;
 pub mod desktop;
 
 pub mod opening_metrics;
+pub mod opening_summary;
 pub mod projection;
 
 pub mod extended;
 
 pub mod engine_metrics;
+
+pub mod opening_coverage;
+pub mod preferences;

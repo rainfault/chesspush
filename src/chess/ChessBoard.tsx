@@ -2,7 +2,9 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Chessground } from "@lichess-org/chessground";
 import type { Api } from "@lichess-org/chessground/api";
 import type { Config } from "@lichess-org/chessground/config";
+import type { DrawShape } from "@lichess-org/chessground/draw";
 import type { Role, SquareName } from "chessops/types";
+import { moveDestinations } from "./boardInput";
 import { BoardSession } from "./BoardSession";
 import "@lichess-org/chessground/assets/chessground.base.css";
 import "@lichess-org/chessground/assets/chessground.brown.css";
@@ -14,17 +16,51 @@ interface Props {
   revision: number;
   onChange: () => void;
   readOnly?: boolean;
+  onSelect?: (square: SquareName | null) => void;
+  onMove?: (orig: SquareName, dest: SquareName, promotion?: Role) => void;
+  destinations?: Map<SquareName, SquareName[]>;
+  allowedMoves?: string[];
+  shapes?: DrawShape[];
+  autoShapes?: DrawShape[];
+  onShapesChange?: (shapes: DrawShape[]) => void;
 }
 export function ChessBoard({
   session,
   revision,
   onChange,
   readOnly = false,
+  onSelect,
+  onMove,
+  allowedMoves,
+  destinations = allowedMoves ? moveDestinations(allowedMoves) : undefined,
+  shapes,
+  autoShapes,
+  onShapesChange,
 }: Props) {
   const element = useRef<HTMLDivElement>(null);
   const api = useRef<Api | null>(null);
-  const current = useRef({ session, onChange, readOnly });
-  current.current = { session, onChange, readOnly };
+  const current = useRef({
+    session,
+    onSelect,
+    onChange,
+    readOnly,
+    onMove,
+    destinations,
+    shapes,
+    autoShapes,
+    onShapesChange,
+  });
+  current.current = {
+    session,
+    onSelect,
+    onChange,
+    readOnly,
+    onMove,
+    destinations,
+    shapes,
+    autoShapes,
+    onShapesChange,
+  };
   const [promotion, setPromotion] = useState<{
     orig: SquareName;
     dest: SquareName;
@@ -43,10 +79,19 @@ export function ChessBoard({
       movable: {
         free: false,
         color: current.current.readOnly ? undefined : s.position.turn,
-        dests: current.current.readOnly ? new Map() : s.destinations,
+        dests: current.current.readOnly
+          ? new Map()
+          : (current.current.destinations ?? s.destinations),
       },
       draggable: { enabled: !current.current.readOnly },
-      drawable: { shapes: s.shapes },
+      drawable: {
+        shapes: current.current.shapes ?? s.shapes,
+        autoShapes: current.current.autoShapes ?? [],
+      },
+      animation: {
+        enabled: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+        duration: 200,
+      },
     };
     // Preserve the reference fix: do not restart an already painted move animation.
     if (force || ground.getFen() !== s.fen.split(" ")[0]) config.fen = s.fen;
@@ -64,10 +109,13 @@ export function ChessBoard({
       draggable: { enabled: !readOnly, showGhost: true },
       selectable: { enabled: true },
       premovable: { enabled: false },
+      events: {
+        select: (square) => current.current.onSelect?.(square as SquareName),
+      },
       movable: {
         free: false,
         color: readOnly ? undefined : session.position.turn,
-        dests: readOnly ? new Map() : session.destinations,
+        dests: readOnly ? new Map() : (destinations ?? session.destinations),
         events: {
           after: (origin, destination) => {
             if (
@@ -83,7 +131,9 @@ export function ChessBoard({
               setPromotion({ orig, dest, revision: s.revision });
               return;
             }
-            if (s.play(orig, dest)) changed();
+            if (current.current.onMove) {
+              current.current.onMove(orig, dest);
+            } else if (s.play(orig, dest)) changed();
             else sync(true);
           },
         },
@@ -92,7 +142,9 @@ export function ChessBoard({
         enabled: true,
         visible: true,
         onChange: (shapes) => {
-          current.current.session.setShapes(shapes);
+          if (current.current.onShapesChange)
+            current.current.onShapesChange(shapes);
+          else current.current.session.setShapes(shapes);
         },
       },
     });
@@ -107,8 +159,9 @@ export function ChessBoard({
   }, []);
   useLayoutEffect(() => {
     sync();
-    if (promotion && promotion.revision !== revision) setPromotion(null);
-  }, [revision, readOnly]);
+    if (promotion && promotion.revision !== session.revision)
+      setPromotion(null);
+  }, [revision, readOnly, destinations, shapes, autoShapes]);
   function cancelPromotion() {
     setPromotion(null);
     sync(true);
@@ -158,7 +211,9 @@ export function ChessBoard({
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (
+                  if (onMove && promotion.revision === session.revision)
+                    onMove(promotion.orig, promotion.dest, role);
+                  else if (
                     session.play(
                       promotion.orig,
                       promotion.dest,

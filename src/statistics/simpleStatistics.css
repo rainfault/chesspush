@@ -1,0 +1,202 @@
+.simple-statistics {
+  max-width: 1660px;
+  padding: 12px 24px 24px;
+}
+.simple-statistics-toolbar,
+.simple-statistics-controls,
+.simple-opening-selection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.simple-statistics-toolbar {
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+.simple-statistics-toolbar .stats-tabs {
+  margin: 0;
+  border: 0;
+  flex-wrap: nowrap;
+}
+.simple-statistics-toolbar .stats-tabs button {
+  padding: 12px 16px;
+}
+.simple-statistics-side {
+  display: flex;
+  gap: 0;
+}
+.simple-statistics-side button {
+  border-radius: 0;
+  min-width: 85px;
+}
+.simple-opening-results table {
+  width: 100%;
+}
+.simple-opening-results th,
+.simple-opening-results td {
+  padding: 12px;
+  text-align: right;
+  white-space: nowrap;
+}
+.simple-opening-results th:nth-child(1),
+.simple-opening-results td:nth-child(1),
+.simple-opening-results th:nth-child(2),
+.simple-opening-results td:nth-child(2) {
+  text-align: left;
+}
+.simple-opening-results td:nth-child(2) {
+  white-space: normal;
+  min-width: 220px;
+}
+.simple-opening-results thead th {
+  padding: 0;
+}
+.simple-opening-results thead button {
+  width: 100%;
+  border: 0;
+  border-radius: 0;
+  text-align: inherit;
+  background: transparent;
+  font: inherit;
+  font-weight: 500;
+  padding: 12px;
+}
+.simple-opening-results tbody tr:hover {
+  background: var(--surface-muted);
+}
+.simple-opening-results tfoot {
+  border-top: 2px solid var(--border);
+}
+.simple-opening-results .stats-link {
+  text-align: left;
+}
+.simple-opening-selection {
+  margin-bottom: 10px;
+}
+.simple-opening-selection span {
+  flex: 1;
+}
+@media (max-width: 900px) {
+  .simple-statistics {
+    padding: 8px 12px 20px;
+  }
+  .simple-statistics-toolbar {
+    flex-wrap: wrap;
+    gap: 4px;
+    padding-bottom: 8px;
+  }
+  .simple-statistics-controls {
+    margin-left: auto;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .simple-statistics-toolbar .stats-tabs button {
+    padding: 10px 12px;
+  }
+  .simple-opening-results th,
+  .simple-opening-results td {
+    padding: 10px 8px;
+  }
+}
+.opening-explorer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 31%);
+  align-items: start;
+  gap: 24px;
+}
+.opening-tables {
+  min-width: 0;
+}
+.opening-side-table + .opening-side-table {
+  margin-top: 24px;
+}
+.opening-side-table h2 {
+  margin: 0 0 12px;
+  font-size: 22px;
+  font-weight: 400;
+}
+.opening-side-table .stats-table-wrap {
+  border: 1px solid var(--border);
+}
+.opening-side-table td:nth-child(2) {
+  min-width: 180px;
+}
+.opening-side-table th,
+.opening-side-table td {
+  padding: 10px 8px;
+}
+.opening-side-table thead th {
+  padding: 0;
+}
+.opening-side-table thead button {
+  padding: 12px 8px;
+}
+.opening-side-table tbody tr.previewed {
+  background: var(--surface-muted);
+}
+.opening-side-table tbody tr.previewed td:first-child {
+  box-shadow: inset 3px 0 var(--accent);
+}
+.opening-coverage {
+  min-width: 110px;
+}
+.opening-coverage-bar {
+  display: block;
+  height: 3px;
+  margin-top: 5px;
+  background: var(--border);
+}
+.opening-coverage-bar i {
+  display: block;
+  height: 100%;
+  background: var(--good, #629924);
+}
+.opening-preview {
+  position: sticky;
+  top: 12px;
+  min-width: 0;
+}
+.opening-preview > header {
+  min-height: 76px;
+  margin-bottom: 12px;
+}
+.opening-preview > header > div {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  min-height: 22px;
+  color: var(--secondary);
+}
+.opening-preview-eco {
+  color: var(--accent);
+  font-weight: 500;
+}
+.opening-preview h2 {
+  margin: 5px 0 0;
+  font-size: 22px;
+  line-height: 1.3;
+  font-weight: 400;
+}
+.opening-preview .board-frame {
+  width: 100%;
+}
+@media (max-width: 1100px) {
+  .opening-explorer {
+    gap: 16px;
+    grid-template-columns: minmax(0, 1fr) 290px;
+  }
+  .opening-side-table td:nth-child(2) {
+    min-width: 170px;
+  }
+}
+@media (max-width: 760px) {
+  .opening-explorer {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .opening-preview {
+    position: static;
+    max-width: 420px;
+    width: 100%;
+  }
+}

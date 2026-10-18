@@ -1,3 +1,5 @@
+import { Repertoire, type RepertoireTarget } from "./knowledge/Repertoire";
+import type { DocumentPosition } from "./knowledge/types";
 import { Statistics } from "./statistics/Statistics";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { invoke, isTauri } from "@tauri-apps/api/core";
@@ -17,15 +19,29 @@ import {
 } from "./lichess";
 
 const pages = [
-  ["databases", "Базы"],
+  ["home", "Главная"],
   ["statistics", "Статистика"],
-  ["knowledge", "Знания"],
-  ["games", "Мои партии"],
-  ["training", "Тренировка"],
+  ["repertoire", "Репертуар"],
+  ["databases", "Парсер ZST"],
 ] as const;
 
 export function App() {
   const [page, setPage] = useState("home");
+  const [sectionRequest, setSectionRequest] = useState(0);
+  const [section, setSection] = useState("openings");
+  const [settingsSection, setSettingsSection] = useState("account");
+  const [repertoireTarget, setRepertoireTarget] = useState<RepertoireTarget>();
+  const [openPositionRequest, setOpenPositionRequest] =
+    useState<DocumentPosition>();
+  const openSettings = (tab = "account") => {
+    setSettingsSection(tab);
+    setSettings(true);
+  };
+  const openMap = () => {
+    setSectionRequest((n) => n + 1);
+    setSection("graph");
+    setPage("statistics");
+  };
   const [theme, setTheme] = useState("light");
   const [settings, setSettings] = useState(false);
   const [error, setError] = useState("");
@@ -134,30 +150,23 @@ export function App() {
   return (
     <>
       <header className="app-header">
-        <span className="wordmark">ChessPush</span>
+        <button
+          className="wordmark"
+          onClick={() => setPage("home")}
+          aria-label="ChessPush — главная"
+        >
+          ChessPush
+        </button>
         <nav aria-label="Разделы">
-          <button
-            className={page === "home" ? "active" : ""}
-            title="Главная"
-            aria-label="Главная"
-            onClick={() => setPage("home")}
-          >
-            <svg
-              viewBox="0 0 24 24"
-              width="24"
-              height="24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.6"
-            >
-              <path d="m3 11 9-8 9 8M6 9v12h5v-7h3v7h4V9" />
-            </svg>
-          </button>
           {pages.map(([id, label]) => (
             <button
               key={id}
               className={page === id ? "active" : ""}
-              onClick={() => setPage(id)}
+              onClick={() => {
+                setPage(id);
+                if (id === "repertoire")
+                  setRepertoireTarget({ mode: "list", requestId: Date.now() });
+              }}
             >
               {label}
             </button>
@@ -169,7 +178,7 @@ export function App() {
           aria-label="Настройки"
           onClick={() => {
             setError("");
-            setSettings(true);
+            openSettings();
           }}
         >
           <svg
@@ -187,8 +196,17 @@ export function App() {
       </header>
       <Databases active={page === "databases"} />
       <Statistics
-        active={page === "statistics" || page === "games"}
-        initialSection={page === "games" ? "games" : undefined}
+        active={page === "statistics"}
+        initialSection={section}
+        sectionRequest={sectionRequest}
+        onNavigateSection={setSection}
+        onOpenSettings={openSettings}
+        openPositionRequest={openPositionRequest}
+        onPositionRequestHandled={() => setOpenPositionRequest(undefined)}
+        onOpenRepertoire={(target) => {
+          setRepertoireTarget({ ...target, requestId: Date.now() });
+          setPage("repertoire");
+        }}
         account={account}
         onAuthenticate={onAuthenticate}
         busy={busy}
@@ -201,17 +219,20 @@ export function App() {
           busy={busy}
         />
       )}
-      {page !== "home" &&
-        page !== "databases" &&
-        page !== "statistics" &&
-        page !== "games" && (
-          <main className="placeholder">
-            <h1>{pages.find(([id]) => id === page)?.[1]}</h1>
-          </main>
-        )}
+      <div hidden={page !== "repertoire"}>
+        <Repertoire
+          active={page === "repertoire"}
+          initialTarget={repertoireTarget}
+          onOpenGraph={(position) => {
+            setOpenPositionRequest(position);
+            openMap();
+          }}
+        />
+      </div>
       {settings && (
         <Settings
           account={account}
+          initialSection={settingsSection}
           theme={theme}
           busy={busy}
           error={error}
@@ -223,17 +244,26 @@ export function App() {
           onDisconnect={() => void runAccountAction(disconnectAccount)}
         />
       )}
-      {error && !settings && (
-        <div className="global-error error" role="alert">
-          {error}
-          <button
-            aria-label="Закрыть ошибку аккаунта"
-            onClick={() => setError("")}
-          >
-            ×
-          </button>
-        </div>
-      )}
+      {(error ||
+        (["invalid_token", "error"].includes(account.status)
+          ? account.message
+          : null)) &&
+        !settings && (
+          <div className="global-error error" role="alert">
+            {error || account.message}
+            <button onClick={() => openSettings("account")}>
+              Проверить подключение
+            </button>
+            {error && (
+              <button
+                aria-label="Закрыть ошибку аккаунта"
+                onClick={() => setError("")}
+              >
+                ×
+              </button>
+            )}
+          </div>
+        )}
     </>
   );
 }

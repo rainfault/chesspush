@@ -1,0 +1,131 @@
+{
+  "started_at": "2026-10-18T00:06:13.811Z",
+  "result": "PASS",
+  "checks": [
+    {
+      "name": "frontend-tests",
+      "command": "npm.cmd run test",
+      "result": "PASS",
+      "log": "frontend-tests.log",
+      "code": 0,
+      "elapsed_ms": 2749,
+      "tests": 38,
+      "test_files": 11
+    },
+    {
+      "name": "frontend-format",
+      "command": "npm.cmd run format:check",
+      "result": "PASS",
+      "log": "frontend-format.log",
+      "code": 0,
+      "elapsed_ms": 6757
+    },
+    {
+      "name": "privacy",
+      "command": "npm.cmd run check:privacy",
+      "result": "PASS",
+      "log": "privacy.log",
+      "code": 0,
+      "elapsed_ms": 1118
+    },
+    {
+      "name": "rust-format",
+      "command": "cargo fmt --manifest-path src-tauri/Cargo.toml -- --check",
+      "result": "PASS",
+      "log": "rust-format.log",
+      "code": 0,
+      "elapsed_ms": 1528
+    },
+    {
+      "name": "rust-tests",
+      "command": "cargo test --manifest-path src-tauri/Cargo.toml --no-default-features",
+      "result": "PASS",
+      "log": "rust-tests.log",
+      "code": 0,
+      "elapsed_ms": 17368,
+      "suites": [
+        {
+          "passed": 202,
+          "failed": 0,
+          "ignored": 3
+        },
+        {
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "passed": 9,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0
+        }
+      ],
+      "passed": 214
+    },
+    {
+      "name": "stockfish-real",
+      "command": "cargo test --manifest-path src-tauri/Cargo.toml --no-default-features -- --ignored",
+      "result": "PASS",
+      "log": "stockfish-real.log",
+      "code": 0,
+      "elapsed_ms": 17593,
+      "suites": [
+        {
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0
+        }
+      ],
+      "passed": 3
+    },
+    {
+      "name": "rust-clippy",
+      "command": "cargo clippy --manifest-path src-tauri/Cargo.toml --no-default-features --all-targets -- -D warnings",
+      "result": "PASS",
+      "log": "rust-clippy.log",
+      "code": 0,
+      "elapsed_ms": 7913
+    },
+    {
+      "name": "rust-clippy-desktop",
+      "command": "cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings",
+      "result": "PASS",
+      "log": "rust-clippy-desktop.log",
+      "code": 0,
+      "elapsed_ms": 7576
+    }
+  ],
+  "completed_at": "2026-10-18T00:07:57.734Z",
+  "counts": {
+    "rust_unit": 202,
+    "rust_integration": 12,
+    "rust_real_stockfish": 3,
+    "rust_total_passed": 217,
+    "frontend": 38,
+    "frontend_files": 11,
+    "privacy_versions": 125
+  },
+  "snapshot": "Final alpha.7 production sources including connection-local synchronization T0/generation guard and three new concurrency tests",
+  "initial_attempts": "sync-guard-initial-attempt.json",
+  "stockfish_path": "C:\\projects\\chess_training_tool\\.qa\\stockfish\\release\\stockfish\\stockfish-windows-x86-64-universal.exe"
+}

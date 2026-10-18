@@ -1,0 +1,27 @@
+{
+  "results": [
+    {
+      "scenario": "black POV labels + flip preserves outcomes",
+      "result": "PASS"
+    },
+    {
+      "scenario": "exact repertoire-node edit/save→same branch and layer; stable document/chapter/node IDs",
+      "result": "PASS",
+      "documentId": "knowledge-8dfdc29a07cf75bc48b0f7d9e46efda9",
+      "nodeId": "node-f3c971f861988be4a2d42f9d9535eb0e"
+    },
+    {
+      "scenario": "document-position request consumed once; reopening map retains later path",
+      "result": "PASS"
+    },
+    {
+      "scenario": "keyboard focus/Down/Enter/Left; focus changes do not execute moves",
+      "result": "PASS"
+    },
+    {
+      "scenario": "reload→Home Continue restores persisted branch+filter+repertoire",
+      "result": "PASS"
+    }
+  ],
+  "provenance": "production frontend→real isolated Rust/SQLite; no response substitution"
+}

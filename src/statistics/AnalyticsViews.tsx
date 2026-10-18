@@ -436,13 +436,22 @@ export function OpeningViews({
       )}
       <details>
         <summary>Репертуар</summary>
+        <p>
+          Документы репертуара доступны в разделе «Репертуар», наложение
+          подготовленных продолжений — на карте игры. Покрытие репертуара и
+          динамика его освоения пока не рассчитываются.
+        </p>
         <table aria-label="Зависимости репертуара">
           <tbody>
             {a.blockers.map((b) => (
               <tr key={b.id}>
                 <td>{b.id}</td>
                 <td>{metricStatus(b.status)}</td>
-                <td>{b.dependency}</td>
+                <td>
+                  {(b.id === "O14" || b.id === "O15") && b.status === "BLOCKED"
+                    ? "Нет расчёта этого показателя по документам репертуара"
+                    : b.dependency}
+                </td>
               </tr>
             ))}
           </tbody>

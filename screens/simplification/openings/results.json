@@ -1,0 +1,46 @@
+{
+  "checks": [
+    {
+      "name": "actual light white membership, counts, outcomes, sorting",
+      "result": "PASS",
+      "games": 3,
+      "rows": 3
+    },
+    {
+      "name": "actual light black membership, counts, outcomes, sorting",
+      "result": "PASS",
+      "games": 1,
+      "rows": 1
+    },
+    {
+      "name": "light opening row enters graph with exact game IDs; zero full report requests",
+      "result": "PASS"
+    },
+    {
+      "name": "light clearing opening cohort and switching colour reset the real branch to root",
+      "result": "PASS"
+    },
+    {
+      "name": "actual dark white membership, counts, outcomes, sorting",
+      "result": "PASS",
+      "games": 3,
+      "rows": 3
+    },
+    {
+      "name": "actual dark black membership, counts, outcomes, sorting",
+      "result": "PASS",
+      "games": 1,
+      "rows": 1
+    },
+    {
+      "name": "dark opening row enters graph with exact game IDs; zero full report requests",
+      "result": "PASS"
+    },
+    {
+      "name": "dark clearing opening cohort and switching colour reset the real branch to root",
+      "result": "PASS"
+    }
+  ],
+  "errors": [],
+  "method": "production dist -> actual isolated native IPC and SQLite; no fake metric values"
+}

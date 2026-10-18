@@ -1,0 +1,114 @@
+[
+  {
+    "file": "after/volume-1000-light-1440-ready.png",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1,
+    "original": ".qa/ux-statistics/volume/light-1440-ready.png",
+    "provenance": "production frontend + isolated actual 1000-game native index; effective scale is CSS viewport/DPR emulation, not Windows OS scaling"
+  },
+  {
+    "file": "after/volume-1000-light-900-ready.png",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1,
+    "original": ".qa/ux-statistics/volume/light-900-ready.png",
+    "provenance": "production frontend + isolated actual 1000-game native index; effective scale is CSS viewport/DPR emulation, not Windows OS scaling"
+  },
+  {
+    "file": "after/volume-1000-light-900-effective-scale-1.25.png",
+    "viewport": {
+      "width": 720,
+      "height": 560
+    },
+    "dpr": 1.25,
+    "original": ".qa/ux-statistics/volume/light-900-effective-scale-1.25.png",
+    "provenance": "production frontend + isolated actual 1000-game native index; effective scale is CSS viewport/DPR emulation, not Windows OS scaling"
+  },
+  {
+    "file": "after/volume-1000-light-900-effective-scale-1.5.png",
+    "viewport": {
+      "width": 600,
+      "height": 467
+    },
+    "dpr": 1.5,
+    "original": ".qa/ux-statistics/volume/light-900-effective-scale-1.5.png",
+    "provenance": "production frontend + isolated actual 1000-game native index; effective scale is CSS viewport/DPR emulation, not Windows OS scaling"
+  },
+  {
+    "file": "after/volume-1000-dark-1440-ready.png",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1,
+    "original": ".qa/ux-statistics/volume/dark-1440-ready.png",
+    "provenance": "production frontend + isolated actual 1000-game native index; effective scale is CSS viewport/DPR emulation, not Windows OS scaling"
+  },
+  {
+    "file": "after/volume-1000-dark-900-ready.png",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1,
+    "original": ".qa/ux-statistics/volume/dark-900-ready.png",
+    "provenance": "production frontend + isolated actual 1000-game native index; effective scale is CSS viewport/DPR emulation, not Windows OS scaling"
+  },
+  {
+    "file": "after/volume-1000-dark-900-effective-scale-1.25.png",
+    "viewport": {
+      "width": 720,
+      "height": 560
+    },
+    "dpr": 1.25,
+    "original": ".qa/ux-statistics/volume/dark-900-effective-scale-1.25.png",
+    "provenance": "production frontend + isolated actual 1000-game native index; effective scale is CSS viewport/DPR emulation, not Windows OS scaling"
+  },
+  {
+    "file": "after/volume-1000-dark-900-effective-scale-1.5.png",
+    "viewport": {
+      "width": 600,
+      "height": 467
+    },
+    "dpr": 1.5,
+    "original": ".qa/ux-statistics/volume/dark-900-effective-scale-1.5.png",
+    "provenance": "production frontend + isolated actual 1000-game native index; effective scale is CSS viewport/DPR emulation, not Windows OS scaling"
+  },
+  {
+    "file": "after/volume-100-light-1440.png",
+    "width": 1440,
+    "height": 960,
+    "dpr": 1,
+    "original": ".qa/ux-statistics/volume100/light-1440.png",
+    "provenance": "100 native factual IDs selected from diverse 1000-game fixture; actual production frontend + native backend"
+  },
+  {
+    "file": "after/volume-100-light-900.png",
+    "width": 900,
+    "height": 700,
+    "dpr": 1,
+    "original": ".qa/ux-statistics/volume100/light-900.png",
+    "provenance": "100 native factual IDs selected from diverse 1000-game fixture; actual production frontend + native backend"
+  },
+  {
+    "file": "after/volume-100-dark-1440.png",
+    "width": 1440,
+    "height": 960,
+    "dpr": 1,
+    "original": ".qa/ux-statistics/volume100/dark-1440.png",
+    "provenance": "100 native factual IDs selected from diverse 1000-game fixture; actual production frontend + native backend"
+  },
+  {
+    "file": "after/volume-100-dark-900.png",
+    "width": 900,
+    "height": 700,
+    "dpr": 1,
+    "original": ".qa/ux-statistics/volume100/dark-900.png",
+    "provenance": "100 native factual IDs selected from diverse 1000-game fixture; actual production frontend + native backend"
+  }
+]

@@ -25,7 +25,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         now - 864000000,
     )
     .map_err(|e| e.message)?;
-    let examples = [
+    let mut examples = vec![
         (
             "stOp0001",
             "1. e4 e5 2. Nf3 d6 3. d4 Bg4 4. dxe5 Bxf3 5. Qxf3 dxe5 6. Bc4 Nf6 7. Qb3 Qe7 8. Nc3 c6 9. Bg5 b5 10. Nxb5 cxb5 11. Bxb5+ Nbd7 12. O-O-O Rd8 13. Rxd7 Rxd7 14. Rd1 Qe6 15. Bxd7+ Nxd7 16. Qb8+ Nxb8 17. Rd8#",
@@ -55,6 +55,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             false,
         ),
     ];
+    if std::env::args().any(|arg| arg == "--with-cycle") {
+        examples.push((
+            "stCy0001",
+            "1. Nf3 Nf6 2. Ng1 Ng8 3. Nf3 Nf6 4. Ng1 Ng8",
+            "draw",
+            None,
+            false,
+        ));
+    }
     for (i, (id, moves, status, winner, black)) in examples.iter().enumerate() {
         let result = match winner {
             Some("white") => "1-0",

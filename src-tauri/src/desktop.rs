@@ -136,6 +136,51 @@ fn reveal_file(id: i64, directory: State<AppDirectory>) -> Result<(), AppError> 
     Ok(())
 }
 #[tauri::command]
+async fn library_games(
+    directory: State<'_, AppDirectory>,
+    file_id: i64,
+    offset: usize,
+) -> Result<crate::library::LibraryPage, AppError> {
+    let path = directory.0.join("chesspush.sqlite3");
+    tauri::async_runtime::spawn_blocking(move || {
+        crate::library::page(&storage::open(&path)?, file_id, offset)
+    })
+    .await
+    .map_err(|_| AppError::new("library", "Не удалось открыть список партий"))?
+}
+#[tauri::command]
+async fn library_game(
+    directory: State<'_, AppDirectory>,
+    id: i64,
+) -> Result<crate::library::LibraryDetail, AppError> {
+    let path = directory.0.join("chesspush.sqlite3");
+    tauri::async_runtime::spawn_blocking(move || crate::library::detail(&storage::open(&path)?, id))
+        .await
+        .map_err(|_| AppError::new("library", "Не удалось открыть партию"))?
+}
+#[tauri::command]
+async fn statistics_controls(
+    directory: State<'_, AppDirectory>,
+    account_id: Option<String>,
+) -> Result<Vec<String>, AppError> {
+    let path = directory.0.join("chesspush.sqlite3");
+    tauri::async_runtime::spawn_blocking(move || {
+        crate::recent::controls(&storage::open(&path)?, account_id.as_deref())
+    })
+    .await
+    .map_err(|_| AppError::new("controls", "Не удалось загрузить контроли времени"))?
+}
+#[tauri::command]
+async fn statistics_recent(
+    directory: State<'_, AppDirectory>,
+) -> Result<Vec<crate::recent::RecentGame>, AppError> {
+    let path = directory.0.join("chesspush.sqlite3");
+    tauri::async_runtime::spawn_blocking(move || crate::recent::list(&storage::open(&path)?))
+        .await
+        .map_err(|_| AppError::new("recent", "Не удалось загрузить последние партии"))?
+}
+
+#[tauri::command]
 fn get_theme(directory: State<AppDirectory>) -> Result<String, AppError> {
     Ok(storage::setting(
         &storage::open(&directory.0.join("chesspush.sqlite3"))?,
@@ -235,9 +280,28 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            crate::knowledge::desktop::knowledge_list,
+            crate::knowledge::desktop::knowledge_load,
+            crate::knowledge::desktop::knowledge_create,
+            crate::knowledge::desktop::knowledge_import,
+            crate::knowledge::desktop::knowledge_apply,
+            crate::knowledge::desktop::knowledge_export,
+            crate::knowledge::desktop::knowledge_navigate,
+            crate::knowledge::desktop::knowledge_attach_file,
+            crate::knowledge::desktop::knowledge_set_attachment,
+            crate::knowledge::desktop::knowledge_delete_repertoire,
+            crate::knowledge::desktop::knowledge_repertoire,
+            crate::knowledge::desktop::knowledge_repertoire_export,
+            crate::game_graph_desktop::game_graph_query,
+            crate::game_graph_desktop::game_graph_evidence,
+            crate::game_graph_desktop::game_graph_resolve_occurrence,
+            crate::game_graph_desktop::game_graph_load_state,
+            crate::game_graph_desktop::game_graph_save_state,
             start_parse,
             cancel_parse,
             library_files,
+            library_games,
+            library_game,
             remember_file,
             reveal_file,
             get_theme,
@@ -249,6 +313,12 @@ pub fn run() {
             disconnect_lichess,
             crate::statistics::desktop::statistics_state,
             crate::statistics::desktop::statistics_report,
+            crate::statistics::desktop::statistics_openings,
+            crate::statistics::desktop::statistics_preferences,
+            crate::statistics::desktop::statistics_preferences_save,
+            crate::statistics::desktop::statistics_reset,
+            statistics_recent,
+            statistics_controls,
             crate::statistics::desktop::statistics_evidence,
             crate::statistics::desktop::statistics_game,
             crate::statistics::desktop::statistics_sync,

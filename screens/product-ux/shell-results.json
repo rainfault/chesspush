@@ -1,0 +1,621 @@
+{
+  "results": [
+    {
+      "theme": "light",
+      "scenario": "Home → recent game → seek → resume address → return Home",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "scenario": "map 3chips+board visible; overview/games/repertoire/library/settings",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "scenario": "map 3chips+board visible; overview/games/repertoire/library/settings",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "scenario": "map 3chips+board visible; overview/games/repertoire/library/settings",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "scenario": "renderer heap at map",
+      "JSHeapUsedSize": 13843436
+    },
+    {
+      "theme": "dark",
+      "scenario": "Home → recent game → seek → resume address → return Home",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "scenario": "map 3chips+board visible; overview/games/repertoire/library/settings",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "scenario": "map 3chips+board visible; overview/games/repertoire/library/settings",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "scenario": "map 3chips+board visible; overview/games/repertoire/library/settings",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "scenario": "renderer heap at map",
+      "JSHeapUsedSize": 13335660
+    }
+  ],
+  "shots": [
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "path": "after/light-1440x960-home.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "path": "after/light-1440x960-map.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "path": "after/light-1440x960-overview.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "path": "after/light-1440x960-games.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "path": "after/light-1440x960-repertoire-list.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "path": "after/light-1440x960-repertoire-editor.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "path": "after/light-1440x960-library.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "path": "after/light-1440x960-settings-account.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "path": "after/light-1440x960-settings-engine.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "dpr": 1,
+      "path": "after/light-900x700-home.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "dpr": 1,
+      "path": "after/light-900x700-map.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "dpr": 1,
+      "path": "after/light-900x700-overview.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "dpr": 1,
+      "path": "after/light-900x700-games.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "dpr": 1,
+      "path": "after/light-900x700-repertoire-list.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "dpr": 1,
+      "path": "after/light-900x700-repertoire-editor.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "dpr": 1,
+      "path": "after/light-900x700-library.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "dpr": 1,
+      "path": "after/light-900x700-settings-account.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "dpr": 1,
+      "path": "after/light-900x700-settings-engine.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "dpr": 1,
+      "path": "after/light-1920x1080-home.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "dpr": 1,
+      "path": "after/light-1920x1080-map.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "dpr": 1,
+      "path": "after/light-1920x1080-overview.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "dpr": 1,
+      "path": "after/light-1920x1080-games.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "dpr": 1,
+      "path": "after/light-1920x1080-repertoire-list.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "dpr": 1,
+      "path": "after/light-1920x1080-repertoire-editor.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "dpr": 1,
+      "path": "after/light-1920x1080-library.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "dpr": 1,
+      "path": "after/light-1920x1080-settings-account.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "light",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "dpr": 1,
+      "path": "after/light-1920x1080-settings-engine.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "path": "after/dark-1440x960-home.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "path": "after/dark-1440x960-map.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "path": "after/dark-1440x960-overview.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "path": "after/dark-1440x960-games.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "path": "after/dark-1440x960-repertoire-list.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "path": "after/dark-1440x960-repertoire-editor.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "path": "after/dark-1440x960-library.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "path": "after/dark-1440x960-settings-account.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "path": "after/dark-1440x960-settings-engine.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "dpr": 1,
+      "path": "after/dark-900x700-home.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "dpr": 1,
+      "path": "after/dark-900x700-map.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "dpr": 1,
+      "path": "after/dark-900x700-overview.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "dpr": 1,
+      "path": "after/dark-900x700-games.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "dpr": 1,
+      "path": "after/dark-900x700-repertoire-list.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "dpr": 1,
+      "path": "after/dark-900x700-repertoire-editor.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "dpr": 1,
+      "path": "after/dark-900x700-library.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "dpr": 1,
+      "path": "after/dark-900x700-settings-account.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "dpr": 1,
+      "path": "after/dark-900x700-settings-engine.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "dpr": 1,
+      "path": "after/dark-1920x1080-home.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "dpr": 1,
+      "path": "after/dark-1920x1080-map.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "dpr": 1,
+      "path": "after/dark-1920x1080-overview.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "dpr": 1,
+      "path": "after/dark-1920x1080-games.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "dpr": 1,
+      "path": "after/dark-1920x1080-repertoire-list.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "dpr": 1,
+      "path": "after/dark-1920x1080-repertoire-editor.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "dpr": 1,
+      "path": "after/dark-1920x1080-library.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "dpr": 1,
+      "path": "after/dark-1920x1080-settings-account.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    },
+    {
+      "theme": "dark",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "dpr": 1,
+      "path": "after/dark-1920x1080-settings-engine.png",
+      "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+    }
+  ],
+  "errors": []
+}

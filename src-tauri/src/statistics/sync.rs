@@ -50,6 +50,48 @@ fn check(
         Ok(())
     }
 }
+// Every polling run owns one connection. TEMP guards disappear with that connection and do
+// not affect a reset or another account/process. The SQLite write lock makes each comparison
+// atomic with its statement, including multi-statement save_game/quarantine transactions.
+const GUARDED_TABLES: &[&str] = &[
+    "statistics_sync_state",
+    "statistics_sync_ranges",
+    "statistics_pending",
+    "statistics_account_games",
+    "statistics_quarantine",
+    "statistics_quarantine_history",
+    "games",
+    "statistics_games",
+    "statistics_payloads",
+    "chess_positions",
+    "game_graph_games",
+    "game_graph_revisions",
+    "game_occurrences",
+    "game_graph_opening_labels",
+];
+fn observation_current(conn: &Connection, account: &AccountObservation) -> Result<bool, AppError> {
+    Ok(conn.query_row(
+        "SELECT EXISTS(SELECT 1 FROM statistics_accounts WHERE id=?1 AND t0_ms=?2 AND generation=?3 AND enabled=1)",
+        rusqlite::params![account.id, account.t0_ms, account.generation as i64],
+        |row| row.get(0),
+    )?)
+}
+fn guard_observation(conn: &Connection, account: &AccountObservation) -> Result<(), AppError> {
+    conn.execute_batch("CREATE TEMP TABLE chesspush_sync_snapshot(account_id TEXT NOT NULL,t0_ms INTEGER NOT NULL,generation INTEGER NOT NULL);")?;
+    conn.execute(
+        "INSERT INTO chesspush_sync_snapshot(account_id,t0_ms,generation) VALUES(?1,?2,?3)",
+        rusqlite::params![account.id, account.t0_ms, account.generation as i64],
+    )?;
+    // Identifiers are internal constants; observation values are always bound parameters.
+    for table in GUARDED_TABLES {
+        for action in ["INSERT", "UPDATE", "DELETE"] {
+            conn.execute_batch(&format!(
+                "CREATE TEMP TRIGGER chesspush_sync_{table}_{action} BEFORE {action} ON main.{table}                  WHEN NOT EXISTS(SELECT 1 FROM main.statistics_accounts a JOIN chesspush_sync_snapshot s                  ON a.id=s.account_id AND a.t0_ms=s.t0_ms AND a.generation=s.generation WHERE a.enabled=1)                  BEGIN SELECT RAISE(ABORT,'statistics_observation_changed'); END;"
+            ))?;
+        }
+    }
+    Ok(())
+}
 pub fn run(
     path: &Path,
     service: &LichessService,
@@ -96,6 +138,7 @@ pub fn run_at(
             ..Default::default()
         });
     }
+    guard_observation(&conn, &account)?;
     let state = store::state(&conn, &account.id)?;
     if state.retry_not_before_ms.is_some_and(|retry| retry > now) {
         return Ok(SyncReport {
@@ -103,9 +146,9 @@ pub fn run_at(
             ..Default::default()
         });
     }
-    store::mark_running(&conn, &account.id, now)?;
     let mut report = SyncReport::default();
     let result = (|| {
+        store::mark_running(&conn, &account.id, now)?;
         check(cancel, service, &identity)?;
         // Active export has neither max nor since: correspondence/pre-T0 pending must survive.
         active_scan(
@@ -222,7 +265,7 @@ pub fn run_at(
     })();
     if let Err(error) = result {
         // Generation invalidation must not publish an old account's state over a new observation.
-        if service.is_current_identity(&identity) {
+        if service.is_current_identity(&identity) && observation_current(&conn, &account)? {
             let delay = if error.code == "rate_limit" {
                 service.retry_after_seconds() as i64 * 1000
             } else if error.code == "cancelled" {
@@ -230,7 +273,14 @@ pub fn run_at(
             } else {
                 30_000
             };
-            store::mark_failure(&conn, &account.id, &error, now.saturating_add(delay))?;
+            if let Err(save_error) =
+                store::mark_failure(&conn, &account.id, &error, now.saturating_add(delay))
+            {
+                // A different process may reset after the read above. Its new status wins.
+                if observation_current(&conn, &account)? {
+                    return Err(save_error);
+                }
+            }
         }
         report.status = store::sync_status(&conn, Some(&account.id))?;
         if error.code == "cancelled" {
@@ -624,6 +674,338 @@ mod tests {
         )
         .unwrap();
         (directory, path, service)
+    }
+    #[test]
+    fn cross_process_reset_during_active_export_rejects_stale_pending_and_status() {
+        let (reached, ready) = std::sync::mpsc::sync_channel(1);
+        let (release, resume) = std::sync::mpsc::sync_channel(1);
+        let mut blocked = false;
+        let mock = Mock::new(move |target| {
+            if target.contains("finished=false") {
+                if !blocked {
+                    blocked = true;
+                    reached.send(()).unwrap();
+                    resume.recv_timeout(Duration::from_secs(5)).unwrap();
+                }
+                Reply::ndjson(vec![fixture("oldact01", 500, "started")])
+            } else {
+                Reply::ndjson(vec![])
+            }
+        });
+        let (_tmp, path, service) = setup(&mock.url);
+        let conn = storage::open(&path).unwrap();
+        conn.execute("INSERT INTO statistics_accounts(id,platform,external_id,username,t0_ms,enabled,generation) VALUES('lichess:other','lichess','other','Other',500,0,17)", []).unwrap();
+        conn.execute("INSERT INTO statistics_sync_state(account_id,highwater_ms,reconciliation_cursor_ms) VALUES('lichess:other',500,500)", []).unwrap();
+        let worker_path = path.clone();
+        let worker = thread::spawn(move || {
+            run_at(
+                &worker_path,
+                &service,
+                &AtomicBool::new(false),
+                10_000,
+                true,
+            )
+        });
+        ready.recv_timeout(Duration::from_secs(5)).unwrap();
+        // Independent connection/process: no shared runtime Mutex or cancellation flag.
+        super::super::preferences::reset(&conn, "lichess:syntheticplayer", 20_000).unwrap();
+        store::track_pending(
+            &conn,
+            "lichess:other",
+            &fixture("otheract", 100, "started"),
+            21_000,
+            true,
+            None,
+        )
+        .unwrap();
+        release.send(()).unwrap();
+        let report = worker.join().unwrap().unwrap();
+        assert_eq!(report.imported, 0);
+        let status = store::sync_status(&conn, Some("lichess:syntheticplayer")).unwrap();
+        assert_eq!(status.status, "pending");
+        assert_eq!(status.account.unwrap().t0_ms, 20_000);
+        assert_eq!(status.highwater_ms, Some(20_000));
+        assert_eq!(
+            status.pending_games + status.pending_ranges + status.quarantined_games,
+            0
+        );
+        assert!(
+            !status.baseline_complete
+                && status.last_success_ms.is_none()
+                && status.error_code.is_none()
+        );
+        assert_eq!(store::pending(&conn, "lichess:other").unwrap().len(), 1);
+        assert_eq!(
+            store::account(&conn, "lichess:other")
+                .unwrap()
+                .unwrap()
+                .t0_ms,
+            500
+        );
+        assert_eq!(
+            conn.query_row("SELECT count(*) FROM games", [], |row| row
+                .get::<_, usize>(0))
+                .unwrap(),
+            0
+        );
+        assert_eq!(
+            conn.query_row("SELECT count(*) FROM pragma_foreign_key_check", [], |row| {
+                row.get::<_, usize>(0)
+            })
+            .unwrap(),
+            0
+        );
+    }
+    #[test]
+    fn cross_process_reset_before_payload_rejects_cached_game_update_and_old_checkpoints() {
+        let (reached, ready) = std::sync::mpsc::sync_channel(1);
+        let (release, resume) = std::sync::mpsc::sync_channel(1);
+        let original = fixture("oldraw01", 2000, "resign");
+        let mut replacement = original.clone();
+        replacement["lastMoveAt"] = json!(2500);
+        replacement["winner"] = json!("black");
+        let mut blocked = false;
+        let mock = Mock::new(move |target| {
+            if target.contains("finished=false") {
+                return Reply::ndjson(vec![]);
+            }
+            if target.starts_with("/game/export/") {
+                if !blocked {
+                    blocked = true;
+                    reached.send(()).unwrap();
+                    resume.recv_timeout(Duration::from_secs(5)).unwrap();
+                }
+                Reply::json(replacement.clone())
+            } else {
+                Reply::ndjson(vec![replacement.clone()])
+            }
+        });
+        let (_tmp, path, service) = setup(&mock.url);
+        let conn = storage::open(&path).unwrap();
+        let game =
+            chess::from_lichess(&original, "lichess:syntheticplayer", "syntheticplayer").unwrap();
+        store::save_game(
+            &conn,
+            "lichess:syntheticplayer",
+            &game,
+            &original.to_string(),
+            "eligible",
+        )
+        .unwrap();
+        let before: String = conn
+            .query_row("SELECT data FROM statistics_games", [], |row| row.get(0))
+            .unwrap();
+        let worker_path = path.clone();
+        let worker = thread::spawn(move || {
+            run_at(
+                &worker_path,
+                &service,
+                &AtomicBool::new(false),
+                10_000,
+                true,
+            )
+        });
+        ready.recv_timeout(Duration::from_secs(5)).unwrap();
+        assert_eq!(
+            store::pending(&conn, "lichess:syntheticplayer")
+                .unwrap()
+                .len(),
+            1
+        );
+        assert_eq!(
+            store::pending_ranges(&conn, "lichess:syntheticplayer")
+                .unwrap()
+                .len(),
+            1
+        );
+        super::super::preferences::reset(&conn, "lichess:syntheticplayer", 20_000).unwrap();
+        release.send(()).unwrap();
+        assert_eq!(worker.join().unwrap().unwrap().imported, 0);
+        let status = store::sync_status(&conn, Some("lichess:syntheticplayer")).unwrap();
+        assert_eq!(status.status, "pending");
+        assert_eq!(status.highwater_ms, Some(20_000));
+        assert!(
+            status.last_success_ms.is_none()
+                && status.last_reconciled_ms.is_none()
+                && status.error_code.is_none()
+        );
+        assert_eq!(
+            status.pending_games + status.pending_ranges + status.quarantined_games,
+            0
+        );
+        assert!(!status.baseline_complete);
+        assert!(store::games(&conn, None).unwrap().is_empty());
+        assert_eq!(
+            conn.query_row("SELECT data FROM statistics_games", [], |row| row
+                .get::<_, String>(0))
+                .unwrap(),
+            before
+        );
+        assert_eq!(
+            conn.query_row("SELECT count(*) FROM statistics_payloads", [], |row| row
+                .get::<_, usize>(
+                0
+            ))
+            .unwrap(),
+            1
+        );
+        assert_eq!(
+            conn.query_row("SELECT count(*) FROM game_graph_games", [], |row| row
+                .get::<_, usize>(0))
+                .unwrap(),
+            1
+        );
+        assert_eq!(
+            conn.query_row("SELECT count(*) FROM pragma_foreign_key_check", [], |row| {
+                row.get::<_, usize>(0)
+            })
+            .unwrap(),
+            0
+        );
+    }
+    #[test]
+    fn observation_guards_are_connection_local_and_cover_update_delete() {
+        let temp = tempfile::tempdir().unwrap();
+        let path = temp.path().join("db.sqlite3");
+        let old = storage::open(&path).unwrap();
+        let identity = VerifiedIdentity {
+            id: "guarded".into(),
+            username: "Guarded".into(),
+            generation: 7,
+        };
+        let account = store::observe(&old, &identity, 1000).unwrap();
+        guard_observation(&old, &account).unwrap();
+        let current = storage::open(&path).unwrap();
+        super::super::preferences::reset(&current, &account.id, 2000).unwrap();
+        for statement in [
+            "UPDATE statistics_sync_state SET status='old' WHERE account_id='lichess:guarded'",
+            "DELETE FROM statistics_sync_state WHERE account_id='lichess:guarded'",
+            "INSERT INTO statistics_pending(account_id,external_id,first_seen_ms,last_seen_ms,status,raw_metadata) VALUES('lichess:guarded','stale',1,1,'started','{}')",
+        ] {
+            assert!(
+                old.execute(statement, [])
+                    .unwrap_err()
+                    .to_string()
+                    .contains("statistics_observation_changed")
+            );
+        }
+        assert_eq!(
+            old.query_row(
+                "SELECT count(*) FROM sqlite_temp_master WHERE type='trigger'",
+                [],
+                |row| row.get::<_, usize>(0)
+            )
+            .unwrap(),
+            GUARDED_TABLES.len() * 3
+        );
+        assert_eq!(
+            current
+                .query_row("SELECT count(*) FROM sqlite_temp_master", [], |row| row
+                    .get::<_, usize>(
+                    0
+                ))
+                .unwrap(),
+            0
+        );
+        assert_eq!(
+            current
+                .query_row(
+                    "SELECT count(*) FROM sqlite_master WHERE name LIKE 'chesspush_sync_%'",
+                    [],
+                    |row| row.get::<_, usize>(0)
+                )
+                .unwrap(),
+            0
+        );
+        // A fresh current run/connection is not blocked by the stale connection's TEMP guards.
+        store::mark_success(&current, &account.id, 3000).unwrap();
+        assert_eq!(
+            store::sync_status(&current, Some(&account.id))
+                .unwrap()
+                .status,
+            "idle"
+        );
+        assert_eq!(
+            current
+                .pragma_query_value(None, "user_version", |row| row.get::<_, i64>(0))
+                .unwrap(),
+            7
+        );
+    }
+    #[test]
+    fn explicit_reset_survives_polling_restart_and_tracks_only_new_finishes() {
+        let data = Arc::new(Mutex::new(vec![
+            fixture("oldreset", 2000, "resign"),
+            fixture("longnew1", 8000, "started"),
+        ]));
+        let mock = server(data.clone());
+        let (_tmp, path, service) = setup(&mock.url);
+        let cancel = AtomicBool::new(false);
+        run_at(&path, &service, &cancel, 9000, true).unwrap();
+        let conn = storage::open(&path).unwrap();
+        assert_eq!(store::games(&conn, None).unwrap().len(), 1);
+        let reset =
+            super::super::preferences::reset(&conn, "lichess:syntheticplayer", 10_000).unwrap();
+        assert_eq!(reset.removed_games, 1);
+        assert!(store::games(&conn, None).unwrap().is_empty());
+        drop(conn);
+        // A fresh connection/startup reconciliation cannot reattach the old finished game.
+        run_at(&path, &service, &cancel, 11_000, true).unwrap();
+        assert!(
+            store::games(&storage::open(&path).unwrap(), None)
+                .unwrap()
+                .is_empty()
+        );
+        {
+            let mut games = data.lock().unwrap();
+            games[1]["status"] = json!("resign");
+            games[1]["lastMoveAt"] = json!(12_000);
+        }
+        run_at(&path, &service, &cancel, 13_000, true).unwrap();
+        run_at(&path, &service, &cancel, 13_500, true).unwrap();
+        let conn = storage::open(&path).unwrap();
+        let games = store::games(&conn, None).unwrap();
+        assert_eq!(games.len(), 1);
+        assert_eq!(games[0].external_id, "longnew1");
+        assert_eq!(games[0].eligibility, "eligible");
+        assert_eq!(
+            conn.query_row("SELECT count(*) FROM games", [], |row| row
+                .get::<_, usize>(0))
+                .unwrap(),
+            2
+        );
+        assert_eq!(
+            conn.query_row("SELECT count(*) FROM statistics_payloads", [], |row| row
+                .get::<_, usize>(
+                0
+            ))
+            .unwrap(),
+            2
+        );
+        // Re-authentication retains the explicit period even when the original game is cached.
+        store::observe(
+            &conn,
+            &service.verified_identity().unwrap().unwrap(),
+            14_000,
+        )
+        .unwrap();
+        assert_eq!(store::active_account(&conn).unwrap().unwrap().t0_ms, 10_000);
+        super::super::preferences::reset(&conn, "lichess:syntheticplayer", 14_000).unwrap();
+        run_at(&path, &service, &cancel, 15_000, true).unwrap();
+        assert!(store::games(&conn, None).unwrap().is_empty());
+        assert_eq!(
+            conn.query_row("SELECT count(*) FROM statistics_games", [], |row| row
+                .get::<_, usize>(0))
+                .unwrap(),
+            2
+        );
+        assert_eq!(
+            conn.query_row("SELECT count(*) FROM pragma_foreign_key_check", [], |row| {
+                row.get::<_, usize>(0)
+            })
+            .unwrap(),
+            0
+        );
     }
     #[test]
     fn empty_history_durable_t0_and_no_historical_import() {

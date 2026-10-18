@@ -1,0 +1,38 @@
+{
+  "isolatedData": "C:\\projects\\chess_training_tool\\.qa\\ui-atlas-VdbV0J\\data",
+  "userDatabaseOpened": false,
+  "items": [
+    {
+      "name": "games",
+      "beforeCount": 4,
+      "afterCount": 4,
+      "beforeHash": "e3acd90214c2a8db60959b7dc62cc3b415ab8e9d77c437798462cd86c5f7ebf2",
+      "afterHash": "e3acd90214c2a8db60959b7dc62cc3b415ab8e9d77c437798462cd86c5f7ebf2",
+      "unchanged": true
+    },
+    {
+      "name": "payloads",
+      "beforeCount": 4,
+      "afterCount": 4,
+      "beforeHash": "d75d1f455b6fc73156601d039f6c19c39f5d63714b2366c519fc6074affdbaba",
+      "afterHash": "d75d1f455b6fc73156601d039f6c19c39f5d63714b2366c519fc6074affdbaba",
+      "unchanged": true
+    },
+    {
+      "name": "analyses",
+      "beforeCount": 8,
+      "afterCount": 8,
+      "beforeHash": "1c349cda83874448d6af1dad9b9513dd3f44e91639b77333d06635bdbf2b4ad5",
+      "afterHash": "1c349cda83874448d6af1dad9b9513dd3f44e91639b77333d06635bdbf2b4ad5",
+      "unchanged": true
+    },
+    {
+      "name": "T0",
+      "beforeCount": 1,
+      "afterCount": 1,
+      "beforeHash": "37fb7793a013d4cb584d5bb28b34b2395fa54392b645ae0da36e963d0bcb724d",
+      "afterHash": "37fb7793a013d4cb584d5bb28b34b2395fa54392b645ae0da36e963d0bcb724d",
+      "unchanged": true
+    }
+  ]
+}

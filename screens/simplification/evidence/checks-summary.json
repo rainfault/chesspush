@@ -1,0 +1,84 @@
+{
+  "completed_at": "2026-10-17T23:29:14.058Z",
+  "checks": [
+    {
+      "name": "rust-format",
+      "command": "cargo fmt --manifest-path src-tauri/Cargo.toml -- --check",
+      "code": 0,
+      "result": "PASS",
+      "elapsed_ms": 1601
+    },
+    {
+      "name": "rust-tests",
+      "command": "cargo test --manifest-path src-tauri/Cargo.toml --no-default-features",
+      "code": 0,
+      "result": "PASS",
+      "elapsed_ms": 54374
+    },
+    {
+      "name": "stockfish-real",
+      "command": "cargo test --manifest-path src-tauri/Cargo.toml --no-default-features -- --ignored",
+      "code": 0,
+      "result": "PASS",
+      "elapsed_ms": 15526
+    },
+    {
+      "name": "rust-clippy",
+      "command": "cargo clippy --manifest-path src-tauri/Cargo.toml --no-default-features --all-targets -- -D warnings",
+      "code": 0,
+      "result": "PASS",
+      "elapsed_ms": 14113
+    },
+    {
+      "name": "frontend-tests",
+      "command": "npm.cmd run test",
+      "code": 0,
+      "result": "PASS",
+      "test_files": 11,
+      "tests": 37,
+      "log": "frontend-tests.actual.log"
+    },
+    {
+      "name": "format-check",
+      "command": "npm.cmd run format:check",
+      "code": 0,
+      "result": "PASS",
+      "log": "format-check.actual.log"
+    },
+    {
+      "name": "privacy-check",
+      "command": "npm.cmd run check:privacy",
+      "code": 0,
+      "result": "PASS",
+      "file_versions": 125,
+      "log": "privacy-check.actual.log"
+    },
+    {
+      "name": "rust-clippy-desktop",
+      "command": "cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings",
+      "code": 0,
+      "result": "PASS",
+      "log": "rust-clippy-desktop.log"
+    }
+  ],
+  "gui": {
+    "script": "node tests/opening-summary-ui.mjs",
+    "checks": 8,
+    "passed": true,
+    "errors": [],
+    "evidence": ".qa/simple-statistics-ui/results.json",
+    "method": "production dist -> actual isolated native IPC and SQLite; no fake metric values"
+  },
+  "counts": {
+    "rust_unit": 184,
+    "rust_integration": 12,
+    "rust_real_stockfish": 3,
+    "rust_total_passed": 199,
+    "frontend": 37,
+    "frontend_files": 11,
+    "statistics_gui": 8,
+    "privacy_versions": 125
+  },
+  "launcher_note": "The initial child Windows PowerShell resolved npm.ps1 and blocked by its execution policy. All three commands were rerun successfully through npm.cmd; no system policy was changed.",
+  "result": "PASS"
+}

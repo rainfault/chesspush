@@ -5,7 +5,7 @@ use serde::Serialize;
 use std::{
     path::PathBuf,
     sync::{
-        Arc,
+        Arc, Mutex,
         atomic::{AtomicBool, AtomicUsize, Ordering},
     },
     time::{Duration, Instant},
@@ -17,10 +17,13 @@ pub struct StatisticsRuntime {
     pub shutdown: AtomicBool,
     pub workers: AtomicUsize,
     pub sync_requested: AtomicBool,
+    pub sync_cancel: AtomicBool,
+    // A reset must wait for the current polling run before replacing its observation boundary.
+    pub sync_gate: Mutex<()>,
 }
 // Count owned work before dispatch, so shutdown cannot race a not-yet-started task.
 // Capturing this guard also releases activity on panic or a dropped task closure.
-struct RuntimeActivity(Arc<StatisticsRuntime>);
+pub(crate) struct RuntimeActivity(Arc<StatisticsRuntime>);
 impl RuntimeActivity {
     fn acquire(runtime: Arc<StatisticsRuntime>) -> Result<Self, AppError> {
         if runtime.shutdown.load(Ordering::SeqCst) {
@@ -39,7 +42,7 @@ impl Drop for RuntimeActivity {
         self.0.workers.fetch_sub(1, Ordering::SeqCst);
     }
 }
-fn command_activity(app: &tauri::AppHandle) -> Result<RuntimeActivity, AppError> {
+pub(crate) fn command_activity(app: &tauri::AppHandle) -> Result<RuntimeActivity, AppError> {
     RuntimeActivity::acquire(app.state::<Arc<StatisticsRuntime>>().inner().clone())
 }
 #[derive(Serialize)]
@@ -83,6 +86,8 @@ pub fn install(app: &mut tauri::App, database: PathBuf) -> Result<(), AppError> 
         shutdown: AtomicBool::new(false),
         workers: AtomicUsize::new(0),
         sync_requested: AtomicBool::new(true),
+        sync_cancel: AtomicBool::new(false),
+        sync_gate: Mutex::new(()),
     });
     app.manage(runtime.clone());
     let sync_app = app.handle().clone();
@@ -108,7 +113,10 @@ pub fn install(app: &mut tauri::App, database: PathBuf) -> Result<(), AppError> 
                 if sync_runtime.sync_requested.swap(false, Ordering::Relaxed)
                     || last.elapsed() >= Duration::from_secs(60)
                 {
-                    let _ = sync::run(&sync_runtime.database, &service, &sync_runtime.shutdown);
+                    if let Ok(_gate) = sync_runtime.sync_gate.lock() {
+                        let _ =
+                            sync::run(&sync_runtime.database, &service, &sync_runtime.sync_cancel);
+                    }
                     let _ = queue_available(&sync_runtime.database);
                     notify(&sync_app);
                     last = Instant::now();
@@ -145,9 +153,9 @@ pub fn install(app: &mut tauri::App, database: PathBuf) -> Result<(), AppError> 
 }
 /// The first caller owns the close sequence; subsequent close events only stay prevented.
 pub fn stop(app: &tauri::AppHandle) -> bool {
-    !app.state::<Arc<StatisticsRuntime>>()
-        .shutdown
-        .swap(true, Ordering::SeqCst)
+    let runtime = app.state::<Arc<StatisticsRuntime>>();
+    runtime.sync_cancel.store(true, Ordering::SeqCst);
+    !runtime.shutdown.swap(true, Ordering::SeqCst)
 }
 pub fn idle(app: &tauri::AppHandle) -> bool {
     app.state::<Arc<StatisticsRuntime>>()
@@ -187,13 +195,35 @@ pub async fn statistics_state(
     .map_err(|_| AppError::new("statistics", "Состояние статистики недоступно"))?
 }
 #[tauri::command]
+pub async fn statistics_openings(
+    app: tauri::AppHandle,
+    account_id: Option<String>,
+    color: String,
+) -> Result<super::opening_summary::OpeningSummary, AppError> {
+    let _activity = command_activity(&app)?;
+    let path = database(&app);
+    tauri::async_runtime::spawn_blocking(move || {
+        let conn = storage::open(&path)?;
+        super::opening_summary::query(&conn, account_id.as_deref(), &color)
+    })
+    .await
+    .map_err(|_| AppError::new("statistics", "Статистика дебютов недоступна"))?
+}
+#[tauri::command]
 pub async fn statistics_report(
     app: tauri::AppHandle,
     filter: StatisticsFilter,
+    view: Option<String>,
 ) -> Result<StatisticsReport, AppError> {
+    if !matches!(view.as_deref(), None | Some("full" | "practice")) {
+        return Err(AppError::new("validation", "Неизвестный вид статистики"));
+    }
     let path = database(&app);
     tauri::async_runtime::spawn_blocking(move || {
         let mut report = calculate_report(&path, filter)?;
+        if view.as_deref() == Some("practice") {
+            report = projection::practice(report);
+        }
         projection::compact(&mut report);
         Ok(report)
     })
@@ -324,6 +354,71 @@ pub fn statistics_sync(app: tauri::AppHandle) -> Result<(), AppError> {
         .store(true, Ordering::Relaxed);
     Ok(())
 }
+
+#[tauri::command]
+pub async fn statistics_preferences(
+    app: tauri::AppHandle,
+) -> Result<super::preferences::StatisticsPreferences, AppError> {
+    let activity = command_activity(&app)?;
+    let path = database(&app);
+    tauri::async_runtime::spawn_blocking(move || {
+        let _activity = activity;
+        super::preferences::load(&storage::open(&path)?)
+    })
+    .await
+    .map_err(|_| AppError::new("statistics", "Настройки статистики недоступны"))?
+}
+#[tauri::command]
+pub async fn statistics_preferences_save(
+    app: tauri::AppHandle,
+    preferences: super::preferences::StatisticsPreferences,
+) -> Result<super::preferences::StatisticsPreferences, AppError> {
+    let activity = command_activity(&app)?;
+    let path = database(&app);
+    let handle = app.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        let _activity = activity;
+        let preferences = super::preferences::save(&storage::open(&path)?, preferences)?;
+        notify(&handle);
+        Ok(preferences)
+    })
+    .await
+    .map_err(|_| AppError::new("statistics", "Не удалось сохранить настройки статистики"))?
+}
+#[tauri::command]
+pub async fn statistics_reset(
+    app: tauri::AppHandle,
+    account_id: String,
+) -> Result<super::preferences::ResetResult, AppError> {
+    let activity = command_activity(&app)?;
+    let runtime = app.state::<Arc<StatisticsRuntime>>().inner().clone();
+    // Stop an in-flight export at its next cancellation check (HTTP has a 10s timeout).
+    runtime.sync_cancel.store(true, Ordering::SeqCst);
+    let handle = app.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        let _activity = activity;
+        let _gate = runtime
+            .sync_gate
+            .lock()
+            .map_err(|_| AppError::new("state", "Синхронизация недоступна"))?;
+        if runtime.shutdown.load(Ordering::SeqCst) {
+            return Err(AppError::new("cancelled", "ChessPush закрывается"));
+        }
+        let result = storage::open(&runtime.database)
+            .and_then(|conn| super::preferences::reset(&conn, &account_id, store::now_ms()));
+        if !runtime.shutdown.load(Ordering::SeqCst) {
+            runtime.sync_cancel.store(false, Ordering::SeqCst);
+        }
+        runtime.sync_requested.store(true, Ordering::Relaxed);
+        let result = result?;
+        let _ = handle.emit("statistics-reset", &result);
+        notify(&handle);
+        Ok(result)
+    })
+    .await
+    .map_err(|_| AppError::new("statistics", "Не удалось сбросить статистику"))?
+}
+
 #[tauri::command]
 pub async fn statistics_engine_config(
     app: tauri::AppHandle,
@@ -447,6 +542,8 @@ mod shutdown_tests {
             shutdown: AtomicBool::new(false),
             workers: AtomicUsize::new(0),
             sync_requested: AtomicBool::new(false),
+            sync_cancel: AtomicBool::new(false),
+            sync_gate: Mutex::new(()),
         })
     }
     #[test]

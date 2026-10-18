@@ -1,0 +1,1283 @@
+[
+  {
+    "path": "before/editor-modal-dark.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "dark",
+    "provenance": "Prior native/atlas screenshot; see README"
+  },
+  {
+    "path": "before/editor-modal-light.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "provenance": "Prior native/atlas screenshot; see README"
+  },
+  {
+    "path": "before/home-native-dark.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "dark",
+    "provenance": "Prior native/atlas screenshot; see README"
+  },
+  {
+    "path": "before/home-native-light.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "provenance": "Prior native/atlas screenshot; see README"
+  },
+  {
+    "path": "before/map-native-dark.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "dark",
+    "provenance": "Prior native/atlas screenshot; see README"
+  },
+  {
+    "path": "before/map-native-light.png",
+    "width": 1425,
+    "height": 1545,
+    "theme": "light",
+    "provenance": "Prior native/atlas screenshot; see README"
+  },
+  {
+    "path": "after/black-pov-light-1440.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/dark-1440x960-games.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "dark",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-1440x960-home.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "dark",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-1440x960-library-game.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "dark",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/dark-1440x960-library.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "dark",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-1440x960-map.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "dark",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-1440x960-overview.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "dark",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-1440x960-repertoire-editor.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "dark",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-1440x960-repertoire-list.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "dark",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-1440x960-settings-account.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "dark",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-1440x960-settings-engine.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "dark",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-1920x1080-games.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "dark",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-1920x1080-home.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "dark",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-1920x1080-library.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "dark",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-1920x1080-map.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "dark",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-1920x1080-overview.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "dark",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-1920x1080-repertoire-editor.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "dark",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-1920x1080-repertoire-list.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "dark",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-1920x1080-settings-account.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "dark",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-1920x1080-settings-engine.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "dark",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-900x700-games.png",
+    "width": 900,
+    "height": 700,
+    "theme": "dark",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-900x700-home.png",
+    "width": 900,
+    "height": 700,
+    "theme": "dark",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-900x700-library.png",
+    "width": 900,
+    "height": 700,
+    "theme": "dark",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-900x700-map.png",
+    "width": 900,
+    "height": 700,
+    "theme": "dark",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-900x700-overview.png",
+    "width": 900,
+    "height": 700,
+    "theme": "dark",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-900x700-repertoire-editor.png",
+    "width": 900,
+    "height": 700,
+    "theme": "dark",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-900x700-repertoire-list.png",
+    "width": 900,
+    "height": 700,
+    "theme": "dark",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-900x700-settings-account.png",
+    "width": 900,
+    "height": 700,
+    "theme": "dark",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/dark-900x700-settings-engine.png",
+    "width": 900,
+    "height": 700,
+    "theme": "dark",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-1440x960-branch-game.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/light-1440x960-games.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-1440x960-home.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-1440x960-library-game.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/light-1440x960-library-result.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/light-1440x960-library.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-1440x960-map.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-1440x960-overview.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-1440x960-repertoire-editor.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-1440x960-repertoire-list.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-1440x960-settings-account.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-1440x960-settings-engine.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-1920x1080-games.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "light",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-1920x1080-home.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "light",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-1920x1080-library.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "light",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-1920x1080-map.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "light",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-1920x1080-overview.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "light",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-1920x1080-repertoire-editor.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "light",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-1920x1080-repertoire-list.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "light",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-1920x1080-settings-account.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "light",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-1920x1080-settings-engine.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "light",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-900x700-games.png",
+    "width": 900,
+    "height": 700,
+    "theme": "light",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-900x700-home.png",
+    "width": 900,
+    "height": 700,
+    "theme": "light",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-900x700-library.png",
+    "width": 900,
+    "height": 700,
+    "theme": "light",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-900x700-map.png",
+    "width": 900,
+    "height": 700,
+    "theme": "light",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-900x700-overview.png",
+    "width": 900,
+    "height": 700,
+    "theme": "light",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-900x700-repertoire-editor.png",
+    "width": 900,
+    "height": 700,
+    "theme": "light",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-900x700-repertoire-list.png",
+    "width": 900,
+    "height": 700,
+    "theme": "light",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-900x700-settings-account.png",
+    "width": 900,
+    "height": 700,
+    "theme": "light",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/light-900x700-settings-engine.png",
+    "width": 900,
+    "height": 700,
+    "theme": "light",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1,
+    "provenance": "production frontend + isolated native Rust/SQLite; theme at IPC boundary"
+  },
+  {
+    "path": "after/linked-repertoire-comment-light.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/native-dark-1440x960-editor.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "dark",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1440,
+    "viewportHeight": 960,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-dark-1440x960-home.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "dark",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1440,
+    "viewportHeight": 960,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-dark-1440x960-map.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "dark",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1440,
+    "viewportHeight": 960,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-dark-1440x960-overview.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "dark",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1440,
+    "viewportHeight": 960,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-dark-1920x1080-editor.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "dark",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1920,
+    "viewportHeight": 1080,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-dark-1920x1080-home.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "dark",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1920,
+    "viewportHeight": 1080,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-dark-1920x1080-map.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "dark",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1920,
+    "viewportHeight": 1080,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-dark-1920x1080-overview.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "dark",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1920,
+    "viewportHeight": 1080,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-dark-900x700-editor.png",
+    "width": 900,
+    "height": 700,
+    "theme": "dark",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 900,
+    "viewportHeight": 700,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-dark-900x700-home.png",
+    "width": 900,
+    "height": 700,
+    "theme": "dark",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 900,
+    "viewportHeight": 700,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-dark-900x700-map.png",
+    "width": 900,
+    "height": 700,
+    "theme": "dark",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 900,
+    "viewportHeight": 700,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-dark-900x700-overview.png",
+    "width": 900,
+    "height": 700,
+    "theme": "dark",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 900,
+    "viewportHeight": 700,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-graph-cycle-visits.png",
+    "width": 1425,
+    "height": 1277,
+    "theme": "see source",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/native-graph-restored.png",
+    "width": 1425,
+    "height": 1077,
+    "theme": "see source",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/native-light-1440x960-editor.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1440,
+    "viewportHeight": 960,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-light-1440x960-home.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1440,
+    "viewportHeight": 960,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-light-1440x960-map.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1440,
+    "viewportHeight": 960,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-light-1440x960-overview.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1440,
+    "viewportHeight": 960,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-light-1920x1080-editor.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "light",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1920,
+    "viewportHeight": 1080,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-light-1920x1080-home.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "light",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1920,
+    "viewportHeight": 1080,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-light-1920x1080-map.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "light",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1920,
+    "viewportHeight": 1080,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-light-1920x1080-overview.png",
+    "width": 1920,
+    "height": 1080,
+    "theme": "light",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1920,
+    "viewportHeight": 1080,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-light-900x700-editor.png",
+    "width": 900,
+    "height": 700,
+    "theme": "light",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 900,
+    "viewportHeight": 700,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-light-900x700-home.png",
+    "width": 900,
+    "height": 700,
+    "theme": "light",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 900,
+    "viewportHeight": 700,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-light-900x700-map.png",
+    "width": 900,
+    "height": 700,
+    "theme": "light",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 900,
+    "viewportHeight": 700,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-light-900x700-overview.png",
+    "width": 900,
+    "height": 700,
+    "theme": "light",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 900,
+    "viewportHeight": 700,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-volume-overview-projection.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "see source",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/repertoire-deep-400.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "see source",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/repertoire-save-error.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "see source",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/states-light-1440x960-connected-empty.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/states-light-1440x960-diagnostics-quarantine-raw.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/states-light-1440x960-empty-filter.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/states-light-1440x960-invalid-token-action.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/states-light-1440x960-invalid-token-cached.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/states-light-1440x960-no-account.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/states-light-1440x960-no-analysis.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/states-light-1440x960-offline-cached.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/states-light-1440x960-rate-limit-cached.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/volume-100-dark-1440.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "dark",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/volume-100-dark-900.png",
+    "width": 900,
+    "height": 700,
+    "theme": "dark",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/volume-100-light-1440.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/volume-100-light-900.png",
+    "width": 900,
+    "height": 700,
+    "theme": "light",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/volume-1000-dark-1440-ready.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "dark",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/volume-1000-dark-900-effective-scale-1.25.png",
+    "width": 720,
+    "height": 560,
+    "theme": "dark",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/volume-1000-dark-900-effective-scale-1.5.png",
+    "width": 600,
+    "height": 467,
+    "theme": "dark",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/volume-1000-dark-900-ready.png",
+    "width": 900,
+    "height": 700,
+    "theme": "dark",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/volume-1000-light-1440-ready.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "light",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/volume-1000-light-900-effective-scale-1.25.png",
+    "width": 720,
+    "height": 560,
+    "theme": "light",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/volume-1000-light-900-effective-scale-1.5.png",
+    "width": 600,
+    "height": 467,
+    "theme": "light",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/volume-1000-light-900-ready.png",
+    "width": 900,
+    "height": 700,
+    "theme": "light",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  },
+  {
+    "path": "after/volume-1000-rare-board-refresh.png",
+    "width": 1440,
+    "height": 960,
+    "theme": "see source",
+    "provenance": "Focused test capture; see acceptance evidence for native/bridge/controlled boundary"
+  }
+]

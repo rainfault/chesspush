@@ -1,0 +1,9 @@
+{
+  "provenance": "Controlled earlier report with no analysis and controlled statistics-updated notification; native graph coverage, subsequent full report, Stockfish evidence and viewer are actual isolated backend data.",
+  "errors": [],
+  "updateInvalidatedCachedEmpty": true,
+  "nativeReviewRefreshed": true,
+  "exactViewerWorking": true,
+  "returnToWorkspacePreservesPath": true,
+  "reviewAvailableAfterReactivation": true
+}

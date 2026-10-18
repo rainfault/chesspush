@@ -1,0 +1,143 @@
+{
+  "result": "PASS",
+  "checks": [
+    {
+      "name": "No account: one relevant connect action, no dash tables; local repertoire remains available",
+      "result": "PASS",
+      "method": "controlled IPC negative state + actual production frontend"
+    },
+    {
+      "name": "Connected account with no accepted games: dedicated waiting state, no repeated tables or forced login",
+      "result": "PASS",
+      "method": "controlled IPC negative state + actual production frontend"
+    },
+    {
+      "name": "An actual native rating filter returns an empty cohort; reset restores the cached native games",
+      "result": "PASS",
+      "method": "actual native statistics_report filter → production frontend"
+    },
+    {
+      "name": "No engine analysis: factual results and games stay available, no invented errors, explicit analysis action",
+      "result": "PASS",
+      "method": "controlled IPC negative state + actual production frontend"
+    },
+    {
+      "name": "Offline sync: human-readable error, retry action and cached native practice remain available",
+      "result": "PASS",
+      "method": "controlled IPC negative state + actual production frontend"
+    },
+    {
+      "name": "HTTP 429: cache stays visible, next retry is shown, raw server wording is not the primary message",
+      "result": "PASS",
+      "method": "controlled IPC negative state + actual production frontend"
+    },
+    {
+      "name": "Expired access is visible beside cached data and leads to browser reconnect; manual token stays hidden",
+      "result": "PASS",
+      "method": "controlled IPC negative state + actual production frontend"
+    },
+    {
+      "name": "Settings→Diagnostics exposes exact native T0, sync code and real quarantined raw input without removing retry",
+      "result": "PASS",
+      "method": "actual native T0/quarantine; 429 sync status controlled at IPC"
+    }
+  ],
+  "shots": [
+    {
+      "path": "after/states-light-1440x960-no-account.png",
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "provenance": "production frontend→native isolated Rust/SQLite; specified negative states controlled at IPC"
+    },
+    {
+      "path": "after/states-light-1440x960-connected-empty.png",
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "provenance": "production frontend→native isolated Rust/SQLite; specified negative states controlled at IPC"
+    },
+    {
+      "path": "after/states-light-1440x960-empty-filter.png",
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "provenance": "production frontend→native isolated Rust/SQLite; specified negative states controlled at IPC"
+    },
+    {
+      "path": "after/states-light-1440x960-no-analysis.png",
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "provenance": "production frontend→native isolated Rust/SQLite; specified negative states controlled at IPC"
+    },
+    {
+      "path": "after/states-light-1440x960-offline-cached.png",
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "provenance": "production frontend→native isolated Rust/SQLite; specified negative states controlled at IPC"
+    },
+    {
+      "path": "after/states-light-1440x960-rate-limit-cached.png",
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "provenance": "production frontend→native isolated Rust/SQLite; specified negative states controlled at IPC"
+    },
+    {
+      "path": "after/states-light-1440x960-invalid-token-cached.png",
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "provenance": "production frontend→native isolated Rust/SQLite; specified negative states controlled at IPC"
+    },
+    {
+      "path": "after/states-light-1440x960-invalid-token-action.png",
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "provenance": "production frontend→native isolated Rust/SQLite; specified negative states controlled at IPC"
+    },
+    {
+      "path": "after/states-light-1440x960-diagnostics-quarantine-raw.png",
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1,
+      "provenance": "production frontend→native isolated Rust/SQLite; specified negative states controlled at IPC"
+    }
+  ],
+  "errors": [],
+  "fixture": {
+    "games": 4,
+    "quarantine": 1
+  },
+  "method": "Production frontend via headless Edge IPC bridge to isolated native Rust/SQLite. Account absence/empty history/no analysis/offline/429/expired access controlled at IPC; rating-filter cohort and T0/quarantine are actual native data. No token submitted and no account modified."
+}

@@ -32,19 +32,22 @@ try {
   if (phase === "connect") {
     await page.getByRole("button", { name: "Настройки", exact: true }).click();
     await page
+      .getByText("Подключить вручную по токену", { exact: true })
+      .click();
+    await page
       .getByLabel("Токен", { exact: true })
       .fill("synthetic_flow_credential");
     await page.getByRole("button", { name: "Подключить", exact: true }).click();
-    await expect(page.getByLabel("Ник", { exact: true })).toHaveValue(
-      "FlowFixture",
-    );
+    await expect(
+      page.getByRole("dialog", { name: "Настройки", exact: true }),
+    ).toContainText("Аккаунт: FlowFixture");
     await page
       .getByRole("button", { name: "Закрыть настройки", exact: true })
       .click();
-    await page.getByRole("button", { name: "Статистика", exact: true }).click();
-    await expect(
-      page.getByRole("table", { name: "Основные показатели" }),
-    ).toBeVisible();
+    await page.getByRole("button", { name: "Моя игра", exact: true }).click();
+    await expect(page.locator("main.statistics")).toContainText(
+      "Новые завершённые партии появятся здесь",
+    );
     const initial = await invoke("statistics_state");
     expect(initial.accounts).toHaveLength(1);
     expect((await report()).total_games).toBe(0);
@@ -53,6 +56,7 @@ try {
       JSON.stringify(initial.accounts[0]),
     );
     await new Promise((ok) => setTimeout(ok, 25));
+    await page.getByRole("tab", { name: "Карта игры", exact: true }).click();
     const published = performance.now();
     await fetch(api + "/_fixture/publish?index=0", { method: "POST" });
     // Deliberately do not press Sync: this assertion exercises the normal automatic interval.
@@ -62,23 +66,32 @@ try {
         intervals: [500, 1000, 2000],
       })
       .toBe(1);
+    await expect(page.locator(".graph-local-heading")).toContainText(
+      "1 партия",
+    );
+    const liveGraph = await invoke("game_graph_query", {
+      request: { filter: { variant: "standard" } },
+    });
+    expect(liveGraph.selected.games).toBe(1);
+    await page.getByRole("tab", { name: "Обзор", exact: true }).click();
     measurements.automatic_discovery_ms = performance.now() - published;
     const received = await report();
     expect(received.metrics.find((m) => m.id === "G03").value).toBe(0);
     expect(received.openings.some((o) => o.result.games === 1)).toBe(true);
-    await expect(page.locator(".stats-coverage")).toContainText("1 партий");
-    await page.getByRole("tab", { name: "Дебюты", exact: true }).click();
+    await expect(page.locator(".practice-summary")).toContainText("1 партий");
+    await page.getByRole("tab", { name: "Карта игры", exact: true }).click();
     await expect(
-      page.getByRole("table", { name: "Дерево продолжений" }),
-    ).toContainText("f3");
-    await page
-      .getByRole("table", { name: "Дерево продолжений" })
-      .getByRole("button", { name: "f3", exact: true })
-      .click();
-    await expect(page.locator(".stats-uci-line")).toContainText("f2f3");
-    await page.getByRole("button", { name: "В начало", exact: true }).click();
-    await expect(page.locator(".stats-uci-line")).toContainText(
-      "Начальная позиция",
+      page.getByRole("button", { name: "Белые: f3", exact: true }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Белые: f3", exact: true }).click();
+    await expect(page.getByLabel("Путь графа")).toHaveAttribute(
+      "data-uci-line",
+      "f2f3",
+    );
+    await page.getByRole("button", { name: "К началу", exact: true }).click();
+    await expect(page.getByLabel("Путь графа")).toHaveAttribute(
+      "data-uci-line",
+      "",
     );
     await page.evaluate(() => {
       window.__flowFrames = [];
@@ -116,7 +129,11 @@ try {
     expect(quality.metrics.find((m) => m.id === "Q02").value).not.toBeNull();
     const critical = quality.events.find((e) => e.loss_q >= 10);
     expect(critical).toBeTruthy();
-    await page.getByRole("tab", { name: "Качество игры", exact: true }).click();
+    await page
+      .getByRole("button", { name: "Подробная статистика", exact: true })
+      .click();
+    await page.getByRole("button", { name: "Качество", exact: true }).click();
+    await page.locator(".practice-topic-details > summary").click();
     const eventTable = page.getByRole("table", { name: "События партий" });
     await expect(eventTable).toBeVisible();
     await eventTable.getByRole("button").first().click();
@@ -137,14 +154,12 @@ try {
     await expect(
       page.getByLabel("Ходы партии").locator('[aria-current="step"]'),
     ).toHaveCount(1);
-    await page
-      .getByRole("button", { name: "Закрыть партию", exact: true })
-      .click();
+    await page.getByRole("button", { name: "Вернуться", exact: true }).click();
     await page
       .getByLabel("Контроль времени статистики", { exact: true })
       .selectOption("300+2");
-    await page.getByRole("button", { name: "Базы", exact: true }).click();
-    await page.getByRole("button", { name: "Статистика", exact: true }).click();
+    await page.getByRole("button", { name: "Библиотека", exact: true }).click();
+    await page.getByRole("button", { name: "Моя игра", exact: true }).click();
     await expect(
       page.getByLabel("Контроль времени статистики", { exact: true }),
     ).toHaveValue("300+2");
@@ -162,7 +177,7 @@ try {
       "PASS flow connect: real account IPC, automatic API ingestion, SQLite results/openings, real engine, critical move/FEN and navigation state",
     );
   } else if (phase === "catchup") {
-    await page.getByRole("button", { name: "Статистика", exact: true }).click();
+    await page.getByRole("button", { name: "Моя игра", exact: true }).click();
     await expect
       .poll(async () => (await report()).total_games, { timeout: 45000 })
       .toBe(3);
@@ -195,11 +210,13 @@ try {
       await page
         .getByLabel("Цвет статистики", { exact: true })
         .selectOption("black");
-      await expect(page.locator(".stats-coverage")).toContainText("0 партий");
+      await expect(page.locator("main.statistics")).toContainText(
+        "Нет партий по этим условиям",
+      );
       await page
         .getByLabel("Цвет статистики", { exact: true })
         .selectOption("");
-      await expect(page.locator(".stats-coverage")).toContainText("3 партий");
+      await expect(page.locator(".practice-summary")).toContainText("3 партий");
     });
     await invoke("statistics_engine_save", {
       config: {
@@ -225,7 +242,7 @@ try {
       "PASS flow catchup: offline published games discovered at startup, same T0, dedup, transpositions/path, filters, engine active before close",
     );
   } else {
-    await page.getByRole("button", { name: "Статистика", exact: true }).click();
+    await page.getByRole("button", { name: "Моя игра", exact: true }).click();
     await expect
       .poll(async () => (await report()).total_games, { timeout: 45000 })
       .toBe(3);
@@ -248,16 +265,26 @@ try {
     expect(current.analysis?.tablebase_status ?? "not_configured").toMatch(
       /not_configured|missing|unavailable|not_requested/,
     );
-    for (const section of [
-      "Обзор",
-      "Дебюты",
-      "Качество игры",
-      "Время",
-      "Реализация и эндшпиль",
-      "Партии",
-    ]) {
+    for (const section of ["Обзор", "Карта игры", "Партии"]) {
       await page.getByRole("tab", { name: section, exact: true }).click();
-      await expect(page.locator(".stats-coverage")).toContainText("3 партий");
+      await expect(
+        page.getByRole("tab", { name: section, exact: true }),
+      ).toHaveAttribute("aria-selected", "true");
+    }
+    await page
+      .getByRole("button", { name: "Подробная статистика", exact: true })
+      .click();
+    for (const section of [
+      "Дебюты",
+      "Качество",
+      "Время",
+      "Реализация и окончания",
+      "Все показатели",
+    ]) {
+      await page.getByRole("button", { name: section, exact: true }).click();
+      await expect(
+        page.getByRole("button", { name: section, exact: true }),
+      ).toHaveClass(/selected/);
     }
     await page.screenshot({
       path: join(data, "flow-completed.png"),
@@ -266,7 +293,7 @@ try {
     await invoke("disconnect_lichess");
     expect((await report()).total_games).toBe(3);
     console.log(
-      "PASS flow recover: analysis resumed/completed, saved source and profiles survive restart, all six sections, disconnect keeps history",
+      "PASS flow recover: analysis resumed/completed, saved source and profiles survive restart, main and detailed routes, disconnect keeps history",
     );
   }
   const cdp = await page.context().newCDPSession(page);

@@ -1,0 +1,292 @@
+.repertoire-list {
+  width: min(1280px, 100%);
+  margin: 24px auto;
+  padding: 0 24px 32px;
+}
+.repertoire-list > header,
+.repertoire-list > header > div,
+.repertoire-combined-actions,
+.repertoire-existing li,
+.combined-repertoire > header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.repertoire-list > header {
+  justify-content: space-between;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+.repertoire-list h1,
+.combined-repertoire h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 400;
+}
+.repertoire-sides {
+  display: flex;
+  border: 1px solid var(--border);
+}
+.repertoire-sides button {
+  border-radius: 0;
+}
+.repertoire-sides [aria-pressed="true"] {
+  color: var(--accent);
+  background: var(--selected);
+}
+.repertoire-combined-actions {
+  margin: 20px 0;
+}
+.repertoire-combined-actions > span {
+  margin-left: auto;
+  color: var(--secondary);
+}
+.repertoire-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+}
+.repertoire-tile {
+  position: relative;
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--repertoire, var(--accent));
+}
+.repertoire-tile-open {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  min-height: 170px;
+  padding: 18px 44px 16px 18px;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+.repertoire-tile-open strong {
+  font-size: 20px;
+  line-height: 1.35;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+.repertoire-tile-eco {
+  color: var(--accent);
+}
+.repertoire-tile-filename {
+  margin-top: auto;
+  overflow-wrap: anywhere;
+}
+.repertoire-extra-openings,
+.repertoire-tile-filename {
+  color: var(--secondary);
+}
+.repertoire-detach {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 36px;
+  padding: 4px;
+  font-size: 23px;
+  background: transparent;
+  border: 0;
+}
+.repertoire-empty {
+  text-align: center;
+  margin: 90px auto;
+}
+.repertoire-existing {
+  margin-top: 24px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+.repertoire-existing summary {
+  cursor: pointer;
+  padding: 8px 0;
+}
+.repertoire-existing ul {
+  list-style: none;
+  padding: 0;
+}
+.repertoire-existing li {
+  border-bottom: 1px solid var(--border);
+  padding: 10px 0;
+}
+.repertoire-existing li > button:first-child {
+  margin-right: auto;
+  text-align: left;
+}
+.repertoire-list-error {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 12px;
+  margin: 16px 0;
+  white-space: pre-wrap;
+}
+.repertoire-return {
+  margin: 8px 24px 0;
+  color: var(--accent);
+}
+.combined-repertoire {
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 12px 24px 24px;
+}
+.combined-repertoire > header {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+}
+.combined-repertoire h1 {
+  margin-right: auto;
+  font-size: 24px;
+}
+.combined-chapter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.combined-layout {
+  display: grid;
+  grid-template-columns:
+    minmax(260px, min(52vw, calc(100dvh - 230px), 680px))
+    minmax(260px, 1fr);
+  gap: 24px;
+}
+.combined-board,
+.combined-variations {
+  min-width: 0;
+}
+.combined-board-controls {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.combined-board-controls button {
+  min-width: 44px;
+  min-height: 40px;
+}
+.combined-path {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+.combined-path [aria-current="step"] {
+  color: var(--accent);
+  background: var(--selected);
+}
+.combined-branches {
+  display: grid;
+  gap: 8px;
+}
+.combined-branches > button {
+  display: grid;
+  text-align: left;
+  gap: 8px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.combined-branches strong {
+  font-size: 21px;
+  font-weight: 400;
+}
+.combined-branches span,
+.combined-leaf {
+  color: var(--secondary);
+}
+.combined-comment {
+  white-space: pre-wrap;
+}
+.combined-sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  border-top: 1px solid var(--border);
+  margin-top: 20px;
+  padding-top: 12px;
+}
+@media (max-width: 800px) {
+  .repertoire-list > header,
+  .repertoire-list > header > div,
+  .repertoire-combined-actions,
+  .combined-repertoire > header {
+    flex-wrap: wrap;
+  }
+  .combined-layout {
+    grid-template-columns: minmax(240px, 1fr);
+  }
+  .combined-board {
+    max-width: 560px;
+    width: 100%;
+    margin: 0 auto;
+  }
+  .repertoire-existing li {
+    flex-wrap: wrap;
+  }
+}
+
+.repertoire-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 6px;
+  flex-shrink: 0;
+  background: transparent;
+  border: 0;
+}
+.repertoire-delete svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.65;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.repertoire-delete:hover,
+.repertoire-delete:focus-visible {
+  color: var(--error, #c33);
+}
+.repertoire-tile > .repertoire-delete {
+  position: absolute;
+  bottom: 7px;
+  right: 4px;
+}
+.repertoire-delete-dialog {
+  width: min(480px, calc(100vw - 40px));
+  padding: 26px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 30px #0005;
+}
+.repertoire-delete-dialog::backdrop {
+  background: #0007;
+}
+.repertoire-delete-dialog h2 {
+  margin: 0 0 18px;
+  font-size: 22px;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+.repertoire-delete-dialog p {
+  line-height: 1.5;
+}
+.repertoire-delete-dialog footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.repertoire-delete-dialog .danger {
+  color: #fff;
+  background: var(--error);
+  border-color: var(--error);
+}

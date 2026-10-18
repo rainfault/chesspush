@@ -399,8 +399,11 @@ export interface GameDetail {
   runs: EngineRun[];
   events: DecisionEvent[];
 }
-export const getReport = (filter: Filter) =>
-  invoke<Report>("statistics_report", { filter });
+export type ReportView = "full" | "practice";
+export const getReport = (filter: Filter, view: ReportView = "full") =>
+  invoke<Report>("statistics_report", { filter, view });
+export const getPracticeControls = (accountId?: string | null) =>
+  invoke<string[]>("statistics_controls", { accountId });
 export const getState = (accountId?: string | null) =>
   invoke<StatisticsState>("statistics_state", { accountId: accountId ?? null });
 export const retryQuarantined = (accountId: string, id: string) =>

@@ -1,0 +1,41 @@
+{
+  "version": "0.2.0-alpha.7",
+  "checks": [
+    {
+      "scenario": "Actual own white/black cohorts in separate tables; canonical hover, orientation, coverage and sorting",
+      "result": "PASS"
+    },
+    {
+      "scenario": "Installed depth setting correct; real account reset confirmation inspected and cancelled; real statistics NOT reset",
+      "result": "PASS"
+    },
+    {
+      "scenario": "Existing real repertoire document accessible; deletion confirmation inspected and cancelled; no documents edited/deleted",
+      "result": "PASS"
+    }
+  ],
+  "errors": [],
+  "account": {
+    "username": "<local-account>",
+    "status": "connected",
+    "hasToken": true
+  },
+  "personalGames": {
+    "white": 8,
+    "black": 7
+  },
+  "documents": 1,
+  "preferences": {
+    "opening_coverage_depth_moves": 15
+  },
+  "realStatisticsReset": false,
+  "realDocumentsDeleted": false,
+  "testDataInjected": false,
+  "viewport": {
+    "width": 1440,
+    "height": 960,
+    "dpr": 1.25
+  },
+  "asset": "/assets/index-DPJPu52Y.js",
+  "personal_details_redacted": true
+}

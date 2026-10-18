@@ -1,0 +1,86 @@
+{
+  "checks": {
+    "initial_layout": true,
+    "background_refresh_preserves_focus": true,
+    "hover_no_navigation": true,
+    "board_same_transition": true,
+    "prefix_back_keyboard": true,
+    "transposition_real_path": true,
+    "independent_repertoire": true,
+    "repertoire_reply_without_preparation": true,
+    "exact_evidence_return": true,
+    "reduced_motion": true,
+    "compact_layout": true,
+    "repeated_position": {
+      "unique_games": 4,
+      "position_visits": 6,
+      "unrolled_plies": 8,
+      "bounded_overview_nodes": 8
+    },
+    "unknown_legal_move_no_fact": true,
+    "all_promotions": true
+  },
+  "timings": {
+    "initial_useful_map_ms": 335.8524,
+    "chip_move_ms": 153.7568000000001,
+    "first_pass_20": {
+      "n": 20,
+      "p50_ms": 298.6190000000006,
+      "p95_ms": 305.7680999999993,
+      "max_ms": 310.7026999999998,
+      "samples_ms": [
+        189.53570000000036,
+        301.7646000000004,
+        305.7680999999993,
+        287.88640000000123,
+        304.29979999999887,
+        301.0016999999989,
+        297.89429999999993,
+        296.9508999999998,
+        310.7026999999998,
+        300.91929999999957,
+        298.6190000000006,
+        297.47730000000047,
+        299.0473000000002,
+        294.95430000000124,
+        288.39789999999994,
+        300.3582000000006,
+        301.02870000000075,
+        296.01590000000033,
+        301.57810000000063,
+        296.6802000000007
+      ],
+      "percentile_method": "nearest rank"
+    },
+    "repeat_pass_20": {
+      "n": 20,
+      "p50_ms": 298.1323000000011,
+      "p95_ms": 304.70530000000144,
+      "max_ms": 305.1599000000024,
+      "samples_ms": [
+        302.3761000000013,
+        296.8125999999993,
+        298.8745000000017,
+        298.1323000000011,
+        295.53099999999904,
+        294.89589999999953,
+        295.5581999999995,
+        298.47729999999865,
+        300.60789999999906,
+        301.63730000000214,
+        296.7858000000015,
+        305.1599000000024,
+        298.0596000000005,
+        293.0469000000012,
+        291.3410999999978,
+        299.5330000000031,
+        298.53939999999784,
+        302.35129999999845,
+        297.9503000000004,
+        304.70530000000144
+      ],
+      "percentile_method": "nearest rank"
+    },
+    "evidence_ms": 39.359300000000076
+  }
+}

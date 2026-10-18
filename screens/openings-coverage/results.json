@@ -1,0 +1,42 @@
+{
+  "results": [
+    {
+      "theme": "light",
+      "scenario": "Two simultaneous side-specific tables; same A05 has separate membership; native totals/WDL; sorting; hover and keyboard canonical preview",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "scenario": "Hover uses existing response; no full report; board remains on right at 1440 and 900, no page overflow",
+      "result": "PASS"
+    },
+    {
+      "scenario": "Actual own-side PGN changes coverage 0→100; opposite side unchanged; depth native save updates denominator; detach/reattach/delete refreshes UI without changing WDL",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "scenario": "Click black row opens unchanged board+graph with exact black cohort",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "scenario": "Two simultaneous side-specific tables; same A05 has separate membership; native totals/WDL; sorting; hover and keyboard canonical preview",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "scenario": "Hover uses existing response; no full report; board remains on right at 1440 and 900, no page overflow",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "scenario": "Click black row opens unchanged board+graph with exact black cohort",
+      "result": "PASS"
+    }
+  ],
+  "errors": [],
+  "passed": true,
+  "backend": "native Rust/SQLite",
+  "fixtures": "isolated 4 observed games; same A05 different sides"
+}

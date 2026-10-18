@@ -1,0 +1,10 @@
+{
+  "phase": "recover",
+  "kind": "synthetic API games, real Tauri and real Stockfish",
+  "webview_metrics": {
+    "Documents": 14,
+    "Nodes": 4583,
+    "JSHeapUsedSize": 9525112,
+    "JSHeapTotalSize": 19722240
+  }
+}

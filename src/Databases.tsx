@@ -1,3 +1,4 @@
+import { LibraryBrowser } from "./LibraryBrowser";
 import { useEffect, useRef, useState } from "react";
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
@@ -21,6 +22,7 @@ interface Opening {
 }
 const basename = (path: string) => path.split(/[\\/]/).pop() ?? path;
 export function Databases({ active }: { active: boolean }) {
+  const [browseFile, setBrowseFile] = useState<LibraryFile | null>(null);
   const [session] = useState(() => new BoardSession());
   const [revision, setRevision] = useState(0);
   const [source, setSource] = useState("");
@@ -117,6 +119,7 @@ export function Databases({ active }: { active: boolean }) {
     const key = (e: KeyboardEvent) => {
       if (
         editor ||
+        browseFile ||
         (e.target instanceof HTMLElement &&
           ["INPUT", "TEXTAREA", "SELECT", "BUTTON"].includes(e.target.tagName))
       )
@@ -132,7 +135,7 @@ export function Databases({ active }: { active: boolean }) {
     };
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
-  }, [active, editor]);
+  }, [active, editor, browseFile]);
   async function choose(importAll = false) {
     try {
       const selected = await open({
@@ -255,6 +258,9 @@ export function Databases({ active }: { active: boolean }) {
 
   return (
     <main className="databases" hidden={!active}>
+      <header className="library-heading">
+        <h1>Парсер ZST</h1>
+      </header>
       <section className="board-column">
         <div className="opening-picker">
           <input
@@ -394,6 +400,7 @@ export function Databases({ active }: { active: boolean }) {
         </div>
       </section>
       <section className="parser-column">
+        <h2 className="parser-step">Источник</h2>
         <button
           className="source-button"
           disabled={busy || !ready}
@@ -408,7 +415,7 @@ export function Databases({ active }: { active: boolean }) {
             className={tab === "filters" ? "active" : ""}
             onClick={() => setTab("filters")}
           >
-            Фильтры
+            Отбор
           </button>
           <button
             className={tab === "files" ? "active" : ""}
@@ -417,7 +424,7 @@ export function Databases({ active }: { active: boolean }) {
               if (ready) void refresh();
             }}
           >
-            Файлы
+            Сохранённые файлы
           </button>
         </div>
         {tab === "filters" ? (
@@ -587,7 +594,7 @@ export function Databases({ active }: { active: boolean }) {
                 </button>
               ) : (
                 <button className="primary" disabled={!source || !ready}>
-                  Найти партии
+                  Получить партии
                 </button>
               )}
             </div>
@@ -603,6 +610,14 @@ export function Databases({ active }: { active: boolean }) {
             </button>
             {library.map((file) => (
               <div className="file-row" key={file.id}>
+                {file.games > 0 && (
+                  <button
+                    aria-label={"Открыть партии: " + basename(file.path)}
+                    onClick={() => setBrowseFile(file)}
+                  >
+                    Партии
+                  </button>
+                )}
                 <button
                   className="file-name"
                   title={file.path}
@@ -655,6 +670,19 @@ export function Databases({ active }: { active: boolean }) {
                 · {(result.elapsed_ms / 1000).toFixed(1)} с
               </div>
             )}
+            {result?.output &&
+              library.find((f) => f.path === result.output && f.games > 0) && (
+                <button
+                  className="primary"
+                  onClick={() =>
+                    setBrowseFile(
+                      library.find((f) => f.path === result.output) ?? null,
+                    )
+                  }
+                >
+                  Открыть партии
+                </button>
+              )}
             {result?.output && (
               <button
                 className="result-file"
@@ -680,6 +708,13 @@ export function Databases({ active }: { active: boolean }) {
           </div>
         )}
       </section>
+      {browseFile && (
+        <LibraryBrowser
+          fileId={browseFile.id}
+          title={basename(browseFile.path)}
+          onClose={() => setBrowseFile(null)}
+        />
+      )}
       {editor && (
         <div className="modal-backdrop" onMouseDown={() => setEditor(null)}>
           <section

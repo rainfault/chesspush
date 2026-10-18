@@ -1,0 +1,50 @@
+{
+  "passed": true,
+  "version": "0.2.0-alpha.7",
+  "productVersion": "0.2.0-alpha.7",
+  "installerExitCode": 0,
+  "installedReleaseMatches": true,
+  "schema": 7,
+  "integrity": "ok",
+  "foreignKeyViolations": 0,
+  "preserved": {
+    "games": 415,
+    "personalGames": 15,
+    "payloads": 15,
+    "knowledgeDocuments": 1,
+    "knowledgeDocumentVersions": 11,
+    "engineObservations": 1858,
+    "moveEvaluations": 1162,
+    "accountAndT0": true
+  },
+  "backup": "C:\\Users\\<user>\\AppData\\Local\\ChessPush Backups\\20261018-031242-alpha7",
+  "credentialExists": true,
+  "credentialValuesAccessed": false,
+  "normalShortcutRelaunch": true,
+  "temporaryDebugListenerActive": false,
+  "shortcuts": [
+    {
+      "path": "C:\\Users\\<user>\\Desktop\\ChessPush.lnk",
+      "target": "C:\\Users\\<user>\\AppData\\Local\\ChessPush\\chesspush.exe",
+      "arguments": ""
+    },
+    {
+      "path": "C:\\Users\\<user>\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\ChessPush.lnk",
+      "target": "C:\\Users\\<user>\\AppData\\Local\\ChessPush\\chesspush.exe",
+      "arguments": ""
+    },
+    {
+      "path": "C:\\Users\\<user>\\AppData\\Roaming\\Microsoft\\Internet Explorer\\Quick Launch\\User Pinned\\TaskBar\\ChessPush.lnk",
+      "target": "C:\\Users\\<user>\\AppData\\Local\\ChessPush\\chesspush.exe",
+      "arguments": ""
+    }
+  ],
+  "shortcutAppIds": [
+    "io.github.rainfault.chesspush.v2",
+    "io.github.rainfault.chesspush.v2",
+    "io.github.rainfault.chesspush.v2"
+  ],
+  "realStatisticsReset": false,
+  "realDocumentsDeleted": false,
+  "personal_details_redacted": true
+}

@@ -1,0 +1,24 @@
+{
+  "attempts": [
+    {
+      "name": "frontend-format",
+      "command": "npm.cmd run format:check",
+      "result": "FAIL",
+      "log": "frontend-format.log",
+      "code": 1,
+      "elapsed_ms": 5314
+    },
+    {
+      "name": "stockfish-real",
+      "command": "cargo test --manifest-path src-tauri/Cargo.toml --no-default-features -- --ignored",
+      "result": "FAIL",
+      "log": "stockfish-real.log",
+      "code": 101,
+      "elapsed_ms": 1151
+    }
+  ],
+  "notes": [
+    "Stockfish was initially invoked without its explicitly required CHESSPUSH_STOCKFISH environment variable.",
+    "The newly added repertoire-delete GUI test had not yet been formatted; root has formatted it."
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "result": "PASS",
+  "scenarios": [
+    "actual parser import→stored library list→shared Rust replay→seek",
+    "vertex→board→back→edge game→exact context return"
+  ],
+  "controlledBoundary": "native file picker selection only; PGN/parser/storage/graph/viewer are actual isolated Rust backend"
+}

@@ -1,0 +1,19 @@
+{
+  "passed": [
+    "Save failure keeps comment and selected node when navigation is attempted",
+    "Reload restores draft; real revision conflict is explicitly reconciled without losing text",
+    "Typing during an in-flight save survives and is persisted by the next save",
+    "Local alternative expansion, symbolic NAG editing, unknown NAG retention and deletion cancellation",
+    "Native PGN round-trip preserves two chapters, RAV, comments, supported unknown NAGs and arrows",
+    "Explicit list requests close an existing editor; hidden/visible workspace re-emits the exact document/chapter/node context",
+    "A draft whose node was deleted remotely is recovered separately and never reassigned to the root position",
+    "Standalone workspace lists title/side/date and creates/imports actual persisted native documents; import errors stay in the bounded task",
+    "A 400-ply native PGN document opens its exact stable node beyond the initial 300-move projection, with selected notation in view"
+  ],
+  "viewport": {
+    "width": 1440,
+    "height": 960,
+    "dpr": 1
+  },
+  "method": "Vite React UI → native IPC isolated backend; save failure injected at IPC boundary, revision conflict real SQLite"
+}

@@ -1,0 +1,28 @@
+{
+  "checks": [
+    {
+      "scenario": "Named confirmation defaults focus to Cancel; Escape and Cancel preserve document, versions and index",
+      "result": "PASS"
+    },
+    {
+      "scenario": "Stale deletion confirmation is rejected after concurrent edit, refreshed source survives",
+      "result": "PASS"
+    },
+    {
+      "scenario": "Confirmed attachment deletion removes all versions/index, union and prepared overlay; original file and actual game count remain",
+      "result": "PASS"
+    },
+    {
+      "scenario": "Detached sources and legacy repertoire documents both support explicit permanent deletion",
+      "result": "PASS"
+    },
+    {
+      "scenario": "All factual PGN, payloads, account T0 and engine data unchanged; zero JS errors",
+      "result": "PASS"
+    }
+  ],
+  "fixtureProfile": "C:\\projects\\chess_training_tool\\.qa\\ui-atlas-MWQ9Hm",
+  "errors": [],
+  "factualBefore": "6bd90ba2046a7f8c5d827d6ec2110e5c0a3b39c05578e807c7d9a953f0ffaad3",
+  "factualAfter": "6bd90ba2046a7f8c5d827d6ec2110e5c0a3b39c05578e807c7d9a953f0ffaad3"
+}

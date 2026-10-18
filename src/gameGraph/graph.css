@@ -1,0 +1,280 @@
+.game-graph {
+  min-width: 0;
+  outline: none;
+}
+.graph-workspace {
+  display: grid;
+  grid-template-columns:
+    minmax(280px, min(39vw, 500px, calc(100dvh - 230px)))
+    minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.graph-board {
+  min-width: 0;
+}
+.graph-board .board-frame {
+  width: 100%;
+}
+.graph-board-actions {
+  display: flex;
+  gap: 8px;
+  padding: 12px 0;
+  align-items: center;
+}
+.graph-board-actions button {
+  min-height: 36px;
+  padding: 6px 10px;
+}
+.graph-board-actions button:last-child {
+  margin-left: auto;
+}
+.graph-branches {
+  min-width: 0;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.graph-history {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow: auto hidden;
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  min-height: 74px;
+  scrollbar-width: thin;
+}
+.game-graph .history-node {
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-height: 44px;
+  padding: 3px 10px 3px 4px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--surface-muted);
+  font-size: 16px;
+  margin-right: 20px;
+}
+.game-graph .history-node:last-child {
+  margin-right: 0;
+}
+.history-node:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  top: 50%;
+  left: 100%;
+  border-top: 2px solid var(--secondary);
+  pointer-events: none;
+}
+.game-graph .history-node[aria-current] {
+  background: var(--selected);
+  border-color: var(--accent);
+  box-shadow: inset 0 -2px var(--accent);
+}
+.history-move-number {
+  color: var(--secondary);
+  padding-left: 4px;
+}
+.graph-history .move-piece.cg-wrap,
+.graph-history .move-piece.cg-wrap piece {
+  width: 25px;
+  height: 25px;
+}
+.graph-history .move-piece.cg-wrap {
+  flex-basis: 25px;
+}
+.graph-scroll {
+  max-height: max(300px, calc(100dvh - 270px));
+  overflow: auto;
+  scrollbar-width: thin;
+}
+.branch-diagram {
+  position: relative;
+  width: 100%;
+  min-height: 260px;
+  isolation: isolate;
+}
+.branch-connections {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: visible;
+  pointer-events: none;
+}
+.branch-connections > g > path {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 2;
+  transition: stroke 150ms ease;
+}
+.branch-connections marker path {
+  fill: var(--secondary);
+}
+.branch-connections > g > path.prepared {
+  stroke: var(--repertoire, var(--success));
+}
+.branch-connections > g > path.active {
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+.game-graph .branch-node {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  position: absolute;
+  width: 160px;
+  padding: 8px 12px 10px;
+  border: 1px solid var(--control-border, var(--border));
+  background: var(--surface);
+  border-radius: 8px;
+  text-align: left;
+  color: var(--text);
+  box-shadow: 0 2px 4px #0000000a;
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease;
+}
+.game-graph button.branch-node:hover,
+.game-graph button.branch-node:focus-visible,
+.game-graph button.branch-node.piece-selected {
+  border-color: var(--accent);
+  background: var(--selected);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.game-graph .branch-current {
+  background: var(--selected);
+  border-color: var(--accent);
+  box-shadow: inset 3px 0 var(--accent);
+}
+.game-graph .branch-node.in-repertoire {
+  border-left: 4px solid var(--repertoire, var(--success));
+  padding-left: 9px;
+}
+.game-graph .branch-node.prepared-only {
+  border-style: dashed;
+}
+.branch-move {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 22px;
+  font-weight: 500;
+  min-height: 32px;
+}
+.move-piece.cg-wrap {
+  position: relative;
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  border-radius: 50%;
+  background-color: var(--board-light);
+}
+.move-piece.cg-wrap piece {
+  width: 32px;
+  height: 32px;
+  position: absolute;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+.branch-prepared-mark {
+  margin-left: auto;
+  color: var(--repertoire, var(--success));
+  font-size: 18px;
+}
+.branch-counts {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+.branch-counts strong {
+  font-weight: 500;
+}
+.branch-counts > span:last-child {
+  color: var(--secondary);
+}
+.branch-results {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 18px;
+}
+.branch-result-bar {
+  display: flex;
+  flex-shrink: 0;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.branch-result-bar > i:nth-child(1) {
+  background: #629924;
+}
+.branch-result-bar > i:nth-child(2) {
+  background: #a0a0a0;
+}
+.branch-result-bar > i:nth-child(3) {
+  background: #c55a55;
+}
+.branch-hidden {
+  position: absolute;
+  width: 160px;
+  color: var(--secondary);
+  font-size: 13px;
+  text-align: center;
+}
+.graph-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 20px;
+  font-size: 14px;
+  color: var(--secondary);
+}
+.graph-footer > button {
+  width: 100%;
+  padding: 9px;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+}
+.graph-footer > span {
+  padding: 4px 10px;
+}
+.graph-error {
+  padding: 12px;
+  color: var(--error);
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.graph-empty {
+  position: absolute;
+  width: 230px;
+  padding: 32px 0;
+  color: var(--secondary);
+}
+@media (max-width: 1100px) {
+  .graph-workspace {
+    gap: 16px;
+    grid-template-columns: minmax(280px, 36%) minmax(0, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .branch-connections > g > path,
+  .game-graph .branch-node {
+    transition: none;
+  }
+}

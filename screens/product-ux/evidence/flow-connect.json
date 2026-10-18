@@ -1,0 +1,17 @@
+{
+  "phase": "connect",
+  "kind": "synthetic API games, real Tauri and real Stockfish",
+  "automatic_discovery_ms": 63421.53660000001,
+  "real_engine_quick_job_ms": 8320.711699999993,
+  "heartbeat": {
+    "sample": 552,
+    "p99_ms": 23.599999994039536,
+    "max_ms": 46.79999999701977
+  },
+  "webview_metrics": {
+    "Documents": 15,
+    "Nodes": 2983,
+    "JSHeapUsedSize": 8609504,
+    "JSHeapTotalSize": 13955072
+  }
+}

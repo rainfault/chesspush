@@ -59,6 +59,8 @@ pub struct Replay {
 }
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct StoredGame {
+    #[serde(default)]
+    pub movetext_revision: i64,
     pub id: String,
     pub external_id: String,
     pub account_id: String,

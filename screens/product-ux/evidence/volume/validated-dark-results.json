@@ -1,0 +1,125 @@
+{
+  "provenance": "production frontend over instrumented IPC bridge to real isolated Rust/SQLite backend; 1000 synthetic, all distinct legal games; all own-white; no engine evaluations",
+  "conditions": {
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1,
+    "backend": "debug",
+    "frontend": "production dist",
+    "headless": "Microsoft Edge",
+    "cacheMeaning": "first UI visits versus revisits of same 20 branches; native index and OS caches can already be warm. This is not an asserted network/DTO cache."
+  },
+  "samples": {
+    "darkFirstScreen": {
+      "line": "",
+      "kind": "branch",
+      "documentId": "",
+      "started": 264.8999999910593,
+      "feedback": 265,
+      "responseAt": 735.2000000029802,
+      "rpcDuration": 186.20000000298023,
+      "done": 488.90000000596046,
+      "readyLine": "",
+      "requests": [
+        {
+          "command": "statistics_controls",
+          "line": null,
+          "start": 266.5,
+          "duration": 272.29999999701977
+        },
+        {
+          "command": "game_graph_query",
+          "line": [],
+          "start": 549,
+          "duration": 186.20000000298023
+        }
+      ]
+    },
+    "darkGeometry": {
+      "width": 1440,
+      "height": 960,
+      "dpr": 1,
+      "board": {
+        "x": 24,
+        "y": 293.796875,
+        "width": 496,
+        "height": 496,
+        "top": 293.796875,
+        "right": 520,
+        "bottom": 789.796875,
+        "left": 24
+      },
+      "chips": [
+        {
+          "x": 562.3392333984375,
+          "y": 369.890625,
+          "width": 92,
+          "height": 48,
+          "top": 369.890625,
+          "right": 654.3392333984375,
+          "bottom": 417.890625,
+          "left": 562.3392333984375
+        },
+        {
+          "x": 562.3392333984375,
+          "y": 460.1875,
+          "width": 92,
+          "height": 48,
+          "top": 460.1875,
+          "right": 654.3392333984375,
+          "bottom": 508.1875,
+          "left": 562.3392333984375
+        },
+        {
+          "x": 562.3392333984375,
+          "y": 550.484375,
+          "width": 92,
+          "height": 48,
+          "top": 550.484375,
+          "right": 654.3392333984375,
+          "bottom": 598.484375,
+          "left": 562.3392333984375
+        }
+      ],
+      "documentWidth": 1440,
+      "documentHeight": 1089
+    },
+    "darkPageErrors": []
+  },
+  "screens": [
+    {
+      "file": ".qa/ux-statistics/volume/dark-1440-ready.png",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "dpr": 1
+    },
+    {
+      "file": ".qa/ux-statistics/volume/dark-900-ready.png",
+      "viewport": {
+        "width": 900,
+        "height": 700
+      },
+      "dpr": 1
+    },
+    {
+      "file": ".qa/ux-statistics/volume/dark-900-effective-scale-1.25.png",
+      "viewport": {
+        "width": 720,
+        "height": 560
+      },
+      "dpr": 1.25
+    },
+    {
+      "file": ".qa/ux-statistics/volume/dark-900-effective-scale-1.5.png",
+      "viewport": {
+        "width": 600,
+        "height": 467
+      },
+      "dpr": 1.5
+    }
+  ]
+}

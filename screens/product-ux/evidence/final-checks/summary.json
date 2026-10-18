@@ -1,0 +1,76 @@
+{
+  "generatedUtc": "2026-10-17T22:37:15.6812121Z",
+  "phase": "Final tree after explicit practice projection",
+  "status": "PASS",
+  "rustUnitPassed": 174,
+  "rustLegacyImportPassed": 3,
+  "rustParityPassed": 9,
+  "stockfishAdditionalPassed": 3,
+  "totalRustPassed": 189,
+  "rustIgnoredAfterExplicitRun": 0,
+  "practiceProjectionRegression": "statistics::projection::tests::practice_keeps_snapshot_outcomes_profiles_and_event_evidence",
+  "frontendTestFiles": 9,
+  "frontendTests": 33,
+  "privacyFileVersions": 125,
+  "stockfish": ".qa/stockfish/release/stockfish/stockfish-windows-x86-64-universal.exe",
+  "productionChangesByVerification": "none",
+  "correctedTestFile": "tests/product-native-captures.mjs (Prettier only); graph-report-native.mjs formatted by owner while final check ran",
+  "compilerNotice": "Cargo test printed Windows linker informational stdout; all command exit codes are 0 and Clippy -D warnings passed",
+  "scope": "Automated unit/integration/static checks. GUI and external source behavior documented separately; no personal profile used.",
+  "results": [
+    {
+      "command": "cargo test --manifest-path src-tauri/Cargo.toml --no-default-features",
+      "phase": "After explicit practice projection",
+      "exitCode": 0,
+      "durationSeconds": 29.5660555,
+      "completedUtc": "2026-10-17T22:36:06.4127944Z"
+    },
+    {
+      "command": "cargo test --manifest-path src-tauri/Cargo.toml --no-default-features -- --ignored --test-threads=1",
+      "phase": "After explicit practice projection",
+      "stockfish": "C:\\projects\\chess_training_tool\\.qa\\stockfish\\release\\stockfish\\stockfish-windows-x86-64-universal.exe",
+      "exitCode": 0,
+      "durationSeconds": 24.2248271,
+      "completedUtc": "2026-10-17T22:36:45.0400328Z"
+    },
+    {
+      "command": "cargo fmt --manifest-path src-tauri/Cargo.toml --check",
+      "phase": "After explicit practice projection",
+      "exitCode": 0,
+      "durationSeconds": 3.2025324,
+      "completedUtc": "2026-10-17T22:35:56.1986526Z"
+    },
+    {
+      "command": "cargo clippy --manifest-path src-tauri/Cargo.toml --no-default-features --all-targets -- -D warnings",
+      "phase": "After explicit practice projection",
+      "exitCode": 0,
+      "durationSeconds": 4.9708434,
+      "completedUtc": "2026-10-17T22:36:15.7344764Z"
+    },
+    {
+      "command": "npm test",
+      "phase": "After explicit practice projection",
+      "exitCode": 0,
+      "durationSeconds": 2.6979612,
+      "completedUtc": "2026-10-17T22:36:42.5825176Z"
+    },
+    {
+      "command": "npm run check:privacy",
+      "phase": "After explicit practice projection",
+      "exitCode": 0,
+      "durationSeconds": 1.8027362,
+      "completedUtc": "2026-10-17T22:36:42.4053126Z"
+    },
+    {
+      "command": "npm run format:check",
+      "phase": "After explicit practice projection",
+      "correctedTestFiles": [
+        "tests/product-native-captures.mjs",
+        "tests/graph-report-native.mjs"
+      ],
+      "exitCode": 0,
+      "durationSeconds": 2.7171654,
+      "completedUtc": "2026-10-17T22:36:58.2847202Z"
+    }
+  ]
+}

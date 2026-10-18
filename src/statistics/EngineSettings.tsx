@@ -75,34 +75,6 @@ export function EngineSettings() {
           </button>
         </div>
       </label>
-      <div className="form-row">
-        <label>
-          Потоки
-          <input
-            aria-label="Потоки Stockfish"
-            type="number"
-            min="1"
-            max="128"
-            value={config.threads}
-            onChange={(e) =>
-              setConfig({ ...config, threads: Number(e.target.value) })
-            }
-          />
-        </label>
-        <label>
-          Hash, MiB
-          <input
-            aria-label="Hash Stockfish"
-            type="number"
-            min="16"
-            max="4096"
-            value={config.hash_mb}
-            onChange={(e) =>
-              setConfig({ ...config, hash_mb: Number(e.target.value) })
-            }
-          />
-        </label>
-      </div>
       <label>
         Режим
         <select
@@ -123,7 +95,36 @@ export function EngineSettings() {
         </select>
       </label>
       <details>
-        <summary>Лимиты анализа и Syzygy</summary>
+        <summary>Дополнительные настройки</summary>
+        <div className="form-row">
+          <label>
+            Потоки
+            <input
+              aria-label="Потоки Stockfish"
+              type="number"
+              min="1"
+              max="128"
+              value={config.threads}
+              onChange={(e) =>
+                setConfig({ ...config, threads: Number(e.target.value) })
+              }
+            />
+          </label>
+          <label>
+            Hash, MiB
+            <input
+              aria-label="Hash Stockfish"
+              type="number"
+              min="16"
+              max="4096"
+              value={config.hash_mb}
+              onChange={(e) =>
+                setConfig({ ...config, hash_mb: Number(e.target.value) })
+              }
+            />
+          </label>
+        </div>
+
         <div className="form-row">
           <label>
             Узлы
@@ -187,7 +188,15 @@ export function EngineSettings() {
           Сохранить движок
         </button>
       </div>
-      {identity && <output>{identity}</output>}
+      {identity && (
+        <>
+          <p role="status">Движок готов. Настройки сохранены.</p>
+          <details>
+            <summary>Технические подробности движка</summary>
+            <output>{identity}</output>
+          </details>
+        </>
+      )}
       {error && (
         <div className="error" role="alert">
           {error}

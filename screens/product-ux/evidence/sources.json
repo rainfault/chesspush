@@ -1,0 +1,22 @@
+{
+  "repertoire-ui.json": ".qa/product-ux-repertoire/results.json",
+  "graph-native.json": ".qa/game-graph-native-Mc1vVf/data/product-graph-checks.json",
+  "graph-state-before-restart.json": ".qa/game-graph-native-Mc1vVf/data/product-graph-state.json",
+  "flow-connect.json": ".qa/statistics-flow-jt0giZ/data/flow-performance-connect.json",
+  "flow-catchup.json": ".qa/statistics-flow-jt0giZ/data/flow-performance-catchup.json",
+  "flow-recover.json": ".qa/statistics-flow-jt0giZ/data/flow-performance-recover.json",
+  "volume/verification-summary.json": ".qa/ux-statistics/volume/verification-summary.json",
+  "volume/interactions.json": ".qa/ux-statistics/volume/interactions.json",
+  "volume100/results.json": ".qa/ux-statistics/volume100/results.json",
+  "volume-native/results.json": ".qa/game-graph-volume-O1KG2Q/data",
+  "volume-native/performance.json": ".qa/game-graph-volume-O1KG2Q/data/graph-volume-metrics.json",
+  "volume-native/steps.json": ".qa/game-graph-volume-O1KG2Q/data/graph-volume-profile.json",
+  "volume-native/report-projections.json": ".qa/game-graph-volume-O1KG2Q/data/graph-report-results.json",
+  "volume-native/causal-before.json": ".qa/game-graph-volume-wUhddd/data/graph-volume-causal-summary.json",
+  "volume-native/causal-after-guard.json": ".qa/game-graph-volume-s6Cxwm/data/graph-volume-causal-summary.json",
+  "volume-native/causal-after-final.json": ".qa/game-graph-volume-O1KG2Q/data",
+  "volume-native/performance-additional-final.json": ".qa/game-graph-volume-2Tvebq/data/graph-volume-metrics.json",
+  "final-checks/summary.json": ".qa/final-product-checks/summary.json",
+  "final-gui-checks.json": "Final root GUI run .qa/ui-atlas-VdbV0J; production frontend index-BqiFGG2Z",
+  "review-freshness.json": ".qa/ux-statistics/review-freshness/results.json"
+}

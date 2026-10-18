@@ -1,0 +1,11 @@
+{
+  "phase": "catchup",
+  "kind": "synthetic API games, real Tauri and real Stockfish",
+  "filter_roundtrip_ms": 157.6188000000002,
+  "webview_metrics": {
+    "Documents": 5,
+    "Nodes": 1232,
+    "JSHeapUsedSize": 10275784,
+    "JSHeapTotalSize": 17100800
+  }
+}

@@ -1,0 +1,314 @@
+[
+  {
+    "path": "after/native-light-1440x960-home.png",
+    "theme": "light",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1440,
+    "viewportHeight": 960,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-light-1440x960-map.png",
+    "theme": "light",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1440,
+    "viewportHeight": 960,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-light-1440x960-overview.png",
+    "theme": "light",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1440,
+    "viewportHeight": 960,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-light-1440x960-editor.png",
+    "theme": "light",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1440,
+    "viewportHeight": 960,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-light-900x700-home.png",
+    "theme": "light",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 900,
+    "viewportHeight": 700,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-light-900x700-map.png",
+    "theme": "light",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 900,
+    "viewportHeight": 700,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-light-900x700-overview.png",
+    "theme": "light",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 900,
+    "viewportHeight": 700,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-light-900x700-editor.png",
+    "theme": "light",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 900,
+    "viewportHeight": 700,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-light-1920x1080-home.png",
+    "theme": "light",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1920,
+    "viewportHeight": 1080,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-light-1920x1080-map.png",
+    "theme": "light",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1920,
+    "viewportHeight": 1080,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-light-1920x1080-overview.png",
+    "theme": "light",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1920,
+    "viewportHeight": 1080,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-light-1920x1080-editor.png",
+    "theme": "light",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1920,
+    "viewportHeight": 1080,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-dark-1440x960-home.png",
+    "theme": "dark",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1440,
+    "viewportHeight": 960,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-dark-1440x960-map.png",
+    "theme": "dark",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1440,
+    "viewportHeight": 960,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-dark-1440x960-overview.png",
+    "theme": "dark",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1440,
+    "viewportHeight": 960,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-dark-1440x960-editor.png",
+    "theme": "dark",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1440,
+    "viewportHeight": 960,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-dark-900x700-home.png",
+    "theme": "dark",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 900,
+    "viewportHeight": 700,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-dark-900x700-map.png",
+    "theme": "dark",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 900,
+    "viewportHeight": 700,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-dark-900x700-overview.png",
+    "theme": "dark",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 900,
+    "viewportHeight": 700,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-dark-900x700-editor.png",
+    "theme": "dark",
+    "viewport": {
+      "width": 900,
+      "height": 700
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 900,
+    "viewportHeight": 700,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-dark-1920x1080-home.png",
+    "theme": "dark",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1920,
+    "viewportHeight": 1080,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-dark-1920x1080-map.png",
+    "theme": "dark",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1920,
+    "viewportHeight": 1080,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-dark-1920x1080-overview.png",
+    "theme": "dark",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1920,
+    "viewportHeight": 1080,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  },
+  {
+    "path": "after/native-dark-1920x1080-editor.png",
+    "theme": "dark",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dpr": 1.0000000149011612,
+    "viewportWidth": 1920,
+    "viewportHeight": 1080,
+    "provenance": "native Tauri/WebView2, final debug binary; isolated 4 played games/8 saved Stockfish runs",
+    "captureMode": "animations: disabled for static end frame; live interactions and WebM retain animations"
+  }
+]

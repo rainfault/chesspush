@@ -56,6 +56,8 @@ await page.addInitScript(() => {
         case "set_theme":
           theme = args.theme;
           return;
+        case "statistics_recent":
+        case "knowledge_list":
         case "library_files":
           return [];
         case "statistics_engine_config":
@@ -105,8 +107,8 @@ await page.addInitScript(() => {
 try {
   await page.goto("http://127.0.0.1:1420");
   await expect(page.getByLabel("Текущее время")).toHaveText(/^\d{2}:\d{2}$/);
-  await expect(page.locator(".home-rating")).toHaveCount(2);
   await expect(page.locator(".home-rating-value")).toHaveCount(0);
+
   await page
     .getByRole("button", { name: "Войти через Lichess", exact: true })
     .click();
@@ -120,7 +122,10 @@ try {
     page.getByRole("button", { name: "Войти через Lichess", exact: true }),
   ).toBeEnabled();
   await page.getByRole("button", { name: "Настройки", exact: true }).click();
-  await expect(page.getByLabel("Ник", { exact: true })).toHaveValue("");
+  await expect(
+    page.getByRole("dialog", { name: "Настройки", exact: true }),
+  ).toContainText("Аккаунт не подключён");
+  await page.getByText("Подключить вручную по токену", { exact: true }).click();
   await expect(page.getByLabel("Токен", { exact: true })).toHaveAttribute(
     "type",
     "password",
@@ -130,20 +135,28 @@ try {
     .fill("synthetic_test_credential");
   await page.getByRole("button", { name: "Подключить", exact: true }).click();
   await expect(page.getByLabel("Токен", { exact: true })).toHaveValue("");
-  await expect(page.getByLabel("Ник", { exact: true })).toHaveValue(
-    "DemoPlayer",
-  );
+  await expect(
+    page.getByRole("dialog", { name: "Настройки", exact: true }),
+  ).toContainText("Аккаунт: DemoPlayer");
   await page
     .getByRole("button", { name: "Закрыть настройки", exact: true })
     .click();
-  await expect(page.locator(".home-rating-value")).toHaveText(["1950", "1900"]);
-  await expect(page.getByRole("progressbar")).toHaveCount(1);
-  await expect(page.getByRole("progressbar")).toHaveAttribute(
-    "aria-valuenow",
-    "50",
-  );
+  await expect(
+    page.getByRole("region", { name: "Rapid 1950", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "Blitz 1900", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator(".home time")).toHaveCount(1);
+  await expect(page.locator(".home-resume,.home-material")).toHaveCount(0);
+  const clockSize = await page
+    .getByLabel("Текущее время")
+    .evaluate((e) => parseFloat(getComputedStyle(e).fontSize));
+  expect(clockSize).toBeGreaterThanOrEqual(80);
+  expect(clockSize).toBeLessThanOrEqual(112);
   await page.screenshot({ path: ".qa/home-light.png" });
   await page.getByRole("button", { name: "Настройки", exact: true }).click();
+  await page.getByRole("tab", { name: "Внешний вид", exact: true }).click();
   await page.getByLabel("Тема", { exact: true }).selectOption("dark");
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
@@ -159,7 +172,6 @@ try {
     }),
   );
   await expect(page.locator(".home-rating-value")).toHaveCount(0);
-  await expect(page.getByRole("progressbar")).toHaveCount(0);
   await expect(
     page.getByRole("button", { name: "Войти через Lichess", exact: true }),
   ).toBeVisible();
@@ -168,7 +180,10 @@ try {
   await page
     .getByRole("button", { name: "Отключить аккаунт", exact: true })
     .click();
-  await expect(page.getByLabel("Ник", { exact: true })).toHaveValue("");
+  await expect(
+    page.getByRole("dialog", { name: "Настройки", exact: true }),
+  ).toContainText("Аккаунт не подключён");
+  await page.getByText("Подключить вручную по токену", { exact: true }).click();
   await expect(page.getByLabel("Токен", { exact: true })).toHaveValue("");
   await page.screenshot({ path: ".qa/settings-account.png" });
   const calls = await page.evaluate(() => window.__testCalls);
@@ -181,7 +196,7 @@ try {
     if (!calls.includes(command)) throw new Error(`Missing command ${command}`);
   if (errors.length) throw new Error(errors.join("\n"));
   console.log(
-    "PASS: Home clock, icons, browser login/cancel, masked token input cleared, ratings/progress boundary, offline hiding, themes, disconnect",
+    "PASS: restored clock/rating Home, scoped clock typography, browser login/cancel, masked manual token, offline, two themes, disconnect",
   );
 } finally {
   await browser.close();

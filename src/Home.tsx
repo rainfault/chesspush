@@ -74,7 +74,11 @@ export function Home({
   return (
     <main className="home home-page">
       <div className="home-dashboard">
-        <time dateTime={now.toISOString()} aria-label="Текущее время">
+        <time
+          className="home-clock"
+          dateTime={now.toISOString()}
+          aria-label="Текущее время"
+        >
           {now.toLocaleTimeString("ru-RU", {
             hour: "2-digit",
             minute: "2-digit",

@@ -1,0 +1,47 @@
+{
+  "generatedUtc": "2026-10-17T22:43:42.536Z",
+  "binarySha256": "05bd2d188d3263fbeb3da566d47e6286e87d1ee992919fc5298457a54d064580",
+  "frontendEntry": "assets/index-BqiFGG2Z.js",
+  "nativeDataFixture": "4 isolated played games / 8 saved analysis runs",
+  "userDatabaseOpened": false,
+  "scripts": [
+    {
+      "command": "node tests/product-shell-ui.mjs",
+      "passed": 8,
+      "heapRecords": 2,
+      "screenshots": 54,
+      "errors": []
+    },
+    {
+      "command": "node tests/product-context-ui.mjs",
+      "passed": 5
+    },
+    {
+      "command": "node tests/product-scenario-ui.mjs",
+      "result": "PASS",
+      "scenarios": [
+        "actual parser import→stored library list→shared Rust replay→seek",
+        "vertex→board→back→edge game→exact context return"
+      ],
+      "controlledBoundary": "native file picker selection only; PGN/parser/storage/graph/viewer are actual isolated Rust backend"
+    },
+    {
+      "command": "node tests/product-states-ui.mjs",
+      "passed": 8,
+      "source": "states-ui.json"
+    },
+    {
+      "command": "node tests/product-native-captures.mjs",
+      "nativeScreenshots": 24,
+      "stillCapture": "finite CSS animations fast-forwarded by screenshot API; live actions/videos retain animation"
+    }
+  ],
+  "postGuiChecks": [
+    "npm run format:check PASS",
+    "npm run check:privacy PASS (125 file versions)"
+  ],
+  "notes": [
+    "Final root GUI rerun after practice projection; separate native1000/profile evidence describes its own interval.",
+    "Editor and primary data hashes verified separately."
+  ]
+}

@@ -12,14 +12,14 @@ pub fn open(path: &Path) -> Result<Connection, AppError> {
     conn.busy_timeout(std::time::Duration::from_secs(5))?;
     conn.execute_batch("PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL;")?;
     let version: i64 = conn.pragma_query_value(None, "user_version", |r| r.get(0))?;
-    if version > 5 {
+    if version > 7 {
         return Err(AppError::new(
             "schema",
             "База создана более новой версией ChessPush",
         ));
     }
     // SQLite backup includes committed WAL pages. Never copy the live main file alone.
-    if version > 0 && version < 5 {
+    if version > 0 && version < 7 {
         let stamp = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .map_err(|e| AppError::new("backup", e))?
@@ -45,7 +45,13 @@ pub fn open(path: &Path) -> Result<Connection, AppError> {
             "../migrations/005_statistics_quarantine_history.sql"
         ))?;
     }
-    if version < 5 {
+    if version < 6 {
+        conn.execute_batch(include_str!("../migrations/006_knowledge.sql"))?;
+    }
+    if version < 7 {
+        conn.execute_batch(include_str!("../migrations/007_game_graph.sql"))?;
+    }
+    if version < 7 {
         let violations: i64 =
             conn.query_row("SELECT count(*) FROM pragma_foreign_key_check", [], |r| {
                 r.get(0)
@@ -146,7 +152,7 @@ mod statistics_migration_tests {
             upgraded
                 .pragma_query_value::<i64, _>(None, "user_version", |r| r.get(0))
                 .unwrap(),
-            5
+            7
         );
         assert_eq!(
             upgraded
@@ -259,7 +265,7 @@ mod quarantine_history_migration_tests {
             migrated
                 .pragma_query_value::<i64, _>(None, "user_version", |r| r.get(0))
                 .unwrap(),
-            5
+            7
         );
         let old_raw: String = migrated
             .query_row("SELECT raw_json FROM statistics_quarantine", [], |r| {

@@ -1,0 +1,19 @@
+{
+  "provenance": "actual production frontend, actual native1000-game index; refresh event controlled on IPC boundary, no new games inserted by this check",
+  "rare": {
+    "uci": "f2f3",
+    "san": "f3",
+    "games": 51,
+    "frequency": 5.1,
+    "rootGames": 1000
+  },
+  "moreDenominatorInvariant": true,
+  "rareViaMore": true,
+  "rareViaBoard": true,
+  "refresh": {
+    "before": "Белые: Na3",
+    "after": "Белые: Na3",
+    "orderPreserved": true,
+    "path": ""
+  }
+}
