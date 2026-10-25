@@ -29,4 +29,18 @@ $verified = $shell.CreateShortcut($shortcutPath)
 if ($verified.TargetPath -ne $executablePath -or $verified.WorkingDirectory -ne $installationPath) {
     throw 'Shortcut verification failed'
 }
+# Notify Explorer about the changed resources without restarting the shell.
+if (-not ('ChessPushShellNotify' -as [type])) {
+    Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+public static class ChessPushShellNotify {
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+    public static extern void SHChangeNotify(int eventId, uint flags, string item1, IntPtr item2);
+}
+'@
+}
+foreach ($changedItem in @($executablePath, $shortcutPath)) {
+    [ChessPushShellNotify]::SHChangeNotify(0x2000, 0x1005, $changedItem, [IntPtr]::Zero)
+}
 Write-Output $shortcutPath

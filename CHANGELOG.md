@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Replace the application and browser icons with a detailed transparent silver pawn; include Windows icon sizes and refresh desktop shortcut icons.
 - Fix training database locks during background writes by reserving write transactions before reading session state; keep the training overview read-only.
 - Preserve named chapter selection from multi-chapter PGNs in the combined viewer and both training modes, while retaining the global merged repertoire and existing review history.
 
