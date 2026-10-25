@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- Fix training database locks during background writes by reserving write transactions before reading session state; keep the training overview read-only.
+- Preserve named chapter selection from multi-chapter PGNs in the combined viewer and both training modes, while retaining the global merged repertoire and existing review history.
+
+- Added repertoire training with SM-2 spaced repetition and independent Full Drill coverage.
+- Reuse the combined PGN VariationTree: transpositions share a position task with all prepared alternatives; opponent moves and short context replay run on Chessground.
+- Persist review history, due dates and resumable sessions; reconcile PGN changes without losing unchanged decisions. Errors and hints require guided board correction.
+- Added transactional SQLite migration 8 with a pre-upgrade backup and repertoire preservation check.
+
 ## 0.2.0-alpha.3 — 2026-10-14
 
 - Restored Home clock, Lichess Rapid/Blitz ratings and offline authentication button.

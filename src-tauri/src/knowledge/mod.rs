@@ -17,6 +17,7 @@ use std::{
 #[cfg(feature = "desktop")]
 pub mod desktop;
 pub mod fragments;
+pub mod training;
 
 const MAX_NODES: usize = 50_000;
 const MAX_DEPTH: usize = 512;

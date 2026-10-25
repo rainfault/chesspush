@@ -1,0 +1,30 @@
+[Event "Five chapters: Queen's Gambit"]
+[Site "https://lichess.org/study/fixture/queens-gambit"]
+
+1. d4 d5 2. c4 {Challenge the d5 pawn.}
+(2. Nf3 {Develop before choosing the centre.})
+e6 3. Nc3 *
+
+[Event "Five chapters: London"]
+[Site "https://lichess.org/study/fixture/london"]
+
+1. d4 d5 2. Nf3 Nf6 3. Bf4 {Develop the bishop before e3.} *
+
+[Event "Five chapters: Reti"]
+[Site "https://lichess.org/study/fixture/reti"]
+
+1. Nf3 d5 2. d4 Nf6 3. c4 {Transpose into a queen's-pawn centre.}
+(3. e3 {Keep the central choice flexible.})
+e6 4. Nc3 *
+
+[Event "Five chapters: Italian"]
+[Site "https://lichess.org/study/fixture/italian"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bc4 {Point the bishop at f7.}
+(3. Bb5 {The Spanish alternative.} a6)
+Bc5 4. d3 *
+
+[Event "Five chapters: English"]
+[Site "https://lichess.org/study/fixture/english"]
+
+1. c4 e5 2. Nc3 Nf6 3. g3 {Fianchetto the king's bishop.} *

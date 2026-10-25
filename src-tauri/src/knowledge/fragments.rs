@@ -12,6 +12,20 @@ pub struct FragmentOpening {
     pub name: String,
 }
 
+/// Original named chapters remain addressable even when the combined chess
+/// projection merges their common root and prepared moves.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct SourceChapter {
+    pub document_id: String,
+    pub chapter_id: String,
+    pub title: String,
+    pub document_title: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub filename: Option<String>,
+    pub root_node_id: String,
+    pub initial_fen: String,
+}
+
 pub fn is_attachment(document: &KnowledgeDocument) -> bool {
     document.metadata.contains_key(ATTACHMENT)
 }
@@ -390,6 +404,20 @@ pub fn combined(conn: &Connection, side: &str) -> Result<KnowledgeDocument, AppE
         .iter()
         .map(|document| document.id.clone())
         .collect();
+    let source_chapters = documents
+        .iter()
+        .flat_map(|document| {
+            document.chapters.iter().map(|chapter| SourceChapter {
+                document_id: document.id.clone(),
+                chapter_id: chapter.id.clone(),
+                title: chapter.title.clone(),
+                document_title: document.title.clone(),
+                filename: filename(document),
+                root_node_id: chapter.root.id.clone(),
+                initial_fen: chapter.initial_fen.clone(),
+            })
+        })
+        .collect::<Vec<_>>();
     let initial_key = position_key(&Chess::default());
     let mut pending = vec![];
     for (document_index, document) in documents.iter().enumerate() {
@@ -530,6 +558,10 @@ pub fn combined(conn: &Connection, side: &str) -> Result<KnowledgeDocument, AppE
     result.metadata.insert(
         "source_document_ids".into(),
         serde_json::json!(attached_ids),
+    );
+    result.metadata.insert(
+        "source_chapters".into(),
+        serde_json::to_value(source_chapters).map_err(error)?,
     );
     result
         .metadata
@@ -952,5 +984,60 @@ mod tests {
         assert_eq!(restored.title, "Edited title");
         assert_eq!(restored.revision, detached.revision + 1);
         assert_eq!(list(&conn).unwrap().len(), 1);
+    }
+
+    #[test]
+    fn lichess_study_named_chapters_remain_addressable_after_common_root_merge() {
+        let conn = db();
+        let names = ["English", "King pawn", "Queen pawn", "Reti", "Flank"];
+        let lines = [
+            "1.c4 e5 *",
+            "1.e4 e5 *",
+            "1.d4 d5 *",
+            "1.Nf3 Nf6 *",
+            "1.g3 d5 *",
+        ];
+        let pgn=names.iter().zip(lines).map(|(name,line)|format!("[Event \"Study: {name}\"]\n[ChapterName \"{name}\"]\n[StudyName \"Five chapters\"]\n[Site \"https://lichess.org/study/example/chapter\"]\n\n{line}")).collect::<Vec<_>>().join("\n\n");
+        let original = attach(&conn, &pgn, "white");
+        assert_eq!(original.chapters.len(), 5);
+        let union = combined(&conn, "white").unwrap();
+        assert_eq!(union.chapters.len(), 1);
+        let catalog: Vec<SourceChapter> =
+            serde_json::from_value(union.metadata["source_chapters"].clone()).unwrap();
+        assert_eq!(
+            catalog
+                .iter()
+                .map(|chapter| chapter.title.as_str())
+                .collect::<Vec<_>>(),
+            names
+        );
+        for (reference, chapter) in catalog.iter().zip(&original.chapters) {
+            assert_eq!(reference.document_id, original.id);
+            assert_eq!(reference.chapter_id, chapter.id);
+            assert_eq!(reference.root_node_id, chapter.root.id);
+            assert_eq!(reference.initial_fen, chapter.initial_fen);
+            assert_eq!(reference.filename.as_deref(), Some("fragment.pgn"));
+            assert_eq!(chapter.headers["StudyName"], "Five chapters");
+        }
+        let renamed = apply(
+            &conn,
+            &original.id,
+            original.revision,
+            EditOperation::RenameChapter {
+                chapter_id: original.chapters[2].id.clone(),
+                title: "New chapter title".into(),
+            },
+        )
+        .unwrap();
+        let refreshed = combined(&conn, "white").unwrap();
+        let catalog: Vec<SourceChapter> =
+            serde_json::from_value(refreshed.metadata["source_chapters"].clone()).unwrap();
+        assert_eq!(catalog[2].chapter_id, original.chapters[2].id);
+        assert_eq!(catalog[2].title, "New chapter title");
+        set_attachment(&conn, &renamed.id, renamed.revision, false).unwrap();
+        assert_eq!(
+            combined(&conn, "white").unwrap().metadata["source_chapters"],
+            serde_json::json!([])
+        );
     }
 }

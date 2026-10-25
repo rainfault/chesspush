@@ -59,6 +59,16 @@ export interface KnowledgeDocument {
   chapters: KnowledgeChapter[];
 }
 
+export interface RepertoireChapterRef {
+  document_id: string;
+  chapter_id: string;
+  title: string;
+  document_title: string;
+  filename: string | null;
+  root_node_id: string;
+  initial_fen: string;
+}
+
 export interface DocumentSummary {
   id: string;
   kind: DocumentKind;

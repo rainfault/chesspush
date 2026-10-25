@@ -229,3 +229,79 @@ pub async fn knowledge_delete_repertoire(
     .await
     .map_err(|_| error("Не удалось удалить репертуар"))?
 }
+
+#[tauri::command]
+pub async fn training_overview(
+    app: tauri::AppHandle,
+    scope: training::Scope,
+) -> Result<training::Overview, AppError> {
+    let activity = command_activity(&app)?;
+    let database = database(&app);
+    tauri::async_runtime::spawn_blocking(move || {
+        let _activity = activity;
+        training::overview(&storage::open(&database)?, scope)
+    })
+    .await
+    .map_err(|_| error("Тренировка недоступна"))?
+}
+
+#[tauri::command]
+pub async fn training_start(
+    app: tauri::AppHandle,
+    request: training::StartRequest,
+) -> Result<training::SessionView, AppError> {
+    let activity = command_activity(&app)?;
+    let database = database(&app);
+    tauri::async_runtime::spawn_blocking(move || {
+        let _activity = activity;
+        training::start(&storage::open(&database)?, request)
+    })
+    .await
+    .map_err(|_| error("Не удалось начать тренировку"))?
+}
+
+#[tauri::command]
+pub async fn training_answer(
+    app: tauri::AppHandle,
+    session_id: String,
+    uci: String,
+) -> Result<training::SessionView, AppError> {
+    let activity = command_activity(&app)?;
+    let database = database(&app);
+    tauri::async_runtime::spawn_blocking(move || {
+        let _activity = activity;
+        training::answer(&storage::open(&database)?, &session_id, &uci)
+    })
+    .await
+    .map_err(|_| error("Не удалось сохранить ответ"))?
+}
+
+#[tauri::command]
+pub async fn training_hint(
+    app: tauri::AppHandle,
+    session_id: String,
+) -> Result<training::SessionView, AppError> {
+    let activity = command_activity(&app)?;
+    let database = database(&app);
+    tauri::async_runtime::spawn_blocking(move || {
+        let _activity = activity;
+        training::hint(&storage::open(&database)?, &session_id)
+    })
+    .await
+    .map_err(|_| error("Подсказка недоступна"))?
+}
+
+#[tauri::command]
+pub async fn training_next(
+    app: tauri::AppHandle,
+    session_id: String,
+) -> Result<training::SessionView, AppError> {
+    let activity = command_activity(&app)?;
+    let database = database(&app);
+    tauri::async_runtime::spawn_blocking(move || {
+        let _activity = activity;
+        training::next(&storage::open(&database)?, &session_id)
+    })
+    .await
+    .map_err(|_| error("Не удалось продолжить тренировку"))?
+}

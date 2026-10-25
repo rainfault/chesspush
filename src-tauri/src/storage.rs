@@ -12,20 +12,24 @@ pub fn open(path: &Path) -> Result<Connection, AppError> {
     conn.busy_timeout(std::time::Duration::from_secs(5))?;
     conn.execute_batch("PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL;")?;
     let version: i64 = conn.pragma_query_value(None, "user_version", |r| r.get(0))?;
-    if version > 7 {
+    if version > 8 {
         return Err(AppError::new(
             "schema",
             "База создана более новой версией ChessPush",
         ));
     }
     // SQLite backup includes committed WAL pages. Never copy the live main file alone.
-    if version > 0 && version < 7 {
+    if version > 0 && version < 8 {
         let stamp = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .map_err(|e| AppError::new("backup", e))?
             .as_nanos();
-        let destination =
-            path.with_extension(format!("before-statistics-v{version}-{stamp}.sqlite3"));
+        let prefix = if version < 7 {
+            "before-statistics"
+        } else {
+            "before-repertoire-training"
+        };
+        let destination = path.with_extension(format!("{prefix}-v{version}-{stamp}.sqlite3"));
         conn.backup("main", &destination, None)?;
     }
     if version == 0 {
@@ -51,7 +55,10 @@ pub fn open(path: &Path) -> Result<Connection, AppError> {
     if version < 7 {
         conn.execute_batch(include_str!("../migrations/007_game_graph.sql"))?;
     }
-    if version < 7 {
+    if version < 8 {
+        conn.execute_batch(include_str!("../migrations/008_repertoire_training.sql"))?;
+    }
+    if version < 8 {
         let violations: i64 =
             conn.query_row("SELECT count(*) FROM pragma_foreign_key_check", [], |r| {
                 r.get(0)
@@ -152,7 +159,7 @@ mod statistics_migration_tests {
             upgraded
                 .pragma_query_value::<i64, _>(None, "user_version", |r| r.get(0))
                 .unwrap(),
-            7
+            8
         );
         assert_eq!(
             upgraded
@@ -265,7 +272,7 @@ mod quarantine_history_migration_tests {
             migrated
                 .pragma_query_value::<i64, _>(None, "user_version", |r| r.get(0))
                 .unwrap(),
-            7
+            8
         );
         let old_raw: String = migrated
             .query_row("SELECT raw_json FROM statistics_quarantine", [], |r| {
@@ -320,6 +327,88 @@ mod quarantine_history_migration_tests {
                 ))
                 .unwrap(),
             old_raw
+        );
+    }
+}
+
+#[cfg(test)]
+mod repertoire_training_migration_tests {
+    use super::*;
+    use crate::knowledge::{ImportRequest, import, load};
+
+    #[test]
+    fn v7_upgrade_preserves_repertoire_and_wal_backup() {
+        let temp = tempfile::tempdir().unwrap();
+        let path = temp.path().join("repertoire.sqlite3");
+        let old = Connection::open(&path).unwrap();
+        old.execute_batch("PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL;")
+            .unwrap();
+        for sql in [
+            include_str!("../migrations/001_initial.sql"),
+            include_str!("../migrations/002_legacy_import.sql"),
+            include_str!("../migrations/003_statistics.sql"),
+            include_str!("../migrations/004_analysis.sql"),
+            include_str!("../migrations/005_statistics_quarantine_history.sql"),
+            include_str!("../migrations/006_knowledge.sql"),
+            include_str!("../migrations/007_game_graph.sql"),
+        ] {
+            old.execute_batch(sql).unwrap();
+        }
+        let document = import(
+            &old,
+            ImportRequest {
+                title: "Repertoire".into(),
+                side: "white".into(),
+                pgn: "1. e4 {Centre} e5 (1... c5 2. Nf3) 2. Nf3 *".into(),
+                document_id: None,
+                expected_revision: None,
+            },
+        )
+        .unwrap();
+
+        // Keep the old WAL connection open while the backup and migration run.
+        let upgraded = open(&path).unwrap();
+        assert_eq!(load(&upgraded, &document.id, None).unwrap(), document);
+        assert_eq!(
+            upgraded
+                .pragma_query_value::<i64, _>(None, "user_version", |r| r.get(0))
+                .unwrap(),
+            8
+        );
+        let backups: Vec<_> = std::fs::read_dir(temp.path())
+            .unwrap()
+            .filter_map(Result::ok)
+            .filter(|entry| {
+                entry
+                    .file_name()
+                    .to_string_lossy()
+                    .starts_with("repertoire.before-repertoire-training-v7-")
+                    && entry.path().extension().is_some_and(|ext| ext == "sqlite3")
+            })
+            .collect();
+        assert_eq!(backups.len(), 1);
+        let backup = Connection::open(backups[0].path()).unwrap();
+        assert_eq!(load(&backup, &document.id, None).unwrap(), document);
+        assert_eq!(
+            backup
+                .pragma_query_value::<i64, _>(None, "user_version", |r| r.get(0))
+                .unwrap(),
+            7
+        );
+        drop(open(&path).unwrap());
+        assert_eq!(
+            std::fs::read_dir(temp.path())
+                .unwrap()
+                .filter_map(Result::ok)
+                .filter(|entry| {
+                    entry
+                        .file_name()
+                        .to_string_lossy()
+                        .contains("before-repertoire-training")
+                        && entry.path().extension().is_some_and(|ext| ext == "sqlite3")
+                })
+                .count(),
+            1
         );
     }
 }

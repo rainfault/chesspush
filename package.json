@@ -19,6 +19,7 @@
     "test:statistics-flow": "npm run tauri build -- --debug --no-bundle && node tools/check-statistics-flow.mjs",
     "test:graph-native": "npm run tauri build -- --debug --no-bundle && node tools/check-game-graph-native.mjs",
     "test:graph-volume": "npm run tauri build -- --debug --no-bundle && node tools/check-game-graph-volume.mjs",
+    "test:repertoire-training": "npm run tauri build -- --debug --no-bundle && node tools/check-repertoire-training.mjs",
     "bench:graph-renderers": "node tests/graph-renderers.mjs"
   },
   "dependencies": {

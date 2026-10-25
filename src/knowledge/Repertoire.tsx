@@ -12,6 +12,7 @@ import {
   setRepertoireAttachment,
 } from "./api";
 import { CombinedRepertoire } from "./CombinedRepertoire";
+import { RepertoireTraining } from "./RepertoireTraining";
 import { KnowledgeEditor } from "./KnowledgeEditor";
 import { sideLabel } from "./presentation";
 import type {
@@ -65,6 +66,11 @@ export function Repertoire({
     initialTarget?.mode === "list" ? null : (initialTarget ?? null),
   );
   const [combined, setCombined] = useState<KnowledgeDocument | null>(null);
+  const [training, setTraining] = useState<{
+    chapterId?: string;
+    nodeId?: string;
+    sourceDocumentId?: string;
+  } | null>(null);
   const [side, setSide] = useState<"white" | "black">(initialSide);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState("");
@@ -146,6 +152,7 @@ export function Repertoire({
     if (initialTarget) {
       lastContext.current = null;
       setCombined(null);
+      setTraining(null);
       setTarget(initialTarget.mode === "list" ? null : initialTarget);
     }
   }, [
@@ -260,14 +267,16 @@ export function Repertoire({
       </button>
     );
   }
-  async function showCombined() {
+  async function showCombined(train = false) {
     setError("");
     setBusy("Открытие репертуара…");
     const request = ++unionGeneration.current;
     try {
       const value = await loadCombinedRepertoire(side);
-      if (request === unionGeneration.current && value.chapters.length)
+      if (request === unionGeneration.current && value.chapters.length) {
         setCombined(value);
+        setTraining(train ? {} : null);
+      }
     } catch (reason) {
       setError(errorMessage(reason));
     } finally {
@@ -305,6 +314,17 @@ export function Repertoire({
   );
   const legacy = documents.filter((item) => !item.attachment);
 
+  if (training && combined)
+    return (
+      <RepertoireTraining
+        document={combined}
+        initialChapterId={training.chapterId}
+        initialNodeId={training.nodeId}
+        initialSourceDocumentId={training.sourceDocumentId}
+        active={active}
+        onClose={() => setTraining(null)}
+      />
+    );
   if (target)
     return (
       <div className="repertoire-workspace">
@@ -349,6 +369,9 @@ export function Repertoire({
           document={combined}
           onClose={() => setCombined(null)}
           onExport={() => void exportCombined()}
+          onTrain={(chapterId, nodeId, sourceDocumentId) =>
+            setTraining({ chapterId, nodeId, sourceDocumentId })
+          }
           onOpenSource={(source) => {
             setCombined(null);
             setTarget({
@@ -392,13 +415,15 @@ export function Repertoire({
               </button>
             ))}
           </div>
-          <button
-            className="primary"
-            disabled={!!busy || !isTauri()}
-            onClick={() => void attach()}
-          >
-            Прикрепить PGN
-          </button>
+          {attached.length > 0 && (
+            <button
+              className="primary"
+              disabled={!!busy || !isTauri()}
+              onClick={() => void attach()}
+            >
+              Прикрепить PGN
+            </button>
+          )}
         </div>
       </header>
       {error && (
@@ -430,6 +455,13 @@ export function Repertoire({
               </button>
               <button disabled={!!busy} onClick={() => void exportCombined()}>
                 Экспорт PGN
+              </button>
+              <button
+                className="primary"
+                disabled={!!busy}
+                onClick={() => void showCombined(true)}
+              >
+                Тренировать
               </button>
               <span>{attached.length} PGN</span>
             </div>
@@ -463,6 +495,9 @@ export function Repertoire({
                   )}
                   <span className="repertoire-tile-filename">
                     {document.filename ?? document.title}
+                    {document.chapters > 1
+                      ? ` · Глав: ${document.chapters}`
+                      : ""}
                   </span>
                 </button>
                 <button
@@ -477,7 +512,7 @@ export function Repertoire({
               </article>
             ))}
           </div>
-          {!attached.length && !error && (
+          {!attached.length && (
             <div className="repertoire-empty">
               <button
                 className="primary"

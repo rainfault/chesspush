@@ -1,0 +1,197 @@
+.repertoire-training {
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 12px 24px 24px;
+}
+.repertoire-training > header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.repertoire-training h1,
+.repertoire-training h2 {
+  font-weight: 400;
+  margin: 0;
+}
+.repertoire-training h1 {
+  font-size: 24px;
+  margin-right: auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.repertoire-training h2 {
+  font-size: 21px;
+}
+.training-layout {
+  display: grid;
+  grid-template-columns:
+    minmax(300px, min(57vw, calc(100dvh - 248px), 760px))
+    minmax(300px, 1fr);
+  gap: 24px;
+}
+.training-board,
+.training-panel {
+  min-width: 0;
+}
+.training-board-controls {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+.training-board-controls button {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 40px;
+}
+.training-panel {
+  background: var(--surface);
+  align-self: start;
+  padding: 24px;
+}
+.training-modes {
+  display: flex;
+  margin: -24px -24px 24px;
+  border-bottom: 1px solid var(--border);
+}
+.training-modes button {
+  flex: 1;
+  border-radius: 0;
+  border-bottom: 2px solid transparent;
+  min-height: 56px;
+}
+.training-modes [aria-pressed="true"] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  background: var(--surface-muted);
+}
+.training-selection {
+  display: grid;
+  gap: 20px;
+}
+.training-selection select {
+  text-overflow: ellipsis;
+}
+.training-start {
+  margin-top: 24px;
+}
+.training-start .primary {
+  min-width: 160px;
+  min-height: 44px;
+}
+.training-session-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+.training-session-heading button {
+  flex-shrink: 0;
+}
+.training-progress {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.training-panel progress {
+  width: 100%;
+  height: 6px;
+  border: 0;
+  border-radius: 0;
+  margin: 10px 0 0;
+  appearance: none;
+  background: var(--border);
+  accent-color: var(--success);
+}
+.training-panel progress::-webkit-progress-bar {
+  background: var(--border);
+}
+.training-panel progress::-webkit-progress-value {
+  background: var(--success);
+}
+.training-panel progress::-moz-progress-bar {
+  background: var(--success);
+}
+.training-feedback {
+  display: grid;
+  align-content: center;
+  min-height: 132px;
+  padding: 20px 0;
+  font-size: 24px;
+}
+.training-feedback p {
+  margin: 0 0 8px;
+}
+.training-feedback.correct {
+  color: var(--success);
+}
+.training-feedback.retry {
+  color: var(--warning);
+}
+.training-context {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-bottom: 20px;
+}
+.training-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.training-actions button {
+  min-height: 44px;
+}
+.training-comments {
+  border-top: 1px solid var(--border);
+  margin-top: 24px;
+  padding-top: 16px;
+}
+.training-comments summary {
+  cursor: pointer;
+  padding: 8px 0;
+}
+.training-comments p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.training-error {
+  margin: 0 0 20px;
+  white-space: pre-wrap;
+}
+.training-error button {
+  margin-left: 12px;
+}
+@media (max-width: 1100px) {
+  .training-layout {
+    grid-template-columns: minmax(300px, 1.3fr) minmax(300px, 1fr);
+    gap: 16px;
+  }
+  .training-panel {
+    padding: 18px;
+  }
+  .training-modes {
+    margin: -18px -18px 18px;
+  }
+  .training-session-heading {
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 760px) {
+  .training-layout {
+    grid-template-columns: minmax(280px, 1fr);
+  }
+  .training-board {
+    width: min(100%, 600px);
+    margin: 0 auto;
+  }
+  .repertoire-training > header {
+    flex-wrap: wrap;
+  }
+}

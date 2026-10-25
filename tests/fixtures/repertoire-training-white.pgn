@@ -1,0 +1,10 @@
+[Event "Training branches and transpositions"]
+
+1. d4 {Occupy the centre.}
+(1. Nf3 d5 2. d4 Nf6 3. c4 {Challenge the centre.} e6 4. Nc3)
+Nf6
+(1... d5 2. Nf3 Nf6 3. e3 {Prepare Bd3.} e6 4. Bd3)
+(1... g6 2. e4 {Take the full centre.} Bg7 3. Nc3)
+2. Nf3 d5 3. c4 {Challenge the centre.}
+(3. e3 {Prepare Bd3.} e6 4. Bd3)
+e6 4. Nc3 *

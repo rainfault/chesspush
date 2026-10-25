@@ -2,8 +2,22 @@ import type {
   DocumentPosition,
   KnowledgeChapter,
   KnowledgeDocument,
+  RepertoireChapterRef,
   VariationNode,
 } from "./types";
+
+export function repertoireChapters(
+  document: KnowledgeDocument,
+): RepertoireChapterRef[] {
+  const chapters = document.metadata.source_chapters;
+  return Array.isArray(chapters) ? chapters : [];
+}
+
+export function repertoireChapterKey(
+  chapter: Pick<RepertoireChapterRef, "document_id" | "chapter_id">,
+) {
+  return JSON.stringify([chapter.document_id, chapter.chapter_id]);
+}
 
 export interface IndexedVariation {
   node: VariationNode;
@@ -104,7 +118,7 @@ export function notationEntries(chapter: KnowledgeChapter): NotationEntry[] {
   return entries;
 }
 
-export function moveLabel(node: VariationNode) {
+export function moveLabel(node: Pick<VariationNode, "san" | "fen">) {
   if (!node.san) return "Начало";
   const fields = node.fen.split(/\s+/);
   const fullmove = Number(fields[5] ?? 1);

@@ -104,7 +104,9 @@ try {
   await openList();
   await p.getByRole("button", { name: "За белых", exact: true }).click();
   await picker(["QA-ruy.pgn", "QA-sicilian.pgn", "QA-fen.pgn"]);
-  await p.getByRole("button", { name: "Прикрепить PGN", exact: true }).click();
+  await p
+    .getByRole("button", { name: /^Прикрепить PGN(?: за (?:белых|чёрных))?$/ })
+    .click();
   await expect(
     p.locator(".repertoire-tile-filename", { hasText: "QA-fen.pgn" }),
   ).toBeVisible({ timeout: 30000 });
@@ -256,7 +258,9 @@ try {
   ).toBeVisible();
   const beforeCount = (await h.native("knowledge_list")).length;
   await picker(["QA-ruy.pgn", "QA-broken.pgn"]);
-  await p.getByRole("button", { name: "Прикрепить PGN", exact: true }).click();
+  await p
+    .getByRole("button", { name: /^Прикрепить PGN(?: за (?:белых|чёрных))?$/ })
+    .click();
   await expect(p.getByRole("alert")).toContainText("QA-broken.pgn");
   expect((await h.native("knowledge_list")).length).toBe(beforeCount);
   result.checks.push({
@@ -266,7 +270,9 @@ try {
   });
   await p.getByRole("button", { name: "За чёрных", exact: true }).click();
   await picker(["QA-french-black.pgn"]);
-  await p.getByRole("button", { name: "Прикрепить PGN", exact: true }).click();
+  await p
+    .getByRole("button", { name: /^Прикрепить PGN(?: за (?:белых|чёрных))?$/ })
+    .click();
   await expect(
     p.locator(".repertoire-tile-filename", { hasText: "QA-french-black.pgn" }),
   ).toBeVisible();
