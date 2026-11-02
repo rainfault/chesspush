@@ -44,6 +44,13 @@ fn filename(document: &KnowledgeDocument) -> Option<String> {
         .and_then(|value| value.get("filename"))
         .and_then(Value::as_str)
         .map(str::to_owned)
+        .or_else(|| {
+            document
+                .metadata
+                .get("source_filename")
+                .and_then(Value::as_str)
+                .map(str::to_owned)
+        })
 }
 
 /// Classification follows actual legal positions in every RAV, with the most
@@ -95,6 +102,9 @@ pub fn summary(document: &KnowledgeDocument) -> DocumentSummary {
         attachment_active: is_active(document),
         filename: filename(document),
         openings: classify(document),
+        classification: super::classification(document),
+        tags: document_tags(document),
+        positions: position_count(document),
     }
 }
 
@@ -178,7 +188,7 @@ pub fn set_attachment(
             "Документ уже изменён. Обновите репертуар.",
         ));
     }
-    if document.kind != "repertoire" {
+    if !["repertoire", "study"].contains(&document.kind.as_str()) {
         return Err(error("Этот документ не является репертуаром"));
     }
     let attachment = document.metadata.entry(ATTACHMENT.into()).or_insert_with(
@@ -393,7 +403,7 @@ pub fn combined(conn: &Connection, side: &str) -> Result<KnowledgeDocument, AppE
     summaries.sort_by(|a, b| a.id.cmp(&b.id));
     let mut documents = vec![];
     for item in summaries.into_iter().filter(|item| {
-        item.kind == "repertoire"
+        ["repertoire", "study"].contains(&item.kind.as_str())
             && item.attachment
             && item.attachment_active
             && (item.side == side || item.side == "both")

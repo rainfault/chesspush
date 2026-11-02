@@ -28,10 +28,42 @@ export const createDocument = (request: {
 export const importDocument = (request: {
   title: string;
   side: DocumentSide;
+  kind?: DocumentKind;
   pgn: string;
   document_id?: string;
   expected_revision?: number;
 }) => invoke<KnowledgeDocument>("knowledge_import", { request });
+
+export const tagSuggestions = (query: string) =>
+  invoke<string[]>("knowledge_tag_suggestions", { query });
+
+export const useKnowledgeInRepertoire = (
+  documentId: string,
+  expectedRevision: number,
+  side: "white" | "black",
+) =>
+  invoke<KnowledgeDocument>("knowledge_use_repertoire", {
+    documentId,
+    expectedRevision,
+    side,
+  });
+
+export const importKnowledgeFile = (path: string) =>
+  invoke<KnowledgeDocument>("knowledge_import_file", { path });
+
+export const exportKnowledgeFile = (
+  documentId: string,
+  path: string,
+  revision?: number,
+) =>
+  invoke<void>("knowledge_export_file", {
+    documentId,
+    path,
+    revision: revision ?? null,
+  });
+
+export const deleteKnowledge = (documentId: string, expectedRevision: number) =>
+  invoke<void>("knowledge_delete_study", { documentId, expectedRevision });
 
 export const applyDocument = (
   documentId: string,

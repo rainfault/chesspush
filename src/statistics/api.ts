@@ -47,6 +47,7 @@ export interface OpeningMatch {
 }
 export interface StoredGame {
   id: string;
+  movetext_revision: number;
   external_id: string;
   account_id: string;
   source: string;

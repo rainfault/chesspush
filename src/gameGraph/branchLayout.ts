@@ -1,10 +1,10 @@
 import type { GraphEdge, GraphPreview } from "./api";
 
 export const GRAPH_NODE_WIDTH = 160;
-export const GRAPH_NODE_HEIGHT = 118;
-export const GRAPH_REPLY_HEIGHT = 100;
-export const GRAPH_COLUMN = 204;
-export const GRAPH_PADDING = 22;
+export const GRAPH_NODE_HEIGHT = 92;
+export const GRAPH_REPLY_HEIGHT = 78;
+export const GRAPH_COLUMN = 196;
+export const GRAPH_PADDING = 18;
 
 /** Layout is tied to paths, never to PositionKey: equal positions reached by
  * different prefixes remain separate visible occurrences. */

@@ -29,7 +29,8 @@ export interface RepertoireTarget {
   nodeId?: string;
   initialFen?: string;
   initialLinks?: KnowledgeLink[];
-  mode?: "create" | "import" | "list";
+  mode?: "create" | "import" | "list" | "train";
+  side?: "white" | "black";
   requestId?: string | number;
 }
 export interface RepertoireContext {
@@ -54,6 +55,10 @@ function initialSide(): "white" | "black" {
     return "white";
   }
 }
+const sourceName = (document: DocumentSummary) =>
+  document.kind === "study"
+    ? document.title
+    : (document.filename ?? document.title);
 export function Repertoire({
   active = true,
   initialTarget,
@@ -63,7 +68,9 @@ export function Repertoire({
 }: Props) {
   const [documents, setDocuments] = useState<DocumentSummary[]>([]);
   const [target, setTarget] = useState<RepertoireTarget | null>(
-    initialTarget?.mode === "list" ? null : (initialTarget ?? null),
+    initialTarget?.mode === "list" || initialTarget?.mode === "train"
+      ? null
+      : (initialTarget ?? null),
   );
   const [combined, setCombined] = useState<KnowledgeDocument | null>(null);
   const [training, setTraining] = useState<{
@@ -97,7 +104,7 @@ export function Repertoire({
       if (request === generation.current) {
         setDocuments(
           values
-            .filter((item) => item.kind === "repertoire")
+            .filter((item) => item.kind === "repertoire" || item.attachment)
             .sort(
               (a, b) =>
                 b.updated_at_ms - a.updated_at_ms || a.id.localeCompare(b.id),
@@ -153,13 +160,39 @@ export function Repertoire({
       lastContext.current = null;
       setCombined(null);
       setTraining(null);
-      setTarget(initialTarget.mode === "list" ? null : initialTarget);
+      if (initialTarget.mode === "train") {
+        const trainingSide = initialTarget.side ?? side;
+        setSide(trainingSide);
+        setTarget(null);
+        setBusy("Открытие повторения…");
+        const request = ++unionGeneration.current;
+        void loadCombinedRepertoire(trainingSide)
+          .then((value) => {
+            if (request !== unionGeneration.current) return;
+            if (!value.chapters.length)
+              throw new Error("В выбранном репертуаре нет вариантов");
+            setCombined(value);
+            setTraining({
+              chapterId: initialTarget.chapterId,
+              nodeId: initialTarget.nodeId,
+              sourceDocumentId: initialTarget.documentId,
+            });
+          })
+          .catch((reason) => {
+            if (request === unionGeneration.current)
+              setError(errorMessage(reason));
+          })
+          .finally(() => {
+            if (request === unionGeneration.current) setBusy("");
+          });
+      } else setTarget(initialTarget.mode === "list" ? null : initialTarget);
     }
   }, [
     initialTarget?.documentId,
     initialTarget?.chapterId,
     initialTarget?.nodeId,
     initialTarget?.mode,
+    initialTarget?.side,
     initialTarget?.requestId,
   ]);
   useEffect(() => {
@@ -252,7 +285,10 @@ export function Repertoire({
     }
   }
   function deleteButton(document: DocumentSummary) {
-    const name = document.filename ?? document.title;
+    // A shared study remains an ordinary knowledge document. Its repertoire
+    // role is detached here; deleting the source is an explicit Knowledge action.
+    if (document.kind === "study") return null;
+    const name = sourceName(document);
     return (
       <button
         className="repertoire-delete"
@@ -329,6 +365,7 @@ export function Repertoire({
     return (
       <div className="repertoire-workspace">
         <KnowledgeEditor
+          active={active}
           key={
             target.documentId
               ? `${target.documentId}:${target.requestId ?? ""}`
@@ -481,7 +518,9 @@ export function Repertoire({
                       : "Без ECO"}
                   </span>
                   <strong>
-                    {document.openings?.[0]?.name ?? "Без классификации"}
+                    {document.kind === "study"
+                      ? document.title
+                      : (document.openings?.[0]?.name ?? "Без классификации")}
                   </strong>
                   {(document.openings?.length ?? 0) > 1 && (
                     <span
@@ -494,7 +533,7 @@ export function Repertoire({
                     </span>
                   )}
                   <span className="repertoire-tile-filename">
-                    {document.filename ?? document.title}
+                    {sourceName(document)}
                     {document.chapters > 1
                       ? ` · Глав: ${document.chapters}`
                       : ""}
@@ -503,7 +542,7 @@ export function Repertoire({
                 <button
                   className="repertoire-detach"
                   disabled={!!busy}
-                  aria-label={`Отсоединить ${document.filename ?? document.title}`}
+                  aria-label={`Отсоединить ${sourceName(document)}`}
                   onClick={() => void changeAttachment(document, false)}
                 >
                   ×

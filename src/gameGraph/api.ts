@@ -12,6 +12,17 @@ export interface PreparedLink {
   document_revision: number;
   side: string;
 }
+export interface GraphKnowledgeReference {
+  document_id: string;
+  document_revision: number;
+  chapter_id: string;
+  node_id: string;
+  title: string;
+  chapter_title: string;
+  classification: string;
+  tags: string[];
+  provenance?: string;
+}
 export interface GraphNode {
   id: string;
   fen: string;
@@ -32,6 +43,8 @@ export interface GraphNode {
   engine_coverage?: number;
   engine_reference?: OccurrenceRef | null;
   engine_run_id?: string | null;
+  knowledge?: GraphKnowledgeReference[];
+  knowledge_count?: number;
 }
 export interface GraphEdge {
   branch_games?: number;
@@ -54,6 +67,8 @@ export interface GraphEdge {
   last_ms: number | null;
   spent_mean: number | null;
   spent_sample: number;
+  knowledge?: GraphKnowledgeReference[];
+  knowledge_count?: number;
 }
 export interface GraphPreview {
   uci: string;
@@ -104,6 +119,7 @@ export interface GraphRequest {
   preview_top_k?: number;
   max_nodes?: number;
   repertoire_ids?: string[];
+  include_knowledge?: boolean;
   all_paths?: boolean;
   review_refs?: GraphReviewReference[];
 }

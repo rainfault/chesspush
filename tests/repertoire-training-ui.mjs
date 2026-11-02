@@ -189,7 +189,7 @@ async function play(uci, drag = false) {
   await expect(trainer.locator(".training-feedback")).not.toContainText(
     "Восстановление",
   );
-  if (state.feedback === "awaiting")
+  if (state.feedback === "awaiting" && state.task !== "learn")
     await expect(
       trainer.getByRole("button", { name: "Подсказка", exact: true }),
     ).toBeEnabled();
@@ -231,10 +231,14 @@ async function openTrainer(side = "white") {
 async function start(mode, resume = false) {
   await trainer
     .getByRole("button", {
-      name: mode === "srs" ? "Интервальное повторение" : "Полный дрилл",
+      name: mode === "srs" ? "Освоение и повторение" : "Полный дрилл",
       exact: true,
     })
     .click();
+  if (mode === "srs" && !resume)
+    await trainer
+      .getByRole("combobox", { name: /^Новых за сессию/ })
+      .selectOption("10");
   await page.evaluate(() => {
     window.__trainingTest.last = null;
   });
@@ -253,7 +257,8 @@ async function next(previous) {
   const current = await last();
   if (
     current.finished ||
-    current.prompt?.decision_id !== previous.prompt?.decision_id
+    current.prompt?.decision_id !== previous.prompt?.decision_id ||
+    current.step !== previous.step
   )
     return current;
   try {
@@ -264,7 +269,8 @@ async function next(previous) {
     const latest = await last();
     if (
       latest.finished ||
-      latest.prompt?.decision_id !== previous.prompt?.decision_id
+      latest.prompt?.decision_id !== previous.prompt?.decision_id ||
+      latest.step !== previous.step
     )
       return latest;
     throw error;
@@ -274,7 +280,8 @@ async function next(previous) {
       const value = await last();
       return (
         value.finished ||
-        value.prompt?.decision_id !== previous.prompt?.decision_id
+        value.prompt?.decision_id !== previous.prompt?.decision_id ||
+        value.step !== previous.step
       );
     })
     .toBe(true);
@@ -293,10 +300,11 @@ async function complete(map, initialSeen = new Set()) {
       session = await next(session);
       continue;
     }
-    expect(
-      seen.has(session.prompt.position_key),
-      "A previously covered transposed decision was repeated",
-    ).toBe(false);
+    if (session.mode === "full_drill")
+      expect(
+        seen.has(session.prompt.position_key),
+        "A previously covered transposed decision was repeated",
+      ).toBe(false);
     seen.add(session.prompt.position_key);
     const choices = expectedMoves(session.prompt, map);
     const uci =
@@ -317,6 +325,7 @@ function srsSnapshot() {
     { readOnly: true },
   );
   try {
+    db.exec("PRAGMA busy_timeout=5000");
     return db
       .prepare("SELECT * FROM repertoire_training_srs ORDER BY decision_id")
       .all();
@@ -371,8 +380,11 @@ async function captureNativeApp() {
       value,
     );
   }
-  for (const width of [1440, 900]) {
-    await nativePage.setViewportSize({ width, height: 960 });
+  for (const [width, height] of [
+    [1440, 960],
+    [900, 700],
+  ]) {
+    await nativePage.setViewportSize({ width, height });
     for (const value of ["light", "dark"]) {
       await theme(value);
       const boardBox = await nativeTrainer.locator("cg-board").boundingBox();
@@ -380,14 +392,14 @@ async function captureNativeApp() {
         .locator(".training-board-controls")
         .boundingBox();
       expect(boardBox.x + boardBox.width).toBeLessThanOrEqual(width + 1);
-      expect(controls.y + controls.height).toBeLessThanOrEqual(961);
+      expect(controls.y + controls.height).toBeLessThanOrEqual(height + 1);
       await nativePage.screenshot({
         path: join(artifacts, `native-${value}-${width}.png`),
       });
     }
   }
   record(
-    "Actual native App navigation, trainer entry and persisted theme settings fit the board and controls at 1440 and 900 pixels",
+    "Actual native App navigation, trainer entry and persisted theme settings fit the board and controls at 1440×960 and 900×700",
   );
 }
 try {
@@ -505,7 +517,36 @@ try {
 
   await openTrainer();
   session = await start("srs");
-  expect(session.total).toBe(whiteDecisions.result.size);
+  expect(session.total).toBeLessThanOrEqual(10);
+  expect(session.new_count).toBe(session.total);
+  expect(session.task).toBe("learn");
+  await expect(trainer.locator(".training-feedback")).toContainText(
+    "Запомните",
+  );
+  await expect(
+    trainer.getByRole("button", { name: "Подсказка", exact: true }),
+  ).toBeHidden();
+  const beforeIntroduction = srsSnapshot();
+  const introduced = new Set();
+  for (let guard = 0; session.task === "learn" && guard < 20; guard++) {
+    introduced.add(session.prompt.decision_id);
+    await play(
+      expectedMoves(session.prompt, whiteDecisions.result)[0],
+      guard % 2 === 0,
+    );
+    session = await sessionFeedback("assisted");
+    expect(session.completed).toBe(0);
+    expect(srsSnapshot()).toEqual(beforeIntroduction);
+    session = await next(session);
+  }
+  expect(session.task).toBe("recall");
+  expect(introduced.has(session.prompt.decision_id)).toBe(true);
+  await expect(trainer.locator(".training-comments")).toBeHidden();
+  await expect(trainer.locator("svg.cg-shapes g > *")).toHaveCount(0);
+  record(
+    "New moves are introduced on the board, then independently recalled without exposing answers or changing SRS during introduction",
+  );
+  const failedDecision = session.prompt.decision_id;
   const [accepted] = expectedMoves(session.prompt, whiteDecisions.result);
   const wrong = session.prompt.legal_moves.find(
     (move) =>
@@ -519,14 +560,33 @@ try {
   await play(accepted, true);
   session = await sessionFeedback("assisted");
   expect(srsSnapshot()).toEqual(failedSrs);
-  await complete(whiteDecisions.result, new Set([session.prompt.position_key]));
-  const overview = await native("training_overview", {
+  expect(session.pending_retests).toBeGreaterThan(0);
+  const failedSessionId = session.id;
+  await page.reload();
+  await openTrainer();
+  session = await start("srs", true);
+  expect(session.id).toBe(failedSessionId);
+  expect(session.pending_retests).toBeGreaterThan(0);
+  const adaptive = await complete(whiteDecisions.result);
+  expect(adaptive.session.recovered).toBeGreaterThan(0);
+  expect(
+    srsSnapshot().find((row) => row.decision_id === failedDecision),
+  ).toEqual(failedSrs.find((row) => row.decision_id === failedDecision));
+  let overview = await native("training_overview", {
     scope: { side: "white" },
   });
+  for (let guard = 0; overview.new_positions > 0 && guard < 10; guard++) {
+    await openTrainer();
+    session = await start("srs");
+    expect(session.total).toBeLessThanOrEqual(10);
+    await complete(whiteDecisions.result);
+    overview = await native("training_overview", { scope: { side: "white" } });
+  }
+  expect(overview.new_positions).toBe(0);
   expect(overview.due).toBe(0);
   expect(overview.next_due_at_ms).toBeGreaterThan(Date.now());
   record(
-    "SRS persists failure once, excludes guided retry from success, and schedules all completed positions",
+    "FSRS preserves the initial failure through correction, durable resume and delayed unaided retest; all new positions receive their own schedules",
   );
 
   // Advance one isolated fixture card to its review date; the remaining cards
@@ -538,6 +598,7 @@ try {
     join(process.env.CHESSPUSH_TEST_DATA, "chesspush.sqlite3"),
   );
   try {
+    fixtureDb.exec("PRAGMA busy_timeout=5000");
     expect(
       fixtureDb
         .prepare(

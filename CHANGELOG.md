@@ -2,6 +2,47 @@
 
 ## Unreleased
 
+## 1.0.0 — 2026-11-02
+
+Первый публичный релиз: базовая версия для личной шахматной подготовки.
+
+- Синхронизация завершённых личных партий Lichess, дебютная статистика и граф позиций.
+- Разбор партий в общем PGN-редакторе: главы, варианты, комментарии, NAG, стрелки, круги, теги и анализ выбранной позиции Stockfish.
+- Библиотека знаний с импортом/экспортом PGN и подключением знаний к репертуару без копирования редактируемого дерева.
+- Повторение репертуара по FSRS-6, короткие учебные сессии и независимый полный прогон.
+- Резервное копирование профиля и проверяемое восстановление со страховочным снимком.
+- Сохранены identifier приложения, каталог профиля и схема SQLite 11.
+- Зафиксированы ограничения подготовки всех PGN-ветвей, отображения пакетного анализа, области завершения тренировки, черновиков, границы T0 и переносимости внешних источников/доступа Lichess: [примечания к релизу](RELEASE_NOTES.md).
+
+## 0.2.0-alpha.11 — 2026-11-02
+
+- Add personal game review with a paginated, filtered game list, game tags, review state and the shared Study editor.
+- Add cancellable Stockfish position analysis using the canonical move history and explicit provenance for saved knowledge.
+- Connect study documents to repertoire and repetition through the same editable document and stable chapter/node identities.
+- Add complete profile snapshots, validated restore previews, automatic safety backups and recovery during a coordinated restart.
+- Preserve played games, existing knowledge, repertoire schedules and settings through SQLite migration 11.
+
+## 0.2.0-alpha.10 — 2026-11-02
+
+- Fit both opening-statistics tables within the window using compact rows and independent pagination sized to the available height.
+- Add opening search, clearer result and repertoire indicators, and always-visible totals while retaining existing sorting, board previews and graph navigation.
+- Preserve statistics calculations, IPC contracts, shared domain and database schema.
+
+## 0.2.0-alpha.9 — 2026-11-02
+
+- Add the Knowledge PGN library with automatic position/theory classification, search, type/tag filters, file import/export and guarded deletion.
+- Extend the shared editor with a local Lichess Study layout, chapter ordering, editable PGN headers and persistent custom-tag suggestions.
+- Integrate indexed knowledge positions and moves into the redesigned graph without changing factual game statistics; support direct navigation and creation from a graph position.
+- Add transactional migration 10, retaining the shared KnowledgeDocument/VariationTree as the sole authoritative PGN model.
+- Bundle pinned official Noto Sans and Roboto fonts with their Apache-2.0 license.
+
+## 0.2.0-alpha.8 — 2026-11-02
+
+- Replace fixed SM-2 scheduling with pinned FSRS 6.6.2, preserving existing due dates and lazily migrating memory state.
+- Add short review-first sessions, limited new material, guided introductions and delayed independent recall after errors.
+- Redesign repertoire training around the board, compact queue counters and faster transitions; keep Full Drill independent of SRS.
+- Add SQLite migration 9 with a consistent pre-upgrade backup; retain repertoire identities, review history and resumable sessions.
+
 - Replace the application and browser icons with a detailed transparent silver pawn; include Windows icon sizes and refresh desktop shortcut icons.
 - Fix training database locks during background writes by reserving write transactions before reading session state; keep the training overview read-only.
 - Preserve named chapter selection from multi-chapter PGNs in the combined viewer and both training modes, while retaining the global merged repertoire and existing review history.

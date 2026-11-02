@@ -1,7 +1,8 @@
 {
   "name": "chesspush",
   "private": true,
-  "version": "0.2.0-alpha.7",
+  "license": "AGPL-3.0-or-later",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -17,9 +18,16 @@
     "check:privacy": "node tools/check-privacy.mjs",
     "test:account-ui": "node tests/account-ui.mjs",
     "test:statistics-flow": "npm run tauri build -- --debug --no-bundle && node tools/check-statistics-flow.mjs",
+    "test:statistics-layout": "node tests/statistics-layout-ui.mjs",
+    "test:statistics-layout-native": "npm run tauri build -- --debug --no-bundle && node tools/check-statistics-layout-native.mjs",
     "test:graph-native": "npm run tauri build -- --debug --no-bundle && node tools/check-game-graph-native.mjs",
     "test:graph-volume": "npm run tauri build -- --debug --no-bundle && node tools/check-game-graph-volume.mjs",
     "test:repertoire-training": "npm run tauri build -- --debug --no-bundle && node tools/check-repertoire-training.mjs",
+    "test:knowledge": "npm run tauri build -- --debug --no-bundle && node tools/check-knowledge-native.mjs",
+    "test:game-review": "npm run tauri build -- --debug --no-bundle && node tools/check-game-review-native.mjs",
+    "test:review-engine": "npm run tauri build -- --debug --no-bundle && node tools/check-game-review-native.mjs --engine",
+    "test:profile-native": "npm run tauri build -- --debug --no-bundle && node tools/check-profile-native.mjs",
+    "test:profile-ui": "node tests/profile-ui.mjs",
     "bench:graph-renderers": "node tests/graph-renderers.mjs"
   },
   "dependencies": {

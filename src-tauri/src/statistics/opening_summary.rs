@@ -314,6 +314,7 @@ mod tests {
         let doc = crate::knowledge::import(
             &conn,
             crate::knowledge::ImportRequest {
+                kind: "repertoire".into(),
                 title: "White Sicilian".into(),
                 side: "white".into(),
                 pgn: "1.e4 c5 *".into(),

@@ -1,0 +1,13 @@
+[Event "Caro-Kann structure"]
+[ChapterName "Advance"]
+[White "Theory"]
+[Black "Caro-Kann"]
+[Result "*"]
+
+{The central pawn chain.} 1. e4 c6 2. d4 d5 3. e5 {Space advantage. [%cal Ge5e6] [%csl Rd5]} Bf5 $1 (3... c5 4. c3) 4. Nf3 e6 *
+
+[Event "Queen pawn"]
+[ChapterName "Queen pawn"]
+[Result "*"]
+
+1. d4 d5 2. c4 e6 (2... c6) *

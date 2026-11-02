@@ -4,6 +4,7 @@ import { chromium, expect } from "@playwright/test";
 import { createServer } from "vite";
 import react from "@vitejs/plugin-react";
 import { mkdir, writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
 const cdp = process.env.CHESSPUSH_TEST_CDP;
 if (!cdp)
   throw new Error(
@@ -97,6 +98,8 @@ await page.addInitScript(() => {
     async invoke(command, args) {
       window.__repertoireTest.calls.push({ command, args });
       if (command.startsWith("plugin:event|")) return 1;
+      if (command === "plugin:dialog|open")
+        return window.__repertoireTest.dialogPaths ?? null;
       if (command === "knowledge_apply") {
         if (window.__repertoireTest.wait)
           await new Promise((resolve) =>
@@ -112,6 +115,24 @@ await page.addInitScript(() => {
         await window.__repertoireNative(command, args),
       );
       if (!envelope.ok) throw envelope.error;
+      if (
+        command === "knowledge_load" &&
+        window.__repertoireTest.conflictAfterLoad
+      ) {
+        window.__repertoireTest.conflictAfterLoad = false;
+        const concurrent = JSON.parse(
+          await window.__repertoireNative("knowledge_apply", {
+            documentId: envelope.value.id,
+            expectedRevision: envelope.value.revision,
+            operation: {
+              type: "rename",
+              title: `${envelope.value.title} remote`,
+              side: envelope.value.side,
+            },
+          }),
+        );
+        if (!concurrent.ok) throw concurrent.error;
+      }
       return envelope.value;
     },
   };
@@ -372,75 +393,244 @@ try {
     "A draft whose node was deleted remotely is recovered separately and never reassigned to the root position",
   );
   await page
-    .getByRole("button", { name: "К репертуарам", exact: true })
+    .getByRole("button", { name: "К файлам репертуара", exact: true })
     .click();
   await expect(
     page.getByRole("heading", { name: "Репертуар", exact: true }),
   ).toBeVisible();
+  await page
+    .getByText("Ранее созданные документы (2)", { exact: true })
+    .click();
+  const legacy = page
+    .getByRole("listitem")
+    .filter({ hasText: "UX editor regression" });
+  await expect(legacy).toContainText("Белыми");
+
+  const whitePath = resolve(".qa/product-ux-repertoire/UX-attached-white.pgn");
+  const blackPath = resolve(".qa/product-ux-repertoire/UX-attached-black.pgn");
+  const brokenPath = resolve(".qa/product-ux-repertoire/UX-broken.pgn");
+  await writeFile(whitePath, pgn);
+  await writeFile(blackPath, '[Event "Black French"]\n\n1. e4 e6 2. d4 d5 *');
+  await writeFile(brokenPath, "1. e4 e5 2. Ke4 *");
+  await page.evaluate(
+    (paths) => {
+      window.__repertoireTest.dialogPaths = paths;
+    },
+    [brokenPath, whitePath],
+  );
+  await page.getByRole("button", { name: "За белых", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Прикрепить PGN за белых", exact: true })
+    .click();
+  await expect(page.getByRole("alert")).toContainText("UX-broken.pgn");
+  const whiteTile = page
+    .getByRole("article")
+    .filter({ hasText: "UX-attached-white.pgn" });
+  await expect(whiteTile).toBeVisible();
+  await expect(whiteTile).toContainText("Глав: 2");
+  await page.getByRole("button", { name: "Повторить", exact: true }).click();
+  await expect(page.getByRole("alert")).toHaveCount(0);
+  const whiteSummary = (await native("knowledge_list")).find(
+    (item) => item.filename === "UX-attached-white.pgn",
+  );
+  expect(whiteSummary.attachment_active).toBe(true);
+  expect(whiteSummary.side).toBe("white");
+  const attachedSource = await native("knowledge_load", {
+    documentId: whiteSummary.id,
+    revision: null,
+  });
+  expect(attachedSource.metadata.repertoire_attachment.source_pgn).toBe(pgn);
+  const attachedMove = attachedSource.chapters[0].root.children[0];
+
+  await page
+    .getByRole("button", { name: "Открыть общий репертуар", exact: true })
+    .click();
   await expect(
-    page
-      .locator(".repertoire-list li button")
-      .filter({ hasText: "UX editor regression" })
-      .first(),
-  ).toContainText("Белыми");
+    page.getByRole("region", { name: "Доска репертуара" }).locator("cg-board"),
+  ).toBeVisible();
+  await page
+    .locator(".combined-branches")
+    .getByRole("button", { name: /^1\. e4(?:\s|$)/ })
+    .click();
+  await page
+    .getByRole("button", { name: /^Открыть фрагмент UX-attached-white\.pgn/ })
+    .click();
+  await expect(
+    page.locator('[data-knowledge-node="' + attachedMove.id + '"]'),
+  ).toHaveAttribute("aria-current", "step");
+  await page
+    .getByLabel("Комментарий к позиции", { exact: true })
+    .fill("Edited through the combined repertoire source");
+  await page.getByRole("button", { name: "Сохранить", exact: true }).click();
+  await expect(page.locator(".knowledge-header [role=status]")).toHaveText(
+    "Сохранено",
+  );
+  const editedSource = await native("knowledge_load", {
+    documentId: whiteSummary.id,
+    revision: null,
+  });
+  expect(editedSource.chapters[0].root.children[0].id).toBe(attachedMove.id);
+  expect(editedSource.chapters[0].root.children[0].comments).toEqual([
+    "Edited through the combined repertoire source",
+  ]);
+  await page
+    .getByRole("button", { name: "К файлам репертуара", exact: true })
+    .click();
+  await page
+    .getByRole("button", {
+      name: "Отсоединить UX-attached-white.pgn",
+      exact: true,
+    })
+    .click();
+  await expect(whiteTile).toHaveCount(0);
+  await page.getByText("Отсоединённые файлы (1)", { exact: true }).click();
+  await page
+    .getByRole("button", { name: "Прикрепить снова", exact: true })
+    .click();
+  await expect(whiteTile).toBeVisible();
+  expect(
+    (
+      await native("knowledge_load", {
+        documentId: whiteSummary.id,
+        revision: null,
+      })
+    ).chapters[0].root.children[0].comments,
+  ).toEqual(["Edited through the combined repertoire source"]);
+
+  await page.getByRole("button", { name: "За чёрных", exact: true }).click();
+  await expect(whiteTile).toHaveCount(0);
+  await page.evaluate((path) => {
+    window.__repertoireTest.dialogPaths = [path];
+  }, blackPath);
+  await page
+    .getByRole("button", { name: "Прикрепить PGN за чёрных", exact: true })
+    .click();
+  const blackTile = page
+    .getByRole("article")
+    .filter({ hasText: "UX-attached-black.pgn" });
+  await expect(blackTile).toBeVisible();
+  const blackSummary = (await native("knowledge_list")).find(
+    (item) => item.filename === "UX-attached-black.pgn",
+  );
+  expect(blackSummary.side).toBe("black");
+  expect(blackSummary.attachment_active).toBe(true);
   await page.evaluate(() => {
     document.documentElement.dataset.theme = "dark";
   });
   await page.screenshot({
     path: ".qa/product-ux-repertoire/list-dark-1440.png",
   });
-  await page.getByRole("button", { name: "Создать", exact: true }).click();
-  await page
-    .getByLabel("Название репертуара", { exact: true })
-    .fill("UX created from workspace");
-  await page
-    .getByLabel("Сторона репертуара", { exact: true })
-    .selectOption("black");
-  await page.getByRole("button", { name: "Создать", exact: true }).click();
-  await expect(
-    page.getByRole("heading", {
-      name: "UX created from workspace",
-      exact: true,
-    }),
-  ).toBeVisible();
-  await page
-    .getByRole("button", { name: "К репертуарам", exact: true })
-    .click();
-  await expect(
-    page
-      .locator(".repertoire-list li button")
-      .filter({ hasText: "UX created from workspace" })
-      .first(),
-  ).toContainText("Чёрными");
-  await page
-    .getByRole("button", { name: "Импортировать PGN", exact: true })
-    .click();
-  const importTask = page.getByRole("dialog", {
-    name: "Импорт PGN",
-    exact: true,
-  });
-  await expect(importTask).toBeVisible();
-  await importTask
-    .getByLabel("Название импортируемого репертуара")
-    .fill("UX imported from workspace");
-  await importTask.getByLabel("PGN для импорта").fill("1. e4 badmove *");
-  await importTask
-    .getByRole("button", { name: "Импортировать репертуар", exact: true })
-    .click();
-  await expect(importTask.getByRole("alert")).toBeVisible();
-  await importTask.getByLabel("PGN для импорта").fill(pgn);
-  await importTask
-    .getByRole("button", { name: "Импортировать репертуар", exact: true })
-    .click();
-  await expect(
-    page.getByRole("heading", {
-      name: "UX imported from workspace",
-      exact: true,
-    }),
-  ).toBeVisible();
-  await expect(page.getByRole("dialog")).toHaveCount(0);
   record(
-    "Standalone workspace lists title/side/date and creates/imports actual persisted native documents; import errors stay in the bounded task",
+    "PGN file attachment isolates invalid files; combined repertoire opens the exact editable source; source edits survive detach/reattach and side filters",
+  );
+  const addressed = await native("knowledge_import", {
+    request: {
+      title: "Addressed draft regression",
+      side: "both",
+      pgn: '[Event "A"]\n\n1. e4 e5 *\n\n[Event "B"]\n\n1. d4 d5 *',
+    },
+  });
+  const chapterA = addressed.chapters[0],
+    chapterB = addressed.chapters[1];
+  const nodeA = chapterA.root.children[0],
+    nodeB = chapterB.root.children[0];
+  async function address(chapter, node, conflict = false) {
+    await page.evaluate(
+      ({ documentId, chapterId, nodeId, conflict }) => {
+        window.__repertoireTest.conflictAfterLoad = conflict;
+        window.__repertoireRoute.setTarget({
+          documentId,
+          chapterId,
+          nodeId,
+          requestId: Date.now(),
+        });
+      },
+      {
+        documentId: addressed.id,
+        chapterId: chapter.id,
+        nodeId: node.id,
+        conflict,
+      },
+    );
+  }
+  async function draft(text) {
+    await page.getByLabel("Комментарий к позиции", { exact: true }).fill(text);
+    await expect
+      .poll(() =>
+        page.evaluate(
+          (id) => localStorage.getItem("chesspush.knowledge.draft." + id),
+          addressed.id,
+        ),
+      )
+      .toContain(text);
+  }
+  await address(chapterA, nodeA);
+  await expect(
+    page.locator('[data-knowledge-node="' + nodeA.id + '"]'),
+  ).toHaveAttribute("aria-current", "step");
+  await draft("Draft A must be saved before B");
+  await address(chapterB, nodeB);
+  await expect(
+    page.locator('[data-knowledge-node="' + nodeB.id + '"]'),
+  ).toHaveAttribute("aria-current", "step");
+  await expect(
+    page.getByLabel("Комментарий к позиции", { exact: true }),
+  ).toHaveValue("");
+  expect(
+    (
+      await native("knowledge_load", {
+        documentId: addressed.id,
+        revision: null,
+      })
+    ).chapters[0].root.children[0].comments,
+  ).toEqual(["Draft A must be saved before B"]);
+  await address(chapterA, nodeA);
+  await expect(
+    page.locator('[data-knowledge-node="' + nodeA.id + '"]'),
+  ).toHaveAttribute("aria-current", "step");
+  await draft("Conflicting draft A remains visible");
+  // The bridge creates a real SQLite revision after load returns its snapshot,
+  // immediately before the pending navigation attempts to persist draft A.
+  await address(chapterB, nodeB, true);
+  await expect(page.getByRole("alert")).toBeVisible();
+  await expect(
+    page.locator('[data-knowledge-node="' + nodeA.id + '"]'),
+  ).toHaveAttribute("aria-current", "step");
+  await expect(
+    page.getByLabel("Комментарий к позиции", { exact: true }),
+  ).toHaveValue("Conflicting draft A remains visible");
+  expect(
+    (
+      await native("knowledge_load", {
+        documentId: addressed.id,
+        revision: null,
+      })
+    ).chapters[0].root.children[0].comments,
+  ).toEqual(["Draft A must be saved before B"]);
+  await page
+    .getByRole("button", { name: "Сверить с сохранённой версией", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Сохранить", exact: true }).click();
+  await expect(page.locator(".knowledge-header [role=status]")).toHaveText(
+    "Сохранено",
+  );
+  await address(chapterB, nodeB);
+  await expect(
+    page.locator('[data-knowledge-node="' + nodeB.id + '"]'),
+  ).toHaveAttribute("aria-current", "step");
+  await expect(
+    page.getByLabel("Комментарий к позиции", { exact: true }),
+  ).toHaveValue("");
+  expect(
+    (
+      await native("knowledge_load", {
+        documentId: addressed.id,
+        revision: null,
+      })
+    ).chapters[0].root.children[0].comments,
+  ).toEqual(["Conflicting draft A remains visible"]);
+  record(
+    "Explicit chapter/node address persists a restored draft at its original node before navigating; real revision conflicts retain that draft and selection",
   );
   const longPgn =
     '[Event "UX long document"]\n\n' +

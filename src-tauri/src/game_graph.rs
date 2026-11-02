@@ -1,5 +1,6 @@
 //! Rebuildable revisioned factual graph. Knowledge overlays never enter factual indexes.
 pub use crate::chess_domain::OccurrenceRef;
+use crate::knowledge::graph_overlay::{self as knowledge_overlay, KnowledgeReference};
 use crate::{
     domain::AppError,
     statistics::{chess, query as statistics_query, types::*},
@@ -21,6 +22,7 @@ pub struct GraphRequest {
     pub preview_top_k: Option<u32>,
     pub max_nodes: Option<u32>,
     pub repertoire_ids: Vec<String>,
+    pub include_knowledge: Option<bool>,
     /// Exact observed prefix by default; overview explicitly opts into all paths.
     pub all_paths: bool,
     pub review_refs: Vec<GraphReviewReference>,
@@ -46,6 +48,10 @@ pub struct GraphNode {
     pub engine_reference: Option<OccurrenceRef>,
     pub engine_run_id: Option<String>,
     pub example: Option<OccurrenceRef>,
+    #[serde(default)]
+    pub knowledge: Vec<KnowledgeReference>,
+    #[serde(default)]
+    pub knowledge_count: usize,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct PreparedLink {
@@ -77,6 +83,10 @@ pub struct GraphEdge {
     pub last_ms: Option<i64>,
     pub spent_mean: Option<f64>,
     pub spent_sample: usize,
+    #[serde(default)]
+    pub knowledge: Vec<KnowledgeReference>,
+    #[serde(default)]
+    pub knowledge_count: usize,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default)]
@@ -543,6 +553,7 @@ pub fn query(conn: &Connection, request: &GraphRequest) -> Result<GraphProjectio
     let top_k = request.top_k.unwrap_or(6).clamp(1, 30) as usize;
     let max_nodes = request.max_nodes.unwrap_or(120).clamp(2, 300) as usize;
     let prepared = crate::knowledge::overlay(conn, &request.repertoire_ids)?;
+    let include_knowledge = request.include_knowledge.unwrap_or(true);
     let mut queue = VecDeque::from([(selected_key.clone(), 0usize)]);
     let mut scheduled = HashSet::from([selected_key.clone()]);
     let mut visited = HashSet::new();
@@ -555,10 +566,17 @@ pub fn query(conn: &Connection, request: &GraphRequest) -> Result<GraphProjectio
         }
         let mut current = node(conn, &selection, &key, &request.filter)?;
         if level < depth {
-            let all_outgoing = project_edges(conn, &selection, &key, &request.filter, &prepared)?;
+            let all_outgoing = project_edges(
+                conn,
+                &selection,
+                &key,
+                &request.filter,
+                &prepared,
+                include_knowledge,
+            )?;
             let mut outgoing = all_outgoing.iter().take(top_k).cloned().collect::<Vec<_>>();
             for edge in &all_outgoing {
-                if !edge.prepared.is_empty()
+                if (!edge.prepared.is_empty() || edge.knowledge_count > 0)
                     && !outgoing.iter().any(|shown| shown.id == edge.id)
                     && outgoing.len() < top_k * 2
                 {
@@ -579,7 +597,15 @@ pub fn query(conn: &Connection, request: &GraphRequest) -> Result<GraphProjectio
                 result_edges.insert(edge.id.clone(), edge);
             }
         } else {
-            let (_, all) = edges(conn, &selection, &key, &request.filter, 0)?;
+            let all = project_edges(
+                conn,
+                &selection,
+                &key,
+                &request.filter,
+                &prepared,
+                include_knowledge,
+            )?
+            .len();
             current.hidden_continuations = all;
             hidden += all;
         }
@@ -589,6 +615,11 @@ pub fn query(conn: &Connection, request: &GraphRequest) -> Result<GraphProjectio
                 .find(|p| p.to_key == key)
                 .map(|p| p.fen.clone())
                 .unwrap_or_default();
+            if current.fen.is_empty() && include_knowledge {
+                current.fen = knowledge_overlay::position(conn, &key)?
+                    .map(|position| position.fen)
+                    .unwrap_or_default();
+            }
         }
         nodes.insert(key, current);
     }
@@ -599,17 +630,21 @@ pub fn query(conn: &Connection, request: &GraphRequest) -> Result<GraphProjectio
     if selected.fen.is_empty() {
         return Err(AppError::new(
             "position",
-            "Позиция не найдена в выборке или репертуаре",
+            "Позиция не найдена в партиях, репертуаре или знаниях",
         ));
     }
-    if request.line.is_none()
-        && selected_key != path_position.position_key
-        && let Some(reference) = &selected.example
-    {
-        let context = resolve_occurrence(conn, reference)?;
-        initial = context.initial_fen;
-        line = context.line;
-        selected.fen = context.fen;
+    if request.line.is_none() && selected_key != path_position.position_key {
+        if let Some(reference) = &selected.example {
+            let context = resolve_occurrence(conn, reference)?;
+            initial = context.initial_fen;
+            line = context.line;
+            selected.fen = context.fen;
+        } else {
+            // A knowledge-only position has no factual occurrence to borrow.
+            // Its own FEN is a valid root; explicit document paths remain intact.
+            initial = selected.fen.clone();
+            line.clear();
+        }
     }
     let root_key = chess::line_position_from(&initial, &[])
         .map_err(|e| AppError::new("position", e))?
@@ -650,8 +685,9 @@ pub fn query(conn: &Connection, request: &GraphRequest) -> Result<GraphProjectio
         &selected_key,
         &request.filter,
         &prepared,
+        include_knowledge,
     )?;
-    let branch_edges = project_edges(conn, &branch, &selected_key, &request.filter, &[])?;
+    let branch_edges = project_edges(conn, &branch, &selected_key, &request.filter, &[], false)?;
     for edge in &mut continuations {
         edge.branch_games = branch_edges
             .iter()
@@ -670,7 +706,14 @@ pub fn query(conn: &Connection, request: &GraphRequest) -> Result<GraphProjectio
         } else {
             &next_branch
         };
-        let replies = project_edges(conn, next_selection, &edge.to, &request.filter, &prepared)?;
+        let replies = project_edges(
+            conn,
+            next_selection,
+            &edge.to,
+            &request.filter,
+            &prepared,
+            include_knowledge,
+        )?;
         let hidden = replies.len().saturating_sub(preview_top_k);
         previews.push(GraphPreview {
             uci: edge.uci.clone(),
@@ -708,6 +751,19 @@ pub fn query(conn: &Connection, request: &GraphRequest) -> Result<GraphProjectio
         chess::line_nodes_from(&initial, &line).map_err(|e| AppError::new("position", e))?;
     let repertoire_ends_here = prepared.iter().any(|p| p.to_key == selected_key)
         && !prepared.iter().any(|p| p.from_key == selected_key);
+    if include_knowledge {
+        let keys = nodes
+            .keys()
+            .cloned()
+            .chain(std::iter::once(selected_key.clone()))
+            .collect::<Vec<_>>();
+        let references = knowledge_overlay::references(conn, &keys)?;
+        for current in nodes.values_mut().chain(std::iter::once(&mut selected)) {
+            let values = unique_knowledge(references.get(&current.id).cloned().unwrap_or_default());
+            current.knowledge_count = values.len();
+            current.knowledge = values.into_iter().take(32).collect();
+        }
+    }
     Ok(GraphProjection {
         repertoire_ends_here,
         continuations,
@@ -913,6 +969,189 @@ pub fn save_state(
         &format!("game_graph_view:{}", account_id.unwrap_or("all")),
         &raw,
     )
+}
+
+#[cfg(test)]
+mod knowledge_layer_tests {
+    use super::*;
+    use crate::knowledge::{self, ImportRequest, KnowledgeDocument};
+
+    fn study(conn: &Connection, title: &str, pgn: &str) -> KnowledgeDocument {
+        knowledge::import(
+            conn,
+            ImportRequest {
+                title: title.into(),
+                kind: "study".into(),
+                side: "both".into(),
+                pgn: pgn.into(),
+                document_id: None,
+                expected_revision: None,
+            },
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn knowledge_moves_and_markers_do_not_change_observed_counts_or_repertoire_coverage() {
+        let (_temp, conn) = super::tests::setup();
+        super::tests::save(&conn, &super::tests::game("knowledge", "1. e4 e5"));
+        let baseline = query(
+            &conn,
+            &GraphRequest {
+                include_knowledge: Some(false),
+                ..super::tests::request()
+            },
+        )
+        .unwrap();
+        let document = study(&conn, "Sicilian idea", "1. e4 c5 2. Nf3 {Develop} *");
+        let root = query(&conn, &super::tests::request()).unwrap();
+        assert_eq!(root.total_positions, baseline.total_positions);
+        assert_eq!(root.total_visits, baseline.total_visits);
+        assert_eq!(root.selected.games, baseline.selected.games);
+        assert_eq!(root.selected.knowledge_count, 1);
+        assert_eq!(root.selected.knowledge[0].document_id, document.id);
+        let after_e4 = query(
+            &conn,
+            &GraphRequest {
+                line: Some(vec!["e2e4".into()]),
+                ..super::tests::request()
+            },
+        )
+        .unwrap();
+        let unplayed = after_e4
+            .continuations
+            .iter()
+            .find(|edge| edge.uci == "c7c5")
+            .unwrap();
+        assert_eq!(
+            (unplayed.games, unplayed.visits, unplayed.branch_games),
+            (0, 0, 0)
+        );
+        assert_eq!(unplayed.score, None);
+        assert_eq!(unplayed.coverage, "knowledge");
+        assert!(unplayed.prepared.is_empty());
+        assert_eq!(unplayed.knowledge_count, 1);
+        assert_eq!(
+            after_e4
+                .continuations
+                .iter()
+                .find(|edge| edge.uci == "e7e5")
+                .unwrap()
+                .games,
+            1
+        );
+        let hidden = query(
+            &conn,
+            &GraphRequest {
+                line: Some(vec!["e2e4".into()]),
+                include_knowledge: Some(false),
+                ..super::tests::request()
+            },
+        )
+        .unwrap();
+        assert!(!hidden.continuations.iter().any(|edge| edge.uci == "c7c5"));
+        assert_eq!(hidden.selected.knowledge_count, 0);
+    }
+
+    #[test]
+    fn knowledge_only_graph_preserves_legal_context_without_inventing_played_games() {
+        let (_temp, conn) = super::tests::setup();
+        let document = study(&conn, "Preparation", "1. d4 d5 (1... Nf6) 2. c4 *");
+        let root = query(&conn, &super::tests::request()).unwrap();
+        assert_eq!(root.eligible_games, 0);
+        assert_eq!(root.selected.score, None);
+        assert!(root.continuations.iter().any(|edge| edge.uci == "d2d4"));
+        let selected = query(
+            &conn,
+            &GraphRequest {
+                line: Some(vec!["d2d4".into(), "g8f6".into()]),
+                ..super::tests::request()
+            },
+        )
+        .unwrap();
+        assert_eq!(selected.line, vec!["d2d4", "g8f6"]);
+        assert_eq!(selected.path_nodes.len(), 3);
+        assert_eq!(selected.selected.games, 0);
+        assert_eq!(selected.selected.knowledge[0].document_id, document.id);
+        assert_eq!(
+            selected.selected.knowledge[0].chapter_id,
+            document.chapters[0].id
+        );
+        assert_eq!(
+            selected.selected_fen,
+            selected.path_nodes.last().unwrap().fen
+        );
+    }
+
+    #[test]
+    fn isolated_position_knowledge_can_be_opened_by_position_key() {
+        let (_temp, conn) = super::tests::setup();
+        let fen = "8/8/8/3k4/8/4K3/8/8 w - - 12 37";
+        let document = study(
+            &conn,
+            "Opposition",
+            &format!("[SetUp \"1\"]\n[FEN \"{fen}\"]\n\n*"),
+        );
+        let key = document.chapters[0].root.position_key.clone();
+        let projection = query(
+            &conn,
+            &GraphRequest {
+                position_key: Some(key.clone()),
+                ..super::tests::request()
+            },
+        )
+        .unwrap();
+        assert_eq!(projection.initial_fen, fen);
+        assert!(projection.line.is_empty());
+        assert_eq!(projection.root_key, key);
+        assert_eq!(projection.selected.knowledge_count, 1);
+        assert_eq!(projection.selected.knowledge[0].classification, "position");
+        assert_eq!(projection.selected.games, 0);
+        assert!(
+            query(
+                &conn,
+                &GraphRequest {
+                    position_key: Some(key),
+                    include_knowledge: Some(false),
+                    ..super::tests::request()
+                }
+            )
+            .is_err()
+        );
+    }
+
+    #[test]
+    fn book_count_is_documents_not_occurrences_and_exposed_references_are_bounded() {
+        let (_temp, conn) = super::tests::setup();
+        study(
+            &conn,
+            "Two chapters",
+            "[Event \"A\"]\n\n1. e4 *\n\n[Event \"B\"]\n\n1. d4 *",
+        );
+        assert_eq!(
+            query(&conn, &super::tests::request())
+                .unwrap()
+                .selected
+                .knowledge_count,
+            1
+        );
+        for index in 0..34 {
+            study(&conn, &format!("Position {index}"), "*");
+        }
+        let root = query(&conn, &super::tests::request()).unwrap();
+        assert_eq!(root.selected.knowledge_count, 35);
+        assert_eq!(root.selected.knowledge.len(), 32);
+        assert_eq!(
+            root.selected
+                .knowledge
+                .iter()
+                .map(|reference| &reference.document_id)
+                .collect::<HashSet<_>>()
+                .len(),
+            32
+        );
+        assert_eq!((root.total_visits, root.eligible_games), (0, 0));
+    }
 }
 
 #[cfg(test)]
@@ -1316,6 +1555,7 @@ mod tests {
         let document = crate::knowledge::import(
             &conn,
             crate::knowledge::ImportRequest {
+                kind: "repertoire".into(),
                 title: "My opening".into(),
                 side: "white".into(),
                 pgn: "1. e4 e5 (1... c5) 2. Nf3 *".into(),
@@ -1379,6 +1619,7 @@ mod tests {
         let document = crate::knowledge::import(
             &conn,
             crate::knowledge::ImportRequest {
+                kind: "repertoire".into(),
                 title: "Preview repertoire".into(),
                 side: "white".into(),
                 pgn: "1. e4 e5 (1... c5) 2. Nf3 *".into(),
@@ -1615,12 +1856,21 @@ mod saved_engine_tests {
     }
 }
 
+fn unique_knowledge(values: Vec<KnowledgeReference>) -> Vec<KnowledgeReference> {
+    let mut documents = HashSet::new();
+    values
+        .into_iter()
+        .filter(|reference| documents.insert(reference.document_id.clone()))
+        .collect()
+}
+
 fn project_edges(
     conn: &Connection,
     selection: &Selection,
     key: &str,
     filter: &StatisticsFilter,
     prepared: &[crate::knowledge::PreparedMove],
+    include_knowledge: bool,
 ) -> Result<Vec<GraphEdge>, AppError> {
     // Standard chess has at most 218 legal moves; 256 is a bounded complete local slice.
     let (mut outgoing, _) = edges(conn, selection, key, filter, 256)?;
@@ -1673,6 +1923,31 @@ fn project_edges(
                 }
                 .into();
             }
+        }
+    }
+    if include_knowledge {
+        for transition in knowledge_overlay::continuations(conn, key)? {
+            if !outgoing.iter().any(|edge| edge.uci == transition.uci) {
+                outgoing.push(GraphEdge {
+                    id: format!("{key}|{}", transition.uci),
+                    from: key.into(),
+                    to: transition.to_key,
+                    uci: transition.uci,
+                    san: transition.san,
+                    coverage: "knowledge".into(),
+                    ..Default::default()
+                });
+            }
+        }
+        let keys = outgoing
+            .iter()
+            .map(|edge| edge.to.clone())
+            .collect::<Vec<_>>();
+        let references = knowledge_overlay::references(conn, &keys)?;
+        for edge in &mut outgoing {
+            let values = unique_knowledge(references.get(&edge.to).cloned().unwrap_or_default());
+            edge.knowledge_count = values.len();
+            edge.knowledge = values.into_iter().take(32).collect();
         }
     }
     Ok(outgoing)

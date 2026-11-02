@@ -196,7 +196,7 @@ async function openTraining(title = null) {
 async function start(mode) {
   await trainer
     .getByRole("button", {
-      name: mode === "srs" ? "Интервальное повторение" : "Полный дрилл",
+      name: mode === "srs" ? "Освоение и повторение" : "Полный дрилл",
       exact: true,
     })
     .click();
@@ -219,7 +219,7 @@ async function play(
   await expect(owner.locator(".training-feedback")).not.toContainText(
     "Восстановление",
   );
-  if ((await last())?.feedback === "awaiting")
+  if ((await last())?.feedback === "awaiting" && state.task !== "learn")
     await expect(
       owner.getByRole("button", { name: "Подсказка", exact: true }),
     ).toBeEnabled();
@@ -243,7 +243,8 @@ async function advance(previous) {
   const current = await last();
   if (
     current.finished ||
-    current.prompt?.decision_id !== previous.prompt?.decision_id
+    current.prompt?.decision_id !== previous.prompt?.decision_id ||
+    current.step !== previous.step
   )
     return current;
   try {
@@ -254,7 +255,8 @@ async function advance(previous) {
     const now = await last();
     if (
       now.finished ||
-      now.prompt?.decision_id !== previous.prompt?.decision_id
+      now.prompt?.decision_id !== previous.prompt?.decision_id ||
+      now.step !== previous.step
     )
       return now;
     throw error;
@@ -263,7 +265,9 @@ async function advance(previous) {
     .poll(async () => {
       const now = await last();
       return (
-        now.finished || now.prompt?.decision_id !== previous.prompt?.decision_id
+        now.finished ||
+        now.prompt?.decision_id !== previous.prompt?.decision_id ||
+        now.step !== previous.step
       );
     })
     .toBe(true);
@@ -288,10 +292,11 @@ async function complete(map, scope, seen = new Set()) {
       moves,
       `Unexpected position outside ${scope?.chapter.title ?? "whole repertoire"}`,
     ).toBeTruthy();
-    expect(
-      seen.has(prompt.position_key),
-      "A completed transposition was repeated",
-    ).toBe(false);
+    if (session.mode === "full_drill")
+      expect(
+        seen.has(prompt.position_key),
+        "A completed transposition was repeated",
+      ).toBe(false);
     seen.add(prompt.position_key);
     session = await play([...moves][0]);
     expect(["correct", "assisted"]).toContain(session.feedback);
@@ -309,6 +314,7 @@ function srsRows() {
     readOnly: true,
   });
   try {
+    db.exec("PRAGMA busy_timeout=5000");
     return db
       .prepare("SELECT * FROM repertoire_training_srs ORDER BY decision_id")
       .all();

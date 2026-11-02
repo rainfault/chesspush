@@ -1,4 +1,8 @@
 import { Repertoire, type RepertoireTarget } from "./knowledge/Repertoire";
+import { Knowledge, type KnowledgeTarget } from "./knowledge/Knowledge";
+import { GameReview } from "./review/GameReview";
+import type { ReviewTarget } from "./review/api";
+import { initializeProfileUi } from "./profile/api";
 import type { DocumentPosition } from "./knowledge/types";
 import { Statistics } from "./statistics/Statistics";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -21,16 +25,52 @@ import {
 const pages = [
   ["home", "Главная"],
   ["statistics", "Статистика"],
+  ["review", "Разбор партий"],
   ["repertoire", "Репертуар"],
+  ["knowledge", "Знания"],
   ["databases", "Парсер ZST"],
 ] as const;
 
 export function App() {
+  const [ready, setReady] = useState(!isTauri());
+  const [error, setError] = useState("");
+  const [attempt, retry] = useState(0);
+  useEffect(() => {
+    if (!isTauri()) return;
+    let disposed = false;
+    void (async () => {
+      await initializeProfileUi();
+      if (!disposed) {
+        setError("");
+        setReady(true);
+      }
+    })().catch((reason) => {
+      if (!disposed) setError(errorMessage(reason));
+    });
+    return () => {
+      disposed = true;
+    };
+  }, [attempt]);
+  if (!ready)
+    return (
+      <main className="profile-bootstrap" role={error ? "alert" : "status"}>
+        {error || "Загрузка профиля…"}
+        {error && (
+          <button onClick={() => retry((value) => value + 1)}>Повторить</button>
+        )}
+      </main>
+    );
+  return <AppWorkspace />;
+}
+
+function AppWorkspace() {
   const [page, setPage] = useState("home");
   const [sectionRequest, setSectionRequest] = useState(0);
   const [section, setSection] = useState("openings");
   const [settingsSection, setSettingsSection] = useState("account");
   const [repertoireTarget, setRepertoireTarget] = useState<RepertoireTarget>();
+  const [knowledgeTarget, setKnowledgeTarget] = useState<KnowledgeTarget>();
+  const [reviewTarget, setReviewTarget] = useState<ReviewTarget>();
   const [openPositionRequest, setOpenPositionRequest] =
     useState<DocumentPosition>();
   const openSettings = (tab = "account") => {
@@ -44,6 +84,7 @@ export function App() {
   };
   const [theme, setTheme] = useState("light");
   const [settings, setSettings] = useState(false);
+  const [restoring, setRestoring] = useState(false);
   const [error, setError] = useState("");
   const [account, setAccount] = useState<AccountStatus>(disconnectedAccount);
   const [busy, setBusy] = useState(false);
@@ -149,107 +190,172 @@ export function App() {
 
   return (
     <>
-      <header className="app-header">
-        <button
-          className="wordmark"
-          onClick={() => setPage("home")}
-          aria-label="ChessPush — главная"
-        >
-          ChessPush
-        </button>
-        <nav aria-label="Разделы">
-          {pages.map(([id, label]) => (
-            <button
-              key={id}
-              className={page === id ? "active" : ""}
-              onClick={() => {
-                setPage(id);
-                if (id === "repertoire")
-                  setRepertoireTarget({ mode: "list", requestId: Date.now() });
-              }}
-            >
-              {label}
-            </button>
-          ))}
-        </nav>
-        <button
-          className="settings-button"
-          title="Настройки"
-          aria-label="Настройки"
-          onClick={() => {
-            setError("");
-            openSettings();
-          }}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            width="25"
-            height="25"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
+      <div className="app-workspace" inert={restoring}>
+        <header className="app-header">
+          <button
+            className="wordmark"
+            onClick={() => setPage("home")}
+            aria-label="ChessPush — главная"
           >
-            <path d="m9 3 1-2h4l1 2 3 2 2 1-1 3v5l1 3-2 1-3 2-1 2h-4l-1-2-3-2-2-1 1-3V9L4 6l2-1z" />
-            <circle cx="12" cy="12" r="4" />
-          </svg>
-        </button>
-      </header>
-      <Databases active={page === "databases"} />
-      <Statistics
-        active={page === "statistics"}
-        initialSection={section}
-        sectionRequest={sectionRequest}
-        onNavigateSection={setSection}
-        onOpenSettings={openSettings}
-        openPositionRequest={openPositionRequest}
-        onPositionRequestHandled={() => setOpenPositionRequest(undefined)}
-        onOpenRepertoire={(target) => {
-          setRepertoireTarget({ ...target, requestId: Date.now() });
-          setPage("repertoire");
-        }}
-        account={account}
-        onAuthenticate={onAuthenticate}
-        busy={busy}
-      />
-      {page === "home" && (
-        <Home
+            ChessPush
+          </button>
+          <nav aria-label="Разделы">
+            {pages.map(([id, label]) => (
+              <button
+                key={id}
+                className={page === id ? "active" : ""}
+                onClick={() => {
+                  setPage(id);
+                  if (id === "repertoire")
+                    setRepertoireTarget({
+                      mode: "list",
+                      requestId: Date.now(),
+                    });
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
+          <button
+            className="settings-button"
+            title="Настройки"
+            aria-label="Настройки"
+            onClick={() => {
+              setError("");
+              openSettings();
+            }}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="25"
+              height="25"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
+              <path d="m9 3 1-2h4l1 2 3 2 2 1-1 3v5l1 3-2 1-3 2-1 2h-4l-1-2-3-2-2-1 1-3V9L4 6l2-1z" />
+              <circle cx="12" cy="12" r="4" />
+            </svg>
+          </button>
+        </header>
+        <Databases active={page === "databases" && !restoring} />
+        <Statistics
+          active={page === "statistics" && !restoring}
+          initialSection={section}
+          sectionRequest={sectionRequest}
+          onNavigateSection={setSection}
+          onOpenSettings={openSettings}
+          openPositionRequest={openPositionRequest}
+          onPositionRequestHandled={() => setOpenPositionRequest(undefined)}
+          onOpenRepertoire={(target) => {
+            setRepertoireTarget({ ...target, requestId: Date.now() });
+            setPage("repertoire");
+          }}
+          onOpenKnowledge={(target) => {
+            setKnowledgeTarget({ ...target, requestId: Date.now() });
+            setPage("knowledge");
+          }}
+          onOpenGameReview={(target) => {
+            setReviewTarget({ ...target, requestId: Date.now() });
+            setPage("review");
+          }}
           account={account}
           onAuthenticate={onAuthenticate}
-          onCancel={onCancel}
           busy={busy}
         />
-      )}
-      <div hidden={page !== "repertoire"}>
-        <Repertoire
-          active={page === "repertoire"}
-          initialTarget={repertoireTarget}
+        {page === "home" && (
+          <Home
+            account={account}
+            onAuthenticate={onAuthenticate}
+            onCancel={onCancel}
+            busy={busy}
+          />
+        )}
+        <GameReview
+          active={page === "review" && !restoring}
+          account={account}
+          initialTarget={reviewTarget}
+          onAuthenticate={onAuthenticate}
+          onSettings={() => openSettings("engine")}
+          onOpenKnowledge={(target) => {
+            setKnowledgeTarget({ ...target, requestId: Date.now() });
+            setPage("knowledge");
+          }}
           onOpenGraph={(position) => {
             setOpenPositionRequest(position);
             openMap();
           }}
         />
+        <div hidden={page !== "repertoire"}>
+          <Repertoire
+            active={page === "repertoire" && !restoring}
+            initialTarget={repertoireTarget}
+            onOpenGraph={(position) => {
+              setOpenPositionRequest(position);
+              openMap();
+            }}
+          />
+        </div>
+        <div hidden={page !== "knowledge"}>
+          <Knowledge
+            active={page === "knowledge" && !restoring}
+            initialTarget={knowledgeTarget}
+            onOpenRepertoire={(target) => {
+              setRepertoireTarget({ ...target, requestId: Date.now() });
+              setPage("repertoire");
+            }}
+            onOpenSourceGame={(target) => {
+              setReviewTarget({
+                gameId: target.gameId,
+                accountId: target.accountId,
+                revision: target.revision,
+                ply: target.ply,
+                requestId: Date.now(),
+              });
+              setPage("review");
+            }}
+            onOpenGraph={(position) => {
+              setOpenPositionRequest(position);
+              openMap();
+            }}
+          />
+        </div>
+        {settings && (
+          <Settings
+            account={account}
+            initialSection={settingsSection}
+            theme={theme}
+            busy={busy}
+            error={error}
+            onClose={closeSettings}
+            onTheme={(value) => void changeTheme(value)}
+            onToken={(token) =>
+              void runAccountAction(() => connectToken(token))
+            }
+            onAuthenticate={onAuthenticate}
+            onCancel={onCancel}
+            onDisconnect={() => void runAccountAction(disconnectAccount)}
+            onRestoringChange={setRestoring}
+          />
+        )}
       </div>
-      {settings && (
-        <Settings
-          account={account}
-          initialSection={settingsSection}
-          theme={theme}
-          busy={busy}
-          error={error}
-          onClose={closeSettings}
-          onTheme={(value) => void changeTheme(value)}
-          onToken={(token) => void runAccountAction(() => connectToken(token))}
-          onAuthenticate={onAuthenticate}
-          onCancel={onCancel}
-          onDisconnect={() => void runAccountAction(disconnectAccount)}
-        />
+      {restoring && (
+        <div
+          className="profile-restore-block"
+          role="alertdialog"
+          aria-modal="true"
+          aria-label="Восстановление профиля"
+        >
+          <p>Восстановление профиля. Перезапуск ChessPush…</p>
+        </div>
       )}
       {(error ||
         (["invalid_token", "error"].includes(account.status)
           ? account.message
           : null)) &&
         !settings && (
-          <div className="global-error error" role="alert">
+          <div className="global-error error" role="alert" inert={restoring}>
             {error || account.message}
             <button onClick={() => openSettings("account")}>
               Проверить подключение

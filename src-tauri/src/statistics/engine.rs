@@ -150,6 +150,110 @@ pub fn configuration(conn: &Connection) -> Result<EngineConfig, AppError> {
         .transpose()?
         .unwrap_or_default())
 }
+
+/// Bounded interactive analysis of an already validated review route. The
+/// cache uses the same full initial-position/history identity as game analysis,
+/// with its actual interactive search budget in a distinct profile fingerprint.
+pub fn evaluate_context(
+    conn: &Connection,
+    initial: &str,
+    history: &[String],
+    fen: &str,
+    mut cancel: impl FnMut() -> bool,
+) -> Result<(PositionEvaluation, EngineIdentity), AppError> {
+    if cancel() {
+        return Err(AppError::new("cancelled", "Анализ отменён"));
+    }
+    if history.len() > 512 || initial.contains(['\r', '\n']) || fen.contains(['\r', '\n']) {
+        return Err(error("Некорректный контекст разбора"));
+    }
+    let config = configuration(conn)?;
+    let raw: Option<String> = conn.query_row(
+        "SELECT identity_json FROM statistics_engine_state WHERE id=1",
+        [],
+        |r| r.get(0),
+    )?;
+    let mut identity: EngineIdentity =
+        serde_json::from_str(&raw.ok_or_else(|| error("Настройте Stockfish в разделе «Движок»"))?)?;
+    let path = Path::new(&config.path);
+    if !path.is_absolute() || !path.is_file() || hash_file(path)? != identity.binary_hash {
+        return Err(error(
+            "Stockfish изменён или недоступен. Проверьте настройки движка.",
+        ));
+    }
+    verify_network_files(&identity)?;
+    let (nodes, movetime) = config.budgets()?;
+    let nodes = nodes.min(20_000_000);
+    let movetime = movetime.min(5_000);
+    identity.profile_id = digest(&serde_json::to_vec(&(
+        &identity.profile_id,
+        "review-live-v1",
+        nodes,
+        movetime,
+    ))?);
+    let (key, context) = cache_key(&identity, initial, history, None)?;
+    let cached:Option<(String,String)>=conn.query_row("SELECT context_json,evaluation_json FROM statistics_engine_observations WHERE cache_key=?1",[&key],|r|Ok((r.get(0)?,r.get(1)?))).optional()?;
+    if let Some((canonical, raw)) = cached
+        && canonical == context
+    {
+        let mut evaluation: PositionEvaluation = serde_json::from_str(&raw)?;
+        evaluation.ply = history.len() as u32;
+        return Ok((evaluation, identity));
+    }
+    let pov = if fen.split_whitespace().nth(1) == Some("b") {
+        "black"
+    } else {
+        "white"
+    };
+    let (evaluation, raw) = if let Some(outcome) = chess::terminal_outcome(fen) {
+        (
+            PositionEvaluation {
+                ply: history.len() as u32,
+                wdl: Some(match outcome.as_str() {
+                    "white" => [1000, 0, 0],
+                    "black" => [0, 0, 1000],
+                    _ => [0, 1000, 0],
+                }),
+                score_kind: "terminal".into(),
+                stop_reason: "terminal_rules".into(),
+                root_pov: pov.into(),
+                terminal_outcome: Some(outcome),
+                complete: true,
+                ..Default::default()
+            },
+            "terminal-rules".into(),
+        )
+    } else {
+        if cancel() {
+            return Err(AppError::new("cancelled", "Анализ отменён"));
+        }
+        let mut engine = UciProcess::start(path)?;
+        let (name, _, available) = engine.handshake()?;
+        if name != identity.name || !available.contains_key("UCI_ShowWDL") {
+            return Err(error(
+                "Конфигурация Stockfish не соответствует сохранённому профилю",
+            ));
+        }
+        engine.configure(&identity.options)?;
+        engine.search(
+            initial,
+            history,
+            pov,
+            history.len() as u32,
+            None,
+            nodes,
+            movetime,
+            &mut cancel,
+        )?
+    };
+    if cancel() {
+        return Err(AppError::new("cancelled", "Анализ отменён"));
+    }
+    if evaluation.complete && evaluation.bound.is_none() {
+        conn.execute("INSERT INTO statistics_engine_observations(cache_key,context_json,evaluation_json,raw_info,created_at_ms) VALUES(?1,?2,?3,?4,?5) ON CONFLICT(cache_key) DO UPDATE SET context_json=excluded.context_json,evaluation_json=excluded.evaluation_json,raw_info=excluded.raw_info,created_at_ms=excluded.created_at_ms",params![key,context,serde_json::to_string(&evaluation)?,raw,now()])?;
+    }
+    Ok((evaluation, identity))
+}
 pub fn validate_config(config: &EngineConfig) -> Result<EngineIdentity, AppError> {
     config.budgets()?;
     let path = Path::new(&config.path);
@@ -493,26 +597,7 @@ fn process_job(conn: &Connection, job: &Job, shutdown: &AtomicBool) -> Result<()
             "Файл Stockfish изменился. Сохраните настройки и запустите новый профиль",
         ));
     }
-    for network in &job.identity.networks {
-        if let Some(expected) = &network.sha256 {
-            let path = job
-                .identity
-                .options
-                .get(
-                    if job.identity.networks.first().map(|n| n.name.as_str())
-                        == Some(network.name.as_str())
-                    {
-                        "EvalFile"
-                    } else {
-                        "EvalFileSmall"
-                    },
-                )
-                .ok_or_else(|| error("Параметры NNUE изменились"))?;
-            if &hash_file(Path::new(path))? != expected {
-                return Err(error("NNUE изменился. Создайте новый профиль анализа"));
-            }
-        }
-    }
+    verify_network_files(&job.identity)?;
     let current_manifest = job
         .config
         .syzygy_path
@@ -717,6 +802,29 @@ fn process_job(conn: &Connection, job: &Job, shutdown: &AtomicBool) -> Result<()
     conn.execute("UPDATE statistics_analysis_jobs SET state='succeeded',progress=total,last_error=NULL,heartbeat_ms=NULL WHERE id=?1 AND state='running'",[job.id])?;
     Ok(())
 }
+fn verify_network_files(identity: &EngineIdentity) -> Result<(), AppError> {
+    for network in &identity.networks {
+        if let Some(expected) = &network.sha256 {
+            let path = identity
+                .options
+                .get(
+                    if identity.networks.first().map(|n| n.name.as_str())
+                        == Some(network.name.as_str())
+                    {
+                        "EvalFile"
+                    } else {
+                        "EvalFileSmall"
+                    },
+                )
+                .ok_or_else(|| error("Параметры NNUE изменились"))?;
+            if &hash_file(Path::new(path))? != expected {
+                return Err(error("NNUE изменился. Создайте новый профиль анализа"));
+            }
+        }
+    }
+    Ok(())
+}
+
 fn cache_key(
     identity: &EngineIdentity,
     initial: &str,

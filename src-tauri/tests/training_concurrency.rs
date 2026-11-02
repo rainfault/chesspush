@@ -98,6 +98,7 @@ fn request(mode: &str) -> StartRequest {
         scope: scope(),
         mode: mode.into(),
         restart: false,
+        new_limit: 5,
     }
 }
 fn fixture() -> (tempfile::TempDir, Connection, std::path::PathBuf) {
@@ -124,6 +125,18 @@ fn schedule(conn: &Connection) -> Vec<(String, i64, i64, i64, f64, i64)> {
     conn.prepare("SELECT decision_id,repetitions,interval_days,due_at_ms,ease,last_review_at_ms FROM repertoire_training_srs ORDER BY decision_id")
         .unwrap().query_map([], |row| Ok((row.get(0)?,row.get(1)?,row.get(2)?,row.get(3)?,row.get(4)?,row.get(5)?)))
         .unwrap().collect::<Result<Vec<_>,_>>().unwrap()
+}
+
+fn independent_recall(conn: &Connection) -> training::SessionView {
+    let mut current = training::start(conn, request("srs")).unwrap();
+    while current.task.as_deref() == Some("learn") {
+        let uci = current.prompt.as_ref().unwrap().accepted_moves[0]
+            .uci
+            .clone();
+        training::answer(conn, &current.id, &uci).unwrap();
+        current = training::next(conn, &current.id).unwrap();
+    }
+    current
 }
 
 #[test]
@@ -177,7 +190,8 @@ fn overview_reads_during_a_background_write_without_saving_the_session() {
 #[test]
 fn srs_answer_waits_and_records_the_answer_exactly_once() {
     let (_directory, conn, database) = fixture();
-    let initial = training::start(&conn, request("srs")).unwrap();
+    let initial = independent_recall(&conn);
+    let initial_reviews = count(&conn, "repertoire_training_reviews");
     let id = initial.id.clone();
     let answered = under_background_write(
         &conn,
@@ -187,7 +201,10 @@ fn srs_answer_waits_and_records_the_answer_exactly_once() {
     );
     assert_eq!(answered.completed, 1);
     assert_eq!(answered.feedback, "correct");
-    assert_eq!(count(&conn, "repertoire_training_reviews"), 1);
+    assert_eq!(
+        count(&conn, "repertoire_training_reviews"),
+        initial_reviews + 1
+    );
     let before = schedule(&conn);
     assert_eq!(before.len(), 1);
     assert_eq!(before[0].1, 1);
@@ -199,14 +216,17 @@ fn srs_answer_waits_and_records_the_answer_exactly_once() {
         move |worker| training::answer(worker, &id, "e2e4"),
     );
     assert_eq!(duplicate.completed, 1);
-    assert_eq!(count(&conn, "repertoire_training_reviews"), 1);
+    assert_eq!(
+        count(&conn, "repertoire_training_reviews"),
+        initial_reviews + 1
+    );
     assert_eq!(before, schedule(&conn));
 }
 
 #[test]
 fn full_drill_hint_waits_and_preserves_srs_schedule() {
     let (_directory, conn, database) = fixture();
-    let srs = training::start(&conn, request("srs")).unwrap();
+    let srs = independent_recall(&conn);
     training::answer(&conn, &srs.id, "e2e4").unwrap();
     let before = schedule(&conn);
     let initial = training::start(&conn, request("full_drill")).unwrap();
@@ -224,6 +244,7 @@ fn full_drill_hint_waits_and_preserves_srs_schedule() {
     assert_eq!(corrected.feedback, "assisted");
     assert_eq!(corrected.mistakes, 1);
     assert_eq!(corrected.completed, 1);
+    assert_eq!(corrected.pending_retests, 0);
     assert_eq!(before, schedule(&conn));
     let hints: i64 = conn
         .query_row(
@@ -238,7 +259,7 @@ fn full_drill_hint_waits_and_preserves_srs_schedule() {
 #[test]
 fn full_drill_next_waits_and_keeps_coverage_and_errors() {
     let (_directory, conn, database) = fixture();
-    let srs = training::start(&conn, request("srs")).unwrap();
+    let srs = independent_recall(&conn);
     training::answer(&conn, &srs.id, "e2e4").unwrap();
     let before = schedule(&conn);
     let initial = training::start(&conn, request("full_drill")).unwrap();

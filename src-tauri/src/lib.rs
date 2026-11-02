@@ -19,4 +19,10 @@ pub mod game_graph_desktop;
 pub mod knowledge;
 pub mod recent;
 
+pub mod game_review;
+#[cfg(feature = "desktop")]
+pub mod game_review_desktop;
 pub mod library;
+pub mod profile;
+#[cfg(feature = "desktop")]
+pub mod profile_desktop;

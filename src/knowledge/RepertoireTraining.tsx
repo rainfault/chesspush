@@ -38,7 +38,7 @@ interface Props {
 }
 
 const modeNames = {
-  srs: "Интервальное повторение",
+  srs: "Освоение и повторение",
   full_drill: "Полный дрилл",
 };
 
@@ -53,6 +53,7 @@ function savedSelection(
     node_id?: string;
     source_document_id?: string;
     mode?: TrainingMode;
+    new_limit?: number;
   } = {};
   try {
     saved = JSON.parse(
@@ -63,6 +64,9 @@ function savedSelection(
   }
   const mode =
     saved?.mode === "full_drill" ? ("full_drill" as const) : ("srs" as const);
+  const newLimit = [0, 5, 10].includes(saved?.new_limit ?? -1)
+    ? saved.new_limit!
+    : 5;
   const sourceId =
     sourceDocumentId ?? (chapterId ? "" : saved?.source_document_id) ?? "";
   if (sourceId) {
@@ -78,6 +82,7 @@ function savedSelection(
         chapterId: source.chapter_id,
         nodeId: selectedNode === source.root_node_id ? "" : selectedNode,
         mode,
+        newLimit,
       };
     }
   }
@@ -95,6 +100,7 @@ function savedSelection(
         ? selectedNode
         : "",
     mode,
+    newLimit,
   };
 }
 
@@ -143,6 +149,7 @@ export function RepertoireTraining({
   const [chapterId, setChapterId] = useState(initial.chapterId);
   const [nodeId, setNodeId] = useState(initial.nodeId);
   const [mode, setMode] = useState<TrainingMode>(initial.mode);
+  const [newLimit, setNewLimit] = useState(initial.newLimit);
   const [overview, setOverview] = useState<TrainingOverview>();
   const [session, setSession] = useState<TrainingSession | null>(null);
   const [error, setError] = useState("");
@@ -244,12 +251,12 @@ export function RepertoireTraining({
     try {
       localStorage.setItem(
         `chesspush.training.${document.side}`,
-        JSON.stringify({ ...scope, mode }),
+        JSON.stringify({ ...scope, mode, new_limit: newLimit }),
       );
     } catch {
       /* SQLite owns training progress; this is only the selected scope. */
     }
-  }, [scope, mode, document.side]);
+  }, [scope, mode, newLimit, document.side]);
 
   async function refreshOverview() {
     const token = ++request.current;
@@ -292,9 +299,26 @@ export function RepertoireTraining({
     session?.feedback === "correct" || session?.feedback === "assisted";
   const answering =
     session?.feedback === "awaiting" || session?.feedback === "retry";
+  const introducing = session?.task === "learn";
+  const materialVisible =
+    introducing ||
+    session?.feedback === "retry" ||
+    settled ||
+    session?.mode === "full_drill";
+  const promptIdentity =
+    session && prompt
+      ? `${session.id}:${prompt.decision_id}:${session.step ?? 0}`
+      : "";
+  const currentVisit = useRef("");
+  currentVisit.current =
+    active && session
+      ? `${session.id}:${session.step ?? 0}:${session.feedback}`
+      : "";
+  useEffect(() => {
+    setCommentsOpen(introducing || session?.feedback === "retry");
+  }, [promptIdentity, introducing, session?.feedback]);
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
-    setCommentsOpen(false);
     if (!active) {
       setAnimating(false);
       return;
@@ -316,7 +340,7 @@ export function RepertoireTraining({
       return;
     }
     const replay = frames(prompt);
-    const identity = `${session.id}:${prompt.decision_id}`;
+    const identity = promptIdentity;
     const finish = () => {
       board.loadReplay(replay);
       if (settled && prompt.attempted_uci) playUci(board, prompt.attempted_uci);
@@ -332,31 +356,30 @@ export function RepertoireTraining({
       return;
     }
     previousPrompt.current = identity;
-    let cursor = replay.map((frame) => frame.fen).lastIndexOf(board.fen);
-    if (cursor < 0 || replay.length - cursor > 5)
-      cursor = Math.max(0, replay.length - 4);
+    // Restore the native context in one short opponent move, without replaying
+    // already learned opening moves before every retrieval attempt.
+    let cursor = Math.max(0, replay.length - 2);
+    if (replay.at(-1)?.fen === board.fen) cursor = replay.length - 1;
     board.loadReplay(replay.slice(0, cursor + 1));
     setRevision(board.revision);
     setAnimating(cursor < replay.length - 1);
-    const step = () => {
-      if (cursor >= replay.length - 1) {
-        finish();
-        return;
-      }
-      cursor++;
-      board.loadReplay(replay.slice(0, cursor + 1));
-      setRevision(board.revision);
-      timer = setTimeout(step, 280);
-    };
-    if (cursor < replay.length - 1) timer = setTimeout(step, 280);
+    if (cursor < replay.length - 1) timer = setTimeout(finish, 220);
     else finish();
     return () => clearTimeout(timer);
-  }, [session, active, chapterIndex, nodeId, document, board]);
+  }, [session, active, chapterIndex, nodeId, document, board, promptIdentity]);
 
-  async function run(action: () => Promise<TrainingSession>) {
-    if (inFlight.current) return;
+  async function run(
+    action: () => Promise<TrainingSession>,
+    expectedGeneration = sourceGeneration.current,
+  ) {
+    if (
+      inFlight.current ||
+      !mounted.current ||
+      expectedGeneration !== sourceGeneration.current
+    )
+      return;
     inFlight.current = true;
-    const generation = sourceGeneration.current;
+    const generation = expectedGeneration;
     setBusy(true);
     setError("");
     try {
@@ -379,15 +402,21 @@ export function RepertoireTraining({
     }
   }
   function move(from: SquareName, to: SquareName, promotion?: Role) {
-    if (!session || !answering || inFlight.current || animating) return;
+    if (!active || !session || !answering || inFlight.current || animating)
+      return;
     const uci = uciInput(board, from, to, promotion);
     board.play(from, to, promotion);
     setRevision(board.revision);
     void run(() => answerTraining(session.id, uci));
   }
   function setup() {
+    sourceGeneration.current++;
     setSession(null);
     void refreshOverview();
+  }
+  function close() {
+    sourceGeneration.current++;
+    onClose();
   }
   useEffect(() => {
     // Keep annotated positions available for reading. Ordinary continuations
@@ -399,20 +428,91 @@ export function RepertoireTraining({
       error ||
       animating ||
       !active ||
-      prompt?.comments.length
+      (materialVisible && prompt?.comments.length)
     )
       return;
-    const timer = setTimeout(
-      () => void run(() => nextTraining(session.id)),
-      1100,
-    );
+    const generation = sourceGeneration.current;
+    const visit = currentVisit.current;
+    const timer = setTimeout(() => {
+      if (currentVisit.current === visit)
+        void run(() => nextTraining(session.id), generation);
+    }, 450);
     return () => clearTimeout(timer);
   }, [session, busy, animating, active, error]);
+  useEffect(() => {
+    if (!active || !session || !settled || busy || animating || error) return;
+    const generation = sourceGeneration.current;
+    const visit = currentVisit.current;
+    const advance = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (
+        event.code !== "Space" ||
+        event.repeat ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        target?.closest(
+          "input, textarea, select, button, summary, [contenteditable], [role=dialog], dialog",
+        )
+      )
+        return;
+      if (
+        currentVisit.current !== visit ||
+        generation !== sourceGeneration.current
+      )
+        return;
+      event.preventDefault();
+      void run(() => nextTraining(session.id), generation);
+    };
+    window.addEventListener("keydown", advance);
+    return () => window.removeEventListener("keydown", advance);
+  }, [active, session, settled, busy, animating, error]);
   const continuing =
     mode === "srs" ? overview?.active_srs : overview?.active_full_drill;
   const finished = session?.finished && !prompt;
+  useEffect(() => {
+    if (finished && active) void refreshOverview();
+  }, [finished, active, scope]);
+  useEffect(() => {
+    const dueAt = overview?.next_due_at_ms;
+    if (!active || (session && !finished) || !dueAt) return;
+    const generation = sourceGeneration.current;
+    const visit = currentVisit.current;
+    const timer = setTimeout(
+      () => {
+        if (
+          mounted.current &&
+          generation === sourceGeneration.current &&
+          currentVisit.current === visit
+        )
+          void refreshOverview();
+      },
+      Math.min(2_147_483_647, Math.max(100, dueAt - Date.now() + 50)),
+    );
+    return () => clearTimeout(timer);
+  }, [
+    active,
+    finished,
+    session?.id,
+    overview?.next_due_at_ms,
+    scope,
+    document,
+  ]);
+  const newPositions = overview?.new_positions ?? 0;
+  const available =
+    !!overview && (overview.due > 0 || (newLimit > 0 && newPositions > 0));
+  const nextReviewAt = session?.next_review_at_ms ?? overview?.next_due_at_ms;
+  const reviewDate = nextReviewAt
+    ? new Date(nextReviewAt).toLocaleString("ru-RU", {
+        day: "numeric",
+        month: "long",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : null;
   const arrows: DrawShape[] =
-    session?.feedback === "retry"
+    session?.feedback === "retry" || (introducing && answering)
       ? (prompt?.accepted_moves ?? []).map((move) => ({
           brush: "green",
           orig: move.uci.slice(0, 2) as SquareName,
@@ -423,7 +523,7 @@ export function RepertoireTraining({
   return (
     <main className="repertoire-training" aria-label="Тренировка репертуара">
       <header>
-        <button disabled={busy} onClick={onClose}>
+        <button disabled={busy} onClick={close}>
           К репертуару
         </button>
         <h1>{sourceChoice?.title ?? "Тренировка репертуара"}</h1>
@@ -550,17 +650,61 @@ export function RepertoireTraining({
                     </select>
                   </label>
                 )}
+                {mode === "srs" && (
+                  <label className="training-new-limit">
+                    Новых за сессию
+                    <select
+                      aria-label="Новых за сессию"
+                      value={newLimit}
+                      onChange={(event) =>
+                        setNewLimit(Number(event.target.value))
+                      }
+                    >
+                      <option value={0}>0</option>
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                    </select>
+                  </label>
+                )}
               </fieldset>
               {loading || sourceLoading ? (
                 <p role="status">Загрузка позиций…</p>
               ) : (
                 overview && (
                   <div className="training-start">
-                    <p>
-                      {mode === "srs"
-                        ? `К повторению: ${overview.due}`
-                        : `Позиций: ${overview.total}`}
-                    </p>
+                    <dl className="training-counts">
+                      {mode === "srs" ? (
+                        <>
+                          <div>
+                            <dt>К повторению</dt>
+                            <dd>{overview.due}</dd>
+                          </div>
+                          {overview.new_positions !== undefined && (
+                            <div>
+                              <dt>Новых</dt>
+                              <dd>{newPositions}</dd>
+                            </div>
+                          )}
+                          {overview.learning !== undefined && (
+                            <div>
+                              <dt>В освоении</dt>
+                              <dd>{overview.learning}</dd>
+                            </div>
+                          )}
+                          {overview.scheduled !== undefined && (
+                            <div>
+                              <dt>По расписанию</dt>
+                              <dd>{overview.scheduled}</dd>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div>
+                          <dt>Позиций</dt>
+                          <dd>{overview.total}</dd>
+                        </div>
+                      )}
+                    </dl>
                     {continuing && (
                       <p>
                         Пройдено: {continuing.completed} / {continuing.total}
@@ -573,9 +717,13 @@ export function RepertoireTraining({
                         !!error ||
                         !!sourceError ||
                         !overview.total ||
-                        (mode === "srs" && !overview.due && !continuing)
+                        (mode === "srs" && !available && !continuing)
                       }
-                      onClick={() => void run(() => startTraining(scope, mode))}
+                      onClick={() =>
+                        void run(() =>
+                          startTraining(scope, mode, false, newLimit),
+                        )
+                      }
                     >
                       {busy
                         ? "Загрузка…"
@@ -587,21 +735,12 @@ export function RepertoireTraining({
                       <p role="status">В этой ветке нет ходов для тренировки</p>
                     )}
                     {mode === "srs" &&
-                      !overview.due &&
+                      !available &&
                       !continuing &&
                       overview.total > 0 && <p role="status">На сегодня всё</p>}
-                    {mode === "srs" && overview.next_due_at_ms && (
-                      <p>
-                        Следующее повторение:{" "}
-                        {new Date(overview.next_due_at_ms).toLocaleString(
-                          "ru-RU",
-                          {
-                            day: "numeric",
-                            month: "long",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          },
-                        )}
+                    {mode === "srs" && reviewDate && (
+                      <p className="training-review-date">
+                        Следующее повторение: {reviewDate}
                       </p>
                     )}
                   </div>
@@ -631,6 +770,31 @@ export function RepertoireTraining({
                 value={session.completed}
                 max={Math.max(1, session.total)}
               />
+              {session.mode === "srs" && (
+                <div className="training-session-counts">
+                  {session.new_count !== undefined && (
+                    <span>Новых: {session.new_count}</span>
+                  )}
+                  {session.review_count !== undefined && (
+                    <span>Повторение: {session.review_count}</span>
+                  )}
+                  {(session.pending_retests ?? 0) > 0 && (
+                    <span>Проверок впереди: {session.pending_retests}</span>
+                  )}
+                </div>
+              )}
+              {session.task && !finished && (
+                <div className="training-task">
+                  {
+                    {
+                      learn: "Новая позиция",
+                      review: "Повторение",
+                      recall: "Проверка",
+                      relearn: "Повтор ошибки",
+                    }[session.task]
+                  }
+                </div>
+              )}
               <div
                 className={`training-feedback ${session.feedback}`}
                 role="status"
@@ -639,7 +803,7 @@ export function RepertoireTraining({
                 {finished ? (
                   <h2>
                     {session.mode === "srs"
-                      ? "Повторение завершено"
+                      ? "Сессия завершена"
                       : "Полный дрилл завершён"}
                   </h2>
                 ) : animating ? (
@@ -647,7 +811,9 @@ export function RepertoireTraining({
                 ) : session.feedback === "correct" ? (
                   <p>Верно</p>
                 ) : session.feedback === "assisted" ? (
-                  <p>Ход повторён с подсказкой</p>
+                  <p>
+                    {introducing ? "Ход разобран" : "Ход повторён с подсказкой"}
+                  </p>
                 ) : session.feedback === "retry" ? (
                   <>
                     <p>
@@ -658,8 +824,23 @@ export function RepertoireTraining({
                     </p>
                     <p>Повторите ход на доске</p>
                   </>
+                ) : introducing ? (
+                  <>
+                    <p>Запомните ход</p>
+                    <div className="training-prepared-moves">
+                      {prompt?.accepted_moves
+                        .map((move) => move.san)
+                        .join(" / ")}
+                    </div>
+                  </>
                 ) : (
-                  <p>{scope.side === "white" ? "Ход белых" : "Ход чёрных"}</p>
+                  <p>
+                    {session.task === "recall" || session.task === "relearn"
+                      ? "Повторите без подсказки"
+                      : scope.side === "white"
+                        ? "Ход белых"
+                        : "Ход чёрных"}
+                  </p>
                 )}
               </div>
               {prompt && (
@@ -669,8 +850,24 @@ export function RepertoireTraining({
                   ))}
                 </div>
               )}
+              {finished && session.mode === "srs" && (
+                <dl className="training-counts training-results">
+                  {session.first_try_correct !== undefined && (
+                    <div>
+                      <dt>С первого раза</dt>
+                      <dd>{session.first_try_correct}</dd>
+                    </div>
+                  )}
+                  {session.recovered !== undefined && (
+                    <div>
+                      <dt>После повторения</dt>
+                      <dd>{session.recovered}</dd>
+                    </div>
+                  )}
+                </dl>
+              )}
               <div className="training-actions">
-                {answering && (
+                {answering && !introducing && (
                   <button
                     disabled={busy || animating || session.feedback === "retry"}
                     onClick={() => void run(() => hintTraining(session.id))}
@@ -687,8 +884,29 @@ export function RepertoireTraining({
                     Дальше
                   </button>
                 )}
+                {finished && session.mode === "srs" && available && (
+                  <button
+                    className="primary"
+                    disabled={busy || loading}
+                    onClick={() =>
+                      void run(() =>
+                        startTraining(scope, "srs", true, newLimit),
+                      )
+                    }
+                  >
+                    Следующая сессия
+                  </button>
+                )}
                 {finished && (
-                  <button className="primary" disabled={busy} onClick={setup}>
+                  <button
+                    className={
+                      session.mode === "srs" && available
+                        ? undefined
+                        : "primary"
+                    }
+                    disabled={busy}
+                    onClick={setup}
+                  >
                     К выбору тренировки
                   </button>
                 )}
@@ -703,7 +921,12 @@ export function RepertoireTraining({
                   </button>
                 )}
               </div>
-              {!!prompt?.comments.length && (
+              {finished && session.mode === "srs" && reviewDate && (
+                <p className="training-review-date">
+                  Следующее повторение: {reviewDate}
+                </p>
+              )}
+              {materialVisible && !!prompt?.comments.length && (
                 <details
                   className="training-comments"
                   open={commentsOpen}

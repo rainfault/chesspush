@@ -13,6 +13,8 @@ import { errorMessage } from "../api";
 import type { AccountStatus } from "../lichess";
 import type { DocumentPosition } from "../knowledge/types";
 import type { RepertoireAddress } from "../gameGraph/GameGraph";
+import type { KnowledgeTarget } from "../knowledge/Knowledge";
+import type { ReviewTarget } from "../review/api";
 import { BoardView } from "./BoardView";
 import { getGame, requestSync, type Filter, type GameDetail } from "./api";
 import {
@@ -59,6 +61,8 @@ export function Statistics({
   sectionRequest,
   onNavigateSection,
   onOpenRepertoire,
+  onOpenKnowledge,
+  onOpenGameReview,
   openPositionRequest,
   onPositionRequestHandled,
   openGameRequest,
@@ -74,6 +78,8 @@ export function Statistics({
   onNavigateSection?: (section: string) => void;
   onOpenSettings?: (section?: string) => void;
   onOpenRepertoire?: (address: RepertoireAddress) => void;
+  onOpenKnowledge?: (target: KnowledgeTarget) => void;
+  onOpenGameReview?: (target: ReviewTarget) => void;
   openGameRequest?: {
     id: string;
     ply?: number;
@@ -513,8 +519,18 @@ export function Statistics({
                       game_ids: graphGameIds,
                     }}
                     generation={String(generation)}
-                    onOpenGame={openGame}
+                    onOpenGame={
+                      onOpenGameReview
+                        ? (gameId, ply) =>
+                            onOpenGameReview({
+                              gameId,
+                              ply,
+                              accountId: accountId ?? undefined,
+                            })
+                        : openGame
+                    }
                     onOpenRepertoire={onOpenRepertoire}
+                    onOpenKnowledge={onOpenKnowledge}
                     openPositionRequest={openPositionRequest}
                     onPositionRequestHandled={handlePositionHandled}
                     onContextChange={handleGraphContext}

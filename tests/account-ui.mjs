@@ -43,6 +43,8 @@ await page.addInitScript(() => {
     async invoke(command, args) {
       calls.push(command);
       switch (command) {
+        case "profile_restored_ui":
+          return null;
         case "plugin:event|listen": {
           const id = next++;
           listeners.set(id, args);

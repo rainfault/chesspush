@@ -23,6 +23,83 @@ struct ActiveJob {
 #[derive(Default)]
 struct Jobs(Mutex<Option<ActiveJob>>);
 struct AppDirectory(PathBuf);
+
+#[cfg(windows)]
+fn focus_profile_owner(directory: &std::path::Path) {
+    use windows_sys::Win32::UI::WindowsAndMessaging::{
+        EnumWindows, GetWindowThreadProcessId, IsWindowVisible, SW_RESTORE, SetForegroundWindow,
+        ShowWindow,
+    };
+    let Ok(Some(pid)) = crate::profile::owner_pid(directory) else {
+        return;
+    };
+    // Enumeration is synchronous; the callback receives only this process ID.
+    unsafe extern "system" fn visit(
+        window: windows_sys::Win32::Foundation::HWND,
+        owner: isize,
+    ) -> i32 {
+        let mut pid = 0;
+        unsafe {
+            GetWindowThreadProcessId(window, &mut pid);
+        }
+        if pid == owner as u32 && unsafe { IsWindowVisible(window) } != 0 {
+            unsafe {
+                ShowWindow(window, SW_RESTORE);
+                SetForegroundWindow(window);
+            }
+            return 0;
+        }
+        1
+    }
+    unsafe {
+        EnumWindows(Some(visit), pid as isize);
+    }
+}
+
+pub(crate) fn profile_parser_busy(app: &tauri::AppHandle) -> bool {
+    app.state::<Jobs>()
+        .0
+        .lock()
+        .map(|job| job.is_some())
+        .unwrap_or(true)
+}
+
+#[tauri::command]
+fn profile_restart_restore(app: tauri::AppHandle) -> Result<(), AppError> {
+    if !crate::profile::has_pending(&app.state::<AppDirectory>().0)? {
+        return Err(AppError::new("profile", "Восстановление не подготовлено"));
+    }
+    if !crate::statistics::desktop::stop(&app) {
+        return Err(AppError::new("cancelled", "ChessPush уже закрывается"));
+    }
+    std::thread::Builder::new()
+        .name("profile-restart".into())
+        .spawn(move || {
+            let _ = app.state::<LichessService>().cancel_auth();
+            if let Ok(job) = app.state::<Jobs>().0.lock()
+                && let Some(job) = job.as_ref()
+            {
+                job.cancel.store(true, Ordering::Relaxed);
+            }
+            // All commands and owned workers must release their SQLite connections
+            // before the next process applies the staged profile at startup.
+            loop {
+                if !profile_parser_busy(&app) && crate::statistics::desktop::idle(&app) {
+                    if let Ok(mut lock) = app
+                        .state::<Mutex<Option<crate::profile::ProfileLock>>>()
+                        .lock()
+                    {
+                        drop(lock.take());
+                    }
+                    app.request_restart();
+                    break;
+                }
+                std::thread::sleep(std::time::Duration::from_millis(50));
+            }
+        })
+        .map_err(|error| AppError::new("profile", error))?;
+    Ok(())
+}
 #[derive(Clone, Serialize)]
 struct JobProgress {
     id: String,
@@ -42,6 +119,7 @@ fn start_parse(
     jobs: State<Jobs>,
     directory: State<AppDirectory>,
 ) -> Result<(), AppError> {
+    let profile_operation = crate::profile_desktop::acquire_operation()?;
     if id.is_empty() || id.len() > 100 {
         return Err(AppError::new("validation", "Некорректный id операции"));
     }
@@ -59,6 +137,7 @@ fn start_parse(
     });
     let directory = directory.0.clone();
     tauri::async_runtime::spawn_blocking(move || {
+        let _profile_operation = profile_operation;
         let result = application::run(request, &directory, &cancel, |p| {
             let _ = app.emit(
                 "parser-progress",
@@ -273,6 +352,22 @@ pub fn run() {
             let directory = std::env::var_os("CHESSPUSH_TEST_DATA")
                 .map(PathBuf::from)
                 .unwrap_or(directory);
+            match crate::profile::lock_profile(&directory) {
+                Ok(lock) => {
+                    app.manage(Mutex::new(Some(lock)));
+                }
+                Err(error) if error.code == "profile_in_use" => {
+                    if let Some(window) = app.get_webview_window("main") {
+                        let _ = window.hide();
+                    }
+                    #[cfg(windows)]
+                    focus_profile_owner(&directory);
+                    app.handle().exit(0);
+                    return Ok(());
+                }
+                Err(error) => return Err(error.into()),
+            }
+            crate::profile::apply_pending(&directory)?;
             storage::open(&directory.join("chesspush.sqlite3"))?;
             app.manage(LichessService::new(&directory)?);
             app.manage(AppDirectory(directory.clone()));
@@ -280,6 +375,21 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            crate::game_review_desktop::game_review_list,
+            crate::game_review_desktop::game_review_open,
+            crate::game_review_desktop::game_review_mark,
+            crate::game_review_desktop::game_review_save_knowledge,
+            crate::game_review_desktop::game_review_evaluate,
+            crate::game_review_desktop::game_review_cancel_evaluation,
+            crate::game_review_desktop::knowledge_use_repertoire,
+            crate::profile_desktop::profile_backup,
+            crate::profile_desktop::profile_restore_preview,
+            crate::profile_desktop::profile_restore_prepare,
+            crate::profile_desktop::profile_restore_cancel,
+            crate::profile_desktop::profile_restored_ui,
+            crate::profile_desktop::profile_restored_ui_ack,
+            crate::profile_desktop::profile_status,
+            profile_restart_restore,
             crate::knowledge::desktop::knowledge_list,
             crate::knowledge::desktop::knowledge_load,
             crate::knowledge::desktop::knowledge_create,
@@ -287,6 +397,10 @@ pub fn run() {
             crate::knowledge::desktop::knowledge_apply,
             crate::knowledge::desktop::knowledge_export,
             crate::knowledge::desktop::knowledge_navigate,
+            crate::knowledge::desktop::knowledge_tag_suggestions,
+            crate::knowledge::desktop::knowledge_delete_study,
+            crate::knowledge::desktop::knowledge_import_file,
+            crate::knowledge::desktop::knowledge_export_file,
             crate::knowledge::desktop::knowledge_attach_file,
             crate::knowledge::desktop::knowledge_set_attachment,
             crate::knowledge::desktop::knowledge_delete_repertoire,

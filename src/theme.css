@@ -1,7 +1,23 @@
+@import "./lichessFonts.css";
+
+.profile-bootstrap {
+  padding: 40px;
+}
+.profile-restore-block {
+  position: fixed;
+  inset: 0;
+  z-index: 20000;
+  display: grid;
+  place-items: center;
+  background: var(--background);
+  color: var(--text);
+  font-size: 20px;
+}
+
 :root {
   color-scheme: light;
   --background: hsl(37 10% 92%);
-  --top: hsl(37 7% 85%);
+  --top: #dbd7d1;
   --surface: #fff;
   --surface-muted: hsl(0 0% 96%);
   --hover: hsl(0 0% 93%);
@@ -22,13 +38,14 @@
   --space-5: 24px;
   --space-6: 32px;
   --radius: 3px;
-  --font: "Segoe UI", "Noto Sans", sans-serif;
-  --font-size: 15px;
+  --font: "Noto Sans", sans-serif;
+  --font-moves: "Roboto", "Noto Sans", sans-serif;
+  --font-size: 14px;
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
   --background: #161512;
-  --top: #24221e;
+  --top: #2e2a24;
   --surface: #262421;
   --surface-muted: #302e2b;
   --hover: #363430;
@@ -47,7 +64,7 @@
 body {
   margin: 0;
   min-width: 900px;
-  background: linear-gradient(var(--top), var(--background) 140px) fixed;
+  background: linear-gradient(var(--top), var(--background) 116px) fixed;
   color: var(--text);
   font: var(--font-size)/1.45 var(--font);
 }

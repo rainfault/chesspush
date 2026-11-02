@@ -66,7 +66,7 @@ impl PreparedChoices {
     pub fn load(conn: &Connection, color: &str) -> Result<Self, AppError> {
         let documents = conn.query_row(
             "SELECT count(*) FROM knowledge_documents d
-             WHERE d.kind='repertoire' AND d.side IN (?1,'both')
+             WHERE d.kind IN ('repertoire','study') AND d.side IN (?1,'both')
                AND json_extract(d.data_json,'$.header.metadata.repertoire_attachment.active')=1",
             [color],
             |row| row.get(0),
@@ -74,7 +74,7 @@ impl PreparedChoices {
         let mut statement = conn.prepare(
             "SELECT DISTINCT n.parent_position_key,n.uci
              FROM knowledge_node_index n JOIN knowledge_documents d ON d.id=n.document_id
-             WHERE d.kind='repertoire' AND d.side IN (?1,'both') AND n.document_revision=d.revision
+             WHERE d.kind IN ('repertoire','study') AND d.side IN (?1,'both') AND n.document_revision=d.revision
                AND json_extract(d.data_json,'$.header.metadata.repertoire_attachment.active')=1
                AND n.parent_position_key IS NOT NULL AND n.uci IS NOT NULL",
         )?;
@@ -184,6 +184,7 @@ mod tests {
         let document = knowledge::import(
             conn,
             knowledge::ImportRequest {
+                kind: "repertoire".into(),
                 title: "Fixture".into(),
                 side: side.into(),
                 pgn: pgn.into(),

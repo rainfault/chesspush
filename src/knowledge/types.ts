@@ -1,5 +1,6 @@
 export type DocumentSide = "white" | "black" | "both";
-export type DocumentKind = "repertoire" | "study";
+export type DocumentKind = "repertoire" | "study" | "analysis";
+export type KnowledgeClassification = "position" | "theory";
 
 export interface KnowledgeShape {
   brush: "green" | "red" | "blue" | "yellow";
@@ -81,6 +82,9 @@ export interface DocumentSummary {
   attachment_active?: boolean;
   filename?: string;
   openings?: { eco: string; name: string }[];
+  classification?: KnowledgeClassification | null;
+  tags?: string[];
+  positions?: number;
 }
 
 export interface DocumentNavigation {
@@ -110,6 +114,13 @@ export type DocumentOperation =
       shapes: KnowledgeShape[];
     }
   | { type: "rename"; title: string; side: DocumentSide }
+  | { type: "set_tags"; tags: string[] }
+  | {
+      type: "set_chapter_headers";
+      chapter_id: string;
+      headers: Record<string, string>;
+    }
+  | { type: "move_chapter"; chapter_id: string; index: number }
   | {
       type: "add_chapter";
       title: string;

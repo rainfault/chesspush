@@ -1,0 +1,80 @@
+.profile-settings {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+.profile-settings h3 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 400;
+}
+.profile-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.profile-message,
+.profile-settings .error {
+  overflow-wrap: anywhere;
+}
+.profile-pending {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  background: var(--selected);
+}
+.profile-last-backup {
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+  display: grid;
+  gap: 12px;
+}
+.profile-details {
+  margin: 0;
+  display: grid;
+  gap: 7px;
+}
+.profile-details > div {
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  min-width: 0;
+}
+.profile-details dt {
+  flex: 1;
+  min-width: 125px;
+  color: var(--secondary);
+}
+.profile-details dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.profile-restore-dialog {
+  width: min(560px, calc(100vw - 48px));
+  max-height: calc(100dvh - 48px);
+  overflow: auto;
+  border: 0;
+  border-radius: var(--radius);
+  padding: 26px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 6px 30px #0006;
+}
+.profile-restore-dialog::backdrop {
+  background: #0007;
+}
+.profile-restore-dialog h2 {
+  margin: 0 0 20px;
+  font-size: 24px;
+  font-weight: 400;
+}
+.profile-restore-dialog p {
+  margin: 18px 0;
+  line-height: 1.5;
+}
+.profile-restore-dialog > .profile-actions {
+  justify-content: flex-end;
+}

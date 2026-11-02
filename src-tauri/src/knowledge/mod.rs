@@ -17,6 +17,9 @@ use std::{
 #[cfg(feature = "desktop")]
 pub mod desktop;
 pub mod fragments;
+pub mod graph_overlay;
+#[cfg(test)]
+mod library_tests;
 pub mod training;
 
 const MAX_NODES: usize = 50_000;
@@ -25,7 +28,7 @@ const MAX_CHAPTERS: usize = 256;
 fn error(message: impl ToString) -> AppError {
     AppError::new("knowledge", message)
 }
-fn new_id(prefix: &str) -> Result<String, AppError> {
+pub(crate) fn new_id(prefix: &str) -> Result<String, AppError> {
     let mut bytes = [0u8; 16];
     getrandom::fill(&mut bytes).map_err(error)?;
     Ok(format!(
@@ -131,6 +134,12 @@ pub struct DocumentSummary {
     pub filename: Option<String>,
     #[serde(default)]
     pub openings: Vec<fragments::FragmentOpening>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub classification: Option<String>,
+    #[serde(default)]
+    pub tags: Vec<String>,
+    #[serde(default)]
+    pub positions: usize,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateRequest {
@@ -147,6 +156,8 @@ pub struct CreateRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ImportRequest {
     pub title: String,
+    #[serde(default = "default_kind")]
+    pub kind: String,
     #[serde(default = "default_side")]
     pub side: String,
     pub pgn: String,
@@ -195,6 +206,17 @@ pub enum EditOperation {
     },
     RemoveChapter {
         chapter_id: String,
+    },
+    SetTags {
+        tags: Vec<String>,
+    },
+    SetChapterHeaders {
+        chapter_id: String,
+        headers: BTreeMap<String, String>,
+    },
+    MoveChapter {
+        chapter_id: String,
+        index: usize,
     },
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -325,6 +347,25 @@ struct Parsing {
 struct TreeVisitor {
     moves: usize,
 }
+fn decode_pgn_tag(value: RawTag<'_>) -> String {
+    // Decode each escape once. pgn-reader 0.29's RawTag decoder revisits
+    // overlapping backslashes, losing the JSON escapes in portable user tags.
+    let bytes = value.as_bytes();
+    let mut decoded = Vec::with_capacity(bytes.len());
+    let mut index = 0;
+    while index < bytes.len() {
+        if bytes[index] == b'\\'
+            && bytes
+                .get(index + 1)
+                .is_some_and(|next| matches!(next, b'\\' | b'"'))
+        {
+            index += 1;
+        }
+        decoded.push(bytes[index]);
+        index += 1;
+    }
+    String::from_utf8_lossy(&decoded).into_owned()
+}
 impl Visitor for TreeVisitor {
     type Tags = BTreeMap<String, String>;
     type Movetext = Parsing;
@@ -342,7 +383,7 @@ impl Visitor for TreeVisitor {
         if tags.contains_key(&key) {
             return ControlFlow::Break(Err(error(format!("Повторяющийся заголовок PGN: {key}"))));
         }
-        tags.insert(key, value.decode_utf8_lossy().into());
+        tags.insert(key, decode_pgn_tag(value));
         ControlFlow::Continue(())
     }
     fn begin_movetext(&mut self, tags: Self::Tags) -> ControlFlow<Self::Output, Self::Movetext> {
@@ -833,10 +874,18 @@ fn escaped(s: &str) -> String {
 pub fn export_document(document: &KnowledgeDocument) -> Result<String, AppError> {
     validate_document(document)?;
     let mut chapters = vec![];
-    for chapter in &document.chapters {
+    for (index, chapter) in document.chapters.iter().enumerate() {
         let mut tags = chapter.headers.clone();
         tags.insert("ChapterName".into(), chapter.title.clone());
-        tags.insert("Event".into(), document.title.clone());
+        tags.entry("Event".into())
+            .or_insert_with(|| document.title.clone());
+        tags.remove("ChessPushTags");
+        if index == 0 && !document_tags(document).is_empty() {
+            tags.insert(
+                "ChessPushTags".into(),
+                serde_json::to_string(&document_tags(document))?,
+            );
+        }
         tags.entry("Result".into()).or_insert_with(|| "*".into());
         if chapter.initial_fen != INITIAL_FEN {
             tags.insert("SetUp".into(), "1".into());
@@ -925,8 +974,136 @@ fn validate_links(links: &[KnowledgeLink]) -> Result<(), AppError> {
     }
     Ok(())
 }
+pub fn document_tags(document: &KnowledgeDocument) -> Vec<String> {
+    document
+        .metadata
+        .get("tags")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter_map(Value::as_str)
+        .map(str::to_owned)
+        .collect()
+}
+pub fn classification(document: &KnowledgeDocument) -> Option<String> {
+    (document.kind == "study").then(|| {
+        if document.chapters.len() == 1 && document.chapters[0].root.children.is_empty() {
+            "position"
+        } else {
+            "theory"
+        }
+        .into()
+    })
+}
+pub fn position_count(document: &KnowledgeDocument) -> usize {
+    fn count(node: &VariationNode) -> usize {
+        1 + node.children.iter().map(count).sum::<usize>()
+    }
+    document
+        .chapters
+        .iter()
+        .map(|chapter| count(&chapter.root))
+        .sum()
+}
+fn normalize_tags(tags: Vec<String>) -> Result<Vec<String>, AppError> {
+    if tags.len() > 32 {
+        return Err(error("Допускается не больше 32 тегов"));
+    }
+    let mut seen = HashSet::new();
+    let mut normalized = Vec::new();
+    for tag in tags {
+        if tag.chars().any(char::is_control) {
+            return Err(error("Тег содержит недопустимые символы"));
+        }
+        let tag = tag.split_whitespace().collect::<Vec<_>>().join(" ");
+        if tag.is_empty() || tag.chars().count() > 64 {
+            return Err(error("Длина тега должна быть от 1 до 64 символов"));
+        }
+        if seen.insert(tag.to_lowercase()) {
+            normalized.push(tag);
+        }
+    }
+    Ok(normalized)
+}
+pub fn tag_suggestions(conn: &Connection, query: &str) -> Result<Vec<String>, AppError> {
+    let query = query
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+        .to_lowercase();
+    if query.chars().count() > 64 {
+        return Ok(Vec::new());
+    }
+    let mut statement = conn.prepare("SELECT tag FROM knowledge_tag_history WHERE substr(tag_key,1,length(?1))=?1 ORDER BY last_used_at_ms DESC,tag_key LIMIT 20")?;
+    Ok(statement
+        .query_map([query], |row| row.get(0))?
+        .collect::<Result<Vec<_>, _>>()?)
+}
+pub(crate) fn seed_tag_history(conn: &Connection) -> Result<(), AppError> {
+    let tx = rusqlite::Transaction::new_unchecked(conn, rusqlite::TransactionBehavior::Immediate)?;
+    {
+        let mut statement=tx.prepare("SELECT json_extract(data_json,'$.header.metadata.tags'),updated_at_ms FROM knowledge_documents ORDER BY updated_at_ms,id")?;
+        let rows = statement.query_map([], |row| {
+            Ok((row.get::<_, Option<String>>(0)?, row.get::<_, i64>(1)?))
+        })?;
+        for row in rows {
+            let (tags, timestamp) = row?;
+            let Some(tags) = tags.and_then(|json| serde_json::from_str::<Vec<String>>(&json).ok())
+            else {
+                continue;
+            };
+            // The history is derived. Unknown legacy metadata remains untouched.
+            let Ok(tags) = normalize_tags(tags) else {
+                continue;
+            };
+            for tag in tags {
+                tx.execute("INSERT INTO knowledge_tag_history(tag_key,tag,last_used_at_ms) VALUES(?1,?2,?3) ON CONFLICT(tag_key) DO UPDATE SET tag=excluded.tag,last_used_at_ms=excluded.last_used_at_ms WHERE excluded.last_used_at_ms>=knowledge_tag_history.last_used_at_ms",params![tag.to_lowercase(),tag,timestamp])?;
+            }
+        }
+    }
+    tx.commit()?;
+    Ok(())
+}
+fn validate_headers(
+    previous: &BTreeMap<String, String>,
+    headers: &BTreeMap<String, String>,
+) -> Result<(), AppError> {
+    if headers.len() > 64 {
+        return Err(error("Слишком много тегов PGN"));
+    }
+    for key in ["FEN", "SetUp", "Variant"] {
+        if previous.get(key) != headers.get(key) {
+            return Err(error("FEN, SetUp и Variant нельзя менять через теги PGN"));
+        }
+    }
+    for (key, value) in headers {
+        if key.is_empty()
+            || key.len() > 64
+            || !key.as_bytes()[0].is_ascii_alphabetic()
+            || !key
+                .chars()
+                .all(|c| c.is_ascii_alphanumeric() || matches!(c, '_' | '-' | ':'))
+            || value.chars().count() > 4096
+            || value.chars().any(char::is_control)
+        {
+            return Err(error("Некорректный тег PGN"));
+        }
+        if key == "Result" && !["*", "1-0", "0-1", "1/2-1/2"].contains(&value.as_str()) {
+            return Err(error("Некорректный результат партии"));
+        }
+        if key == "ChapterName" && value.trim().is_empty() {
+            return Err(error("Название главы не должно быть пустым"));
+        }
+        if key == "ChessPushTags" && previous.get(key) != Some(value) {
+            return Err(error(
+                "Используйте поле пользовательских тегов для ChessPushTags",
+            ));
+        }
+    }
+    Ok(())
+}
 fn validate_document(document: &KnowledgeDocument) -> Result<(), AppError> {
-    if !["repertoire", "study"].contains(&document.kind.as_str())
+    if !["repertoire", "study", "analysis"].contains(&document.kind.as_str())
         || !["white", "black", "both"].contains(&document.side.as_str())
         || document.title.trim().is_empty()
         || document.title.len() > 500
@@ -934,6 +1111,21 @@ fn validate_document(document: &KnowledgeDocument) -> Result<(), AppError> {
         || document.chapters.len() > MAX_CHAPTERS
     {
         return Err(error("Некорректные свойства документа"));
+    }
+    if let Some(tags) = document.metadata.get("tags") {
+        let tags = tags
+            .as_array()
+            .ok_or_else(|| error("Некорректный список тегов"))?
+            .iter()
+            .map(|tag| {
+                tag.as_str()
+                    .map(str::to_owned)
+                    .ok_or_else(|| error("Некорректный тег"))
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        if normalize_tags(tags.clone())? != tags {
+            return Err(error("Теги должны быть нормализованы и не повторяться"));
+        }
     }
     fn walk(
         node: &VariationNode,
@@ -1093,6 +1285,11 @@ fn decode(json: &str) -> Result<KnowledgeDocument, AppError> {
     Ok(document)
 }
 fn reindex(conn: &Connection, document: &KnowledgeDocument) -> Result<(), AppError> {
+    let modern: bool = conn.query_row(
+        "SELECT count(*) FROM pragma_table_info('knowledge_node_index') WHERE name='fen'",
+        [],
+        |row| row.get::<_, i64>(0),
+    )? != 0;
     conn.execute(
         "DELETE FROM knowledge_node_index WHERE document_id=?1",
         [&document.id],
@@ -1103,15 +1300,45 @@ fn reindex(conn: &Connection, document: &KnowledgeDocument) -> Result<(), AppErr
         chapter: &Chapter,
         node: &VariationNode,
         parent: Option<&str>,
+        modern: bool,
     ) -> Result<(), AppError> {
-        conn.execute("INSERT INTO knowledge_node_index(document_id,chapter_id,node_id,document_revision,position_key,parent_position_key,uci) VALUES(?1,?2,?3,?4,?5,?6,?7)",params![document.id,chapter.id,node.id,document.revision,node.position_key,parent,node.uci])?;
+        if modern {
+            conn.execute("INSERT INTO knowledge_node_index(document_id,chapter_id,node_id,document_revision,position_key,parent_position_key,uci,fen,chapter_title) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9)",params![document.id,chapter.id,node.id,document.revision,node.position_key,parent,node.uci,node.fen,chapter.title])?;
+        } else {
+            conn.execute("INSERT INTO knowledge_node_index(document_id,chapter_id,node_id,document_revision,position_key,parent_position_key,uci) VALUES(?1,?2,?3,?4,?5,?6,?7)",params![document.id,chapter.id,node.id,document.revision,node.position_key,parent,node.uci])?;
+        }
         for child in &node.children {
-            visit(conn, document, chapter, child, Some(&node.position_key))?;
+            visit(
+                conn,
+                document,
+                chapter,
+                child,
+                Some(&node.position_key),
+                modern,
+            )?;
         }
         Ok(())
     }
+    if modern {
+        conn.execute(
+            "DELETE FROM knowledge_position_links WHERE document_id=?1",
+            [&document.id],
+        )?;
+    }
     for c in &document.chapters {
-        visit(conn, document, c, &c.root, None)?;
+        visit(conn, document, c, &c.root, None, modern)?;
+        if modern {
+            for link in &c.links {
+                if let LinkTarget::Position { position_key } = &link.target {
+                    let fen = if &c.root.position_key == position_key {
+                        c.root.fen.as_str()
+                    } else {
+                        ""
+                    };
+                    conn.execute("INSERT OR IGNORE INTO knowledge_position_links(document_id,chapter_id,node_id,position_key,fen,chapter_title,provenance) VALUES(?1,?2,?3,?4,?5,?6,?7)",params![document.id,c.id,c.root.id,position_key,fen,c.title,link.provenance])?;
+                }
+            }
+        }
     }
     Ok(())
 }
@@ -1120,9 +1347,21 @@ fn persist(
     document: &KnowledgeDocument,
     expected: Option<i64>,
 ) -> Result<(), AppError> {
+    let tx = conn.unchecked_transaction()?;
+    persist_uncommitted(&tx, document, expected)?;
+    tx.commit()?;
+    Ok(())
+}
+/// Shared document write inside an application-owned transaction. A game review
+/// and its source mapping must commit together; the PGN model stays unchanged.
+pub(crate) fn persist_uncommitted(
+    conn: &Connection,
+    document: &KnowledgeDocument,
+    expected: Option<i64>,
+) -> Result<(), AppError> {
     validate_document(document)?;
     let json = encode(document)?;
-    let tx = conn.unchecked_transaction()?;
+    let tx = conn;
     if let Some(expected) = expected {
         let changed=tx.execute("UPDATE knowledge_documents SET kind=?2,title=?3,side=?4,revision=?5,updated_at_ms=?6,data_json=?7 WHERE id=?1 AND revision=?8",params![document.id,document.kind,document.title,document.side,document.revision,document.updated_at_ms,json,expected])?;
         if changed != 1 {
@@ -1135,8 +1374,10 @@ fn persist(
         tx.execute("INSERT INTO knowledge_documents(id,kind,title,side,revision,created_at_ms,updated_at_ms,data_json) VALUES(?1,?2,?3,?4,?5,?6,?7,?8)",params![document.id,document.kind,document.title,document.side,document.revision,document.created_at_ms,document.updated_at_ms,json])?;
     }
     tx.execute("INSERT INTO knowledge_document_versions(document_id,revision,data_json,created_at_ms) VALUES(?1,?2,?3,?4)",params![document.id,document.revision,json,document.updated_at_ms])?;
+    for tag in document_tags(document) {
+        tx.execute("INSERT INTO knowledge_tag_history(tag_key,tag,last_used_at_ms) VALUES(?1,?2,?3) ON CONFLICT(tag_key) DO UPDATE SET tag=excluded.tag,last_used_at_ms=excluded.last_used_at_ms", params![tag.to_lowercase(),tag,document.updated_at_ms])?;
+    }
     reindex(&tx, document)?;
-    tx.commit()?;
     Ok(())
 }
 pub fn list(conn: &Connection) -> Result<Vec<DocumentSummary>, AppError> {
@@ -1188,7 +1429,24 @@ pub fn create(conn: &Connection, request: CreateRequest) -> Result<KnowledgeDocu
     Ok(document)
 }
 pub fn import(conn: &Connection, request: ImportRequest) -> Result<KnowledgeDocument, AppError> {
+    import_with_metadata(conn, request, BTreeMap::new())
+}
+fn import_with_metadata(
+    conn: &Connection,
+    request: ImportRequest,
+    metadata: BTreeMap<String, Value>,
+) -> Result<KnowledgeDocument, AppError> {
     let chapters = parse_pgn(&request.pgn)?;
+    let imported_tags = chapters
+        .first()
+        .and_then(|chapter| chapter.headers.get("ChessPushTags"))
+        .map(|value| {
+            serde_json::from_str::<Vec<String>>(value)
+                .map_err(|_| error("Некорректные теги ChessPushTags в PGN"))
+        })
+        .transpose()?
+        .map(normalize_tags)
+        .transpose()?;
     let (mut document, expected) = if let Some(id) = request.document_id {
         let document = load(conn, &id, None)?;
         let expected = request
@@ -1203,7 +1461,7 @@ pub fn import(conn: &Connection, request: ImportRequest) -> Result<KnowledgeDocu
         (
             KnowledgeDocument {
                 id: new_id("knowledge")?,
-                kind: "repertoire".into(),
+                kind: request.kind,
                 title: request.title.trim().into(),
                 side: request.side,
                 revision: 0,
@@ -1215,11 +1473,106 @@ pub fn import(conn: &Connection, request: ImportRequest) -> Result<KnowledgeDocu
             None,
         )
     };
+    document.metadata.extend(metadata);
+    if let Some(tags) = imported_tags {
+        let mut combined = document_tags(&document);
+        combined.extend(tags);
+        document.metadata.insert(
+            "tags".into(),
+            serde_json::to_value(normalize_tags(combined)?)?,
+        );
+    }
     document.chapters.extend(chapters);
     document.revision += 1;
     document.updated_at_ms = now_ms();
     persist(conn, &document, expected)?;
     Ok(document)
+}
+pub fn import_file(
+    conn: &Connection,
+    path: &std::path::Path,
+) -> Result<KnowledgeDocument, AppError> {
+    if !path
+        .extension()
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("pgn"))
+    {
+        return Err(error("Выберите файл PGN"));
+    }
+    let info = std::fs::metadata(path).map_err(error)?;
+    if !info.is_file() || info.len() > 8 * 1024 * 1024 {
+        return Err(error("Размер PGN должен быть не больше 8 МБ"));
+    }
+    let pgn =
+        std::fs::read_to_string(path).map_err(|_| error("Не удалось прочитать PGN в UTF-8"))?;
+    let filename = path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or("knowledge.pgn");
+    let title = path
+        .file_stem()
+        .and_then(|name| name.to_str())
+        .unwrap_or("Новое знание");
+    import_with_metadata(
+        conn,
+        ImportRequest {
+            title: title.into(),
+            kind: "study".into(),
+            side: "both".into(),
+            pgn: pgn.trim_start_matches('\u{feff}').into(),
+            document_id: None,
+            expected_revision: None,
+        },
+        BTreeMap::from([("source_filename".into(), Value::String(filename.into()))]),
+    )
+}
+pub fn export_file(
+    conn: &Connection,
+    id: &str,
+    revision: Option<i64>,
+    path: &std::path::Path,
+) -> Result<(), AppError> {
+    if !path
+        .extension()
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("pgn"))
+    {
+        return Err(error("Укажите расширение .pgn"));
+    }
+    std::fs::write(path, export_document(&load(conn, id, revision)?)?).map_err(error)
+}
+pub fn delete_study(conn: &Connection, id: &str, expected_revision: i64) -> Result<(), AppError> {
+    let tx = rusqlite::Transaction::new_unchecked(conn, rusqlite::TransactionBehavior::Immediate)?;
+    let current: Option<(String, i64)> = tx
+        .query_row(
+            "SELECT kind,revision FROM knowledge_documents WHERE id=?1",
+            [id],
+            |row| Ok((row.get(0)?, row.get(1)?)),
+        )
+        .optional()?;
+    let (kind, revision) =
+        current.ok_or_else(|| AppError::new("not_found", "Знание уже удалено или не найдено"))?;
+    if kind != "study" {
+        return Err(error("Документ не является знанием"));
+    }
+    if revision != expected_revision {
+        return Err(AppError::new(
+            "conflict",
+            "Знание изменено. Обновите список перед удалением.",
+        ));
+    }
+    tx.execute(
+        "DELETE FROM knowledge_node_index WHERE document_id=?1",
+        [id],
+    )?;
+    tx.execute(
+        "DELETE FROM knowledge_document_versions WHERE document_id=?1",
+        [id],
+    )?;
+    tx.execute(
+        "DELETE FROM knowledge_documents WHERE id=?1 AND revision=?2",
+        params![id, expected_revision],
+    )?;
+    tx.commit()?;
+    Ok(())
 }
 pub fn apply(
     conn: &Connection,
@@ -1235,6 +1588,23 @@ pub fn apply(
         ));
     }
     match operation {
+        EditOperation::SetTags { tags } => {
+            document
+                .metadata
+                .insert("tags".into(), serde_json::to_value(normalize_tags(tags)?)?);
+        }
+        EditOperation::MoveChapter { chapter_id, index } => {
+            if index >= document.chapters.len() {
+                return Err(error("Некорректный порядок главы"));
+            }
+            let current = document
+                .chapters
+                .iter()
+                .position(|chapter| chapter.id == chapter_id)
+                .ok_or_else(|| error("Глава не найдена"))?;
+            let chapter = document.chapters.remove(current);
+            document.chapters.insert(index, chapter);
+        }
         EditOperation::Rename { title, side } => {
             document.title = title.trim().into();
             document.side = side;
@@ -1263,6 +1633,7 @@ pub fn apply(
                 | EditOperation::RemoveVariation { chapter_id, .. }
                 | EditOperation::PromoteVariation { chapter_id, .. }
                 | EditOperation::Annotate { chapter_id, .. }
+                | EditOperation::SetChapterHeaders { chapter_id, .. }
                 | EditOperation::RenameChapter { chapter_id, .. } => chapter_id,
                 _ => unreachable!(),
             };
@@ -1273,7 +1644,21 @@ pub fn apply(
                 .ok_or_else(|| error("Глава не найдена"))?;
             let promote = matches!(&operation, EditOperation::PromoteVariation { .. });
             match operation {
-                EditOperation::RenameChapter { title, .. } => chapter.title = title,
+                EditOperation::SetChapterHeaders { headers, .. } => {
+                    validate_headers(&chapter.headers, &headers)?;
+                    if let Some(title) = headers.get("ChapterName") {
+                        chapter.title = title.trim().into();
+                    }
+                    chapter.headers = headers;
+                }
+                EditOperation::RenameChapter { title, .. } => {
+                    chapter.title = title;
+                    if chapter.headers.contains_key("ChapterName") {
+                        chapter
+                            .headers
+                            .insert("ChapterName".into(), chapter.title.clone());
+                    }
+                }
                 EditOperation::AddMove { parent_id, uci, .. } => {
                     let path = node_path(&chapter.root, &parent_id)?;
                     let parent = at_mut(&mut chapter.root, &path);
@@ -1414,7 +1799,8 @@ pub fn overlay(conn: &Connection, document_ids: &[String]) -> Result<Vec<Prepare
     let mut out = vec![];
     for id in document_ids {
         let document = load(conn, id, None)?;
-        if document.kind != "repertoire"
+        if !["repertoire", "study"].contains(&document.kind.as_str())
+            || (document.kind == "study" && !fragments::is_attachment(&document))
             || (fragments::is_attachment(&document) && !fragments::is_active(&document))
         {
             continue;
@@ -1452,6 +1838,7 @@ mod tests {
         import(
             conn,
             ImportRequest {
+                kind: "repertoire".into(),
                 title: "Preparation".into(),
                 side: "white".into(),
                 pgn: TREE.into(),
@@ -1491,6 +1878,7 @@ mod tests {
         let document = import(
             &conn,
             ImportRequest {
+                kind: "repertoire".into(),
                 title: "Two".into(),
                 side: "both".into(),
                 pgn,
@@ -1667,6 +2055,7 @@ mod tests {
         let doc = import(
             &conn,
             ImportRequest {
+                kind: "repertoire".into(),
                 title: "Long".into(),
                 side: "both".into(),
                 pgn,
@@ -1698,6 +2087,7 @@ mod tests {
                 import(
                     &conn,
                     ImportRequest {
+                        kind: "repertoire".into(),
                         title: "Invalid".into(),
                         side: "white".into(),
                         pgn: bad.into(),
@@ -1790,6 +2180,7 @@ mod tests {
         let imported = import(
             &conn,
             ImportRequest {
+                kind: "repertoire".into(),
                 title: "ignored".into(),
                 side: "black".into(),
                 pgn: TREE.into(),
@@ -1810,6 +2201,7 @@ mod tests {
         let doc = import(
             &conn,
             ImportRequest {
+                kind: "repertoire".into(),
                 title: "Comments".into(),
                 side: "white".into(),
                 pgn: pgn.into(),

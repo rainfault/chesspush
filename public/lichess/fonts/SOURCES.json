@@ -1,0 +1,23 @@
+{
+  "repository": "https://github.com/lichess-org/lila",
+  "revision": "2e3e641c32b361c113e696cee34f9fddefef6727",
+  "files": [
+    {
+      "sha256": "6ab64433de6077ca5ad31b05420450ce986a616a4ea47b6ad16f3217055dafc3",
+      "name": "noto-sans-cyrillic.woff2"
+    },
+    {
+      "sha256": "086bfcad0e112af1c9ac0cdea1744dfb11dfdda61906ceee1b32439437096add",
+      "name": "noto-sans-latin.woff2"
+    },
+    {
+      "sha256": "c06ca3fcbc5f7c37ebb7c86a69502009911ecd8183811bae02f9b1fbb0541ddb",
+      "name": "roboto-cyrillic.woff2"
+    },
+    {
+      "sha256": "20b535fa80c8189e3b87d1803038389960203a886d502bc2ef1857affc2f38d2",
+      "name": "roboto-latin.woff2"
+    }
+  ],
+  "license": "Apache-2.0"
+}

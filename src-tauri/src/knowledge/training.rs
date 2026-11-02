@@ -1,11 +1,19 @@
 //! Position-based training projected from the existing combined VariationTree.
 //! No repertoire lines or independently editable chess content are stored here.
 use super::*;
+use fsrs::{FSRS, FSRS6_DEFAULT_DECAY, MemoryState, current_retrievability};
 use rusqlite::{Transaction, TransactionBehavior};
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeSet, HashMap, VecDeque};
 
 const DAY_MS: i64 = 86_400_000;
+const SESSION_LIMIT: usize = 10;
+const RETEST_GAP: u64 = 3;
+const DESIRED_RETENTION: f32 = 0.9;
+const STRATEGY_VERSION: u8 = 1;
+fn default_new_limit() -> usize {
+    5
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Scope {
@@ -25,6 +33,8 @@ pub struct StartRequest {
     pub mode: String,
     #[serde(default)]
     pub restart: bool,
+    #[serde(default = "default_new_limit")]
+    pub new_limit: usize,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SessionSummary {
@@ -33,11 +43,19 @@ pub struct SessionSummary {
     pub total: usize,
     pub mistakes: usize,
     pub finished: bool,
+    pub new_count: usize,
+    pub review_count: usize,
+    pub first_try_correct: usize,
+    pub recovered: usize,
+    pub pending_retests: usize,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Overview {
     pub total: usize,
     pub due: usize,
+    pub new_positions: usize,
+    pub learning: usize,
+    pub scheduled: usize,
     pub next_due_at_ms: Option<i64>,
     pub active_srs: Option<SessionSummary>,
     pub active_full_drill: Option<SessionSummary>,
@@ -78,6 +96,14 @@ pub struct SessionView {
     pub finished: bool,
     pub feedback: String,
     pub prompt: Option<Prompt>,
+    pub task: Option<String>,
+    pub step: u64,
+    pub new_count: usize,
+    pub review_count: usize,
+    pub first_try_correct: usize,
+    pub recovered: usize,
+    pub pending_retests: usize,
+    pub next_review_at_ms: Option<i64>,
 }
 
 #[derive(Debug, Clone)]
@@ -325,7 +351,7 @@ fn project_scope(conn: &Connection, scope: &Scope) -> Result<Projection, AppErro
             "Исследование удалено. Выберите другую главу.",
         )
     })?;
-    if document.kind != "repertoire"
+    if !["repertoire", "study"].contains(&document.kind.as_str())
         || !fragments::is_attachment(&document)
         || !fragments::is_active(&document)
         || !(document.side == scope.side || document.side == "both")
@@ -346,6 +372,12 @@ fn project_scope(conn: &Connection, scope: &Scope) -> Result<Projection, AppErro
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+struct QueuedTask {
+    decision_id: String,
+    task: String,
+    ready_at_step: u64,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
 struct Session {
     id: String,
     scope: Scope,
@@ -360,6 +392,28 @@ struct Session {
     feedback: String,
     attempted_uci: Option<String>,
     created_at_ms: i64,
+    #[serde(default)]
+    strategy_version: u8,
+    #[serde(default = "default_new_limit")]
+    new_limit: usize,
+    #[serde(default)]
+    queue: Vec<QueuedTask>,
+    #[serde(default)]
+    task: String,
+    #[serde(default)]
+    step: u64,
+    #[serde(default)]
+    visit_assisted: bool,
+    #[serde(default)]
+    scored: BTreeSet<String>,
+    #[serde(default)]
+    new_items: BTreeSet<String>,
+    #[serde(default)]
+    introduced: BTreeSet<String>,
+    #[serde(default)]
+    first_try_correct: BTreeSet<String>,
+    #[serde(default)]
+    recovered: BTreeSet<String>,
 }
 impl Session {
     fn summary(&self) -> SessionSummary {
@@ -369,6 +423,24 @@ impl Session {
             total: self.items.len(),
             mistakes: self.failed.len(),
             finished: self.current.is_none(),
+            new_count: self.new_items.len(),
+            review_count: self.items.len().saturating_sub(self.new_items.len()),
+            first_try_correct: self.first_try_correct.len(),
+            recovered: self.recovered.len(),
+            pending_retests: self
+                .queue
+                .iter()
+                .filter(|entry| matches!(entry.task.as_str(), "recall" | "relearn"))
+                .count()
+                + usize::from(
+                    self.current.is_some()
+                        && self.mode == "srs"
+                        && (matches!(self.task.as_str(), "recall" | "relearn")
+                            || self.feedback == "assisted")
+                        && !self
+                            .completed
+                            .contains(self.current.as_deref().unwrap_or_default()),
+                ),
         }
     }
 }
@@ -398,6 +470,7 @@ fn latest(conn: &Connection, scope: &Scope, mode: &str) -> Result<Option<Session
     }
     Ok(None)
 }
+#[cfg(test)]
 fn due_at(conn: &Connection, id: &str) -> Result<Option<i64>, AppError> {
     Ok(conn
         .query_row(
@@ -407,15 +480,137 @@ fn due_at(conn: &Connection, id: &str) -> Result<Option<i64>, AppError> {
         )
         .optional()?)
 }
+#[derive(Debug, Clone)]
+struct Schedule {
+    repetitions: i64,
+    interval_days: i64,
+    ease: f64,
+    due_at_ms: i64,
+    last_review_at_ms: i64,
+    stability: Option<f32>,
+    difficulty: Option<f32>,
+    scheduler_version: i64,
+}
+impl Schedule {
+    fn memory(&self) -> Option<MemoryState> {
+        let stability = self.stability?;
+        let difficulty = self.difficulty?;
+        (self.scheduler_version == 6
+            && stability.is_finite()
+            && stability > 0.0
+            && difficulty.is_finite()
+            && (1.0..=10.0).contains(&difficulty))
+        .then_some(MemoryState {
+            stability,
+            difficulty,
+        })
+    }
+    fn urgency(&self, now: i64) -> f32 {
+        if let Some(memory) = self.memory() {
+            current_retrievability(
+                memory,
+                now.saturating_sub(self.last_review_at_ms).max(0) as f32 / DAY_MS as f32,
+                FSRS6_DEFAULT_DECAY,
+            )
+        } else {
+            // Legacy cards retain their due dates until the next real review.
+            // Relative overdue time orders them without inventing memory state.
+            1.0 / (1.0
+                + now.saturating_sub(self.due_at_ms).max(0) as f32
+                    / (self.interval_days.max(1) as f32 * DAY_MS as f32))
+        }
+    }
+}
+fn schedules(conn: &Connection, side: &str) -> Result<HashMap<String, Schedule>, AppError> {
+    let mut statement = conn.prepare("SELECT decision_id,repetitions,interval_days,ease,due_at_ms,last_review_at_ms,stability,difficulty,scheduler_version FROM repertoire_training_srs WHERE side=?1")?;
+    Ok(statement
+        .query_map([side], |row| {
+            Ok((
+                row.get(0)?,
+                Schedule {
+                    repetitions: row.get(1)?,
+                    interval_days: row.get(2)?,
+                    ease: row.get(3)?,
+                    due_at_ms: row.get(4)?,
+                    last_review_at_ms: row.get(5)?,
+                    stability: row.get(6)?,
+                    difficulty: row.get(7)?,
+                    scheduler_version: row.get(8)?,
+                },
+            ))
+        })?
+        .collect::<Result<HashMap<_, _>, _>>()?)
+}
+fn planned_items(
+    projection: &Projection,
+    state: &HashMap<String, Schedule>,
+    now: i64,
+    new_limit: usize,
+    excluded: &HashSet<String>,
+) -> Vec<(String, bool)> {
+    let mut due = projection
+        .decisions
+        .iter()
+        .filter(|decision| !excluded.contains(&decision.id))
+        .filter_map(|decision| {
+            state
+                .get(&decision.id)
+                .filter(|schedule| schedule.due_at_ms <= now)
+                .map(|schedule| (decision, schedule))
+        })
+        .collect::<Vec<_>>();
+    due.sort_by(|(left, a), (right, b)| {
+        a.urgency(now)
+            .total_cmp(&b.urgency(now))
+            .then_with(|| a.due_at_ms.cmp(&b.due_at_ms))
+            .then_with(|| left.id.cmp(&right.id))
+    });
+    let mut selected = due
+        .into_iter()
+        .take(SESSION_LIMIT)
+        .map(|(decision, _)| (decision.id.clone(), false))
+        .collect::<Vec<_>>();
+    let mut fresh = projection
+        .decisions
+        .iter()
+        .enumerate()
+        .filter(|(_, decision)| {
+            !excluded.contains(&decision.id) && !state.contains_key(&decision.id)
+        })
+        .collect::<Vec<_>>();
+    fresh.sort_by_key(|(index, decision)| (decision.occurrence.path.len(), *index));
+    selected.extend(
+        fresh
+            .into_iter()
+            .take(new_limit.min(SESSION_LIMIT.saturating_sub(selected.len())))
+            .map(|(_, decision)| (decision.id.clone(), true)),
+    );
+    selected
+}
 fn eligible(
     conn: &Connection,
     projection: &Projection,
     mode: &str,
     now: i64,
 ) -> Result<Vec<String>, AppError> {
+    // Full drill has no scheduling filter. SRS selection uses planned_items.
+    if mode == "full_drill" {
+        return Ok(projection
+            .decisions
+            .iter()
+            .map(|decision| decision.id.clone())
+            .collect());
+    }
+    let state = schedules(conn, "white")?
+        .into_iter()
+        .chain(schedules(conn, "black")?)
+        .collect::<HashMap<_, _>>();
     let mut result = vec![];
     for decision in &projection.decisions {
-        if mode == "full_drill" || due_at(conn, &decision.id)?.is_none_or(|due| due <= now) {
+        if state
+            .get(&decision.id)
+            .is_none_or(|schedule| schedule.due_at_ms <= now)
+        {
             result.push(decision.id.clone());
         }
     }
@@ -431,6 +626,8 @@ fn set_current(session: &mut Session, decision: Option<&Decision>) {
     }
     .into();
     if let Some(decision) = decision {
+        session.step = session.step.saturating_add(1);
+        session.task = "review".into();
         session.initial_fen = decision.occurrence.initial_fen.clone();
         session.path = decision.occurrence.path.clone();
         if session.failed.contains(&decision.id) {
@@ -438,11 +635,179 @@ fn set_current(session: &mut Session, decision: Option<&Decision>) {
         }
     }
 }
+fn choose_adaptive(session: &mut Session, projection: &Projection) {
+    session
+        .queue
+        .retain(|entry| !session.completed.contains(&entry.decision_id));
+    let next_step = session.step.saturating_add(1);
+    // If a small deck cannot supply three intervening tasks, continue without
+    // an artificial wait. Same-session success is not long-term mastery.
+    let index = session
+        .queue
+        .iter()
+        .position(|entry| entry.ready_at_step <= next_step)
+        .or_else(|| {
+            session
+                .queue
+                .iter()
+                .enumerate()
+                .min_by_key(|(_, entry)| entry.ready_at_step)
+                .map(|(index, _)| index)
+        });
+    let Some(index) = index else {
+        session.current = None;
+        session.task.clear();
+        session.feedback = "finished".into();
+        session.attempted_uci = None;
+        return;
+    };
+    let entry = session.queue.remove(index);
+    let Some(decision) = projection
+        .decisions
+        .iter()
+        .find(|decision| decision.id == entry.decision_id)
+    else {
+        return;
+    };
+    session.current = Some(entry.decision_id);
+    session.task = entry.task;
+    session.step = next_step;
+    session.visit_assisted = session.task == "learn";
+    session.feedback = "awaiting".into();
+    session.attempted_uci = None;
+    session.initial_fen = decision.occurrence.initial_fen.clone();
+    session.path = decision.occurrence.path.clone();
+}
+fn refresh_adaptive(
+    conn: &Connection,
+    session: &mut Session,
+    projection: &Projection,
+) -> Result<(), AppError> {
+    let state = schedules(conn, &session.scope.side)?;
+    if session.strategy_version == 0 {
+        // Existing active runs keep their exact membership and completed work,
+        // even if they exceed the new ten-position limit.
+        session.strategy_version = STRATEGY_VERSION;
+        session.scored.extend(session.completed.iter().cloned());
+        session.scored.extend(session.failed.iter().cloned());
+        for id in &session.items {
+            if !state.contains_key(id) {
+                session.new_items.insert(id.clone());
+            }
+            if Some(id) != session.current.as_ref() && !session.completed.contains(id) {
+                session.queue.push(QueuedTask {
+                    decision_id: id.clone(),
+                    task: if session.failed.contains(id) {
+                        "relearn"
+                    } else if state.contains_key(id) {
+                        "review"
+                    } else {
+                        "learn"
+                    }
+                    .into(),
+                    ready_at_step: 0,
+                });
+            }
+        }
+        session.task = if session
+            .failed
+            .contains(session.current.as_deref().unwrap_or_default())
+        {
+            "relearn"
+        } else if session
+            .new_items
+            .contains(session.current.as_deref().unwrap_or_default())
+        {
+            "learn"
+        } else {
+            "review"
+        }
+        .into();
+        session.visit_assisted = session.feedback == "retry" || session.task == "learn";
+        session.step = session.step.max(1);
+    }
+    let content_changed = session.fingerprint != projection.fingerprint;
+    let valid = projection
+        .decisions
+        .iter()
+        .map(|decision| decision.id.as_str())
+        .collect::<HashSet<_>>();
+    session.items.retain(|id| {
+        valid.contains(id.as_str())
+            && (session.completed.contains(id)
+                || session.scored.contains(id)
+                || state
+                    .get(id)
+                    .is_none_or(|schedule| schedule.due_at_ms <= now_ms()))
+    });
+    let included = session.items.iter().cloned().collect::<HashSet<_>>();
+    for values in [
+        &mut session.completed,
+        &mut session.failed,
+        &mut session.scored,
+        &mut session.new_items,
+        &mut session.introduced,
+        &mut session.first_try_correct,
+        &mut session.recovered,
+    ] {
+        values.retain(|id| included.contains(id));
+    }
+    session
+        .queue
+        .retain(|entry| included.contains(&entry.decision_id));
+    if content_changed && session.items.len() < SESSION_LIMIT {
+        for (id, fresh) in planned_items(
+            projection,
+            &state,
+            now_ms(),
+            session.new_limit.saturating_sub(session.new_items.len()),
+            &included,
+        ) {
+            if session.items.len() == SESSION_LIMIT {
+                break;
+            }
+            if !session.items.contains(&id) {
+                session.items.push(id.clone());
+                if fresh {
+                    session.new_items.insert(id.clone());
+                }
+                session.queue.push(QueuedTask {
+                    decision_id: id,
+                    task: if fresh { "learn" } else { "review" }.into(),
+                    ready_at_step: 0,
+                });
+            }
+        }
+    }
+    if let Some(current) = session
+        .current
+        .as_ref()
+        .filter(|id| session.items.contains(id))
+        .and_then(|id| {
+            projection
+                .decisions
+                .iter()
+                .find(|decision| &decision.id == id)
+        })
+    {
+        if content_changed {
+            session.initial_fen = current.occurrence.initial_fen.clone();
+            session.path = current.occurrence.path.clone();
+        }
+    } else {
+        choose_adaptive(session, projection);
+    }
+    session.fingerprint = projection.fingerprint.clone();
+    Ok(())
+}
 fn refresh(
     conn: &Connection,
     session: &mut Session,
     projection: &Projection,
 ) -> Result<(), AppError> {
+    if session.mode == "srs" {
+        return refresh_adaptive(conn, session, projection);
+    }
     let content_changed = session.fingerprint != projection.fingerprint;
     if !content_changed && session.mode != "srs" {
         return Ok(());
@@ -515,7 +880,11 @@ fn replay(initial_fen: &str, path: &[String]) -> Result<(Chess, Vec<ContextMove>
     }
     Ok((pos, context))
 }
-fn view(session: &Session, projection: &Projection) -> Result<SessionView, AppError> {
+fn view(
+    conn: &Connection,
+    session: &Session,
+    projection: &Projection,
+) -> Result<SessionView, AppError> {
     let prompt = if let Some(current) = &session.current {
         let decision = projection
             .decisions
@@ -526,7 +895,7 @@ fn view(session: &Session, projection: &Projection) -> Result<SessionView, AppEr
         if position_key(&pos) != decision.key {
             return Err(error("Контекст тренировки изменён"));
         }
-        let revealed = session.feedback != "awaiting";
+        let revealed = session.feedback != "awaiting" || session.task == "learn";
         let mut comments = decision.comments.clone();
         for answer in &decision.answers {
             push_comments(&mut comments, &answer.comments);
@@ -565,6 +934,25 @@ fn view(session: &Session, projection: &Projection) -> Result<SessionView, AppEr
     } else {
         None
     };
+    let summary = session.summary();
+    let next_review_at_ms = if session.mode == "srs" {
+        let state = schedules(conn, &session.scope.side)?;
+        session
+            .current
+            .as_ref()
+            .and_then(|id| state.get(id).map(|schedule| schedule.due_at_ms))
+            .or_else(|| {
+                session
+                    .items
+                    .iter()
+                    .filter_map(|id| state.get(id))
+                    .map(|schedule| schedule.due_at_ms)
+                    .filter(|at| *at > now_ms())
+                    .min()
+            })
+    } else {
+        None
+    };
     Ok(SessionView {
         id: session.id.clone(),
         mode: session.mode.clone(),
@@ -575,21 +963,47 @@ fn view(session: &Session, projection: &Projection) -> Result<SessionView, AppEr
         finished: session.current.is_none(),
         feedback: session.feedback.clone(),
         prompt,
+        task: session.current.as_ref().map(|_| {
+            if session.task.is_empty() {
+                "review".into()
+            } else {
+                session.task.clone()
+            }
+        }),
+        step: session.step,
+        new_count: summary.new_count,
+        review_count: summary.review_count,
+        first_try_correct: summary.first_try_correct,
+        recovered: summary.recovered,
+        pending_retests: summary.pending_retests,
+        next_review_at_ms,
     })
 }
 
 pub fn overview(conn: &Connection, scope: Scope) -> Result<Overview, AppError> {
     let tx = conn.unchecked_transaction()?;
     let projection = project_scope(&tx, &scope)?;
+    let state = schedules(&tx, &scope.side)?;
     let now = now_ms();
     let mut due = 0;
+    let mut new_positions = 0;
+    let mut learning = 0;
+    let mut scheduled = 0;
     let mut next_due_at_ms: Option<i64> = None;
     for decision in &projection.decisions {
-        match due_at(&tx, &decision.id)? {
-            Some(at) if at > now => {
-                next_due_at_ms = Some(next_due_at_ms.map_or(at, |existing| existing.min(at)))
+        match state.get(&decision.id) {
+            Some(schedule) => {
+                scheduled += 1;
+                learning += usize::from(schedule.repetitions == 0);
+                if schedule.due_at_ms <= now {
+                    due += 1;
+                } else {
+                    next_due_at_ms = Some(next_due_at_ms.map_or(schedule.due_at_ms, |existing| {
+                        existing.min(schedule.due_at_ms)
+                    }));
+                }
             }
-            _ => due += 1,
+            None => new_positions += 1,
         }
     }
     let active = |mode: &str| -> Result<Option<SessionSummary>, AppError> {
@@ -605,6 +1019,9 @@ pub fn overview(conn: &Connection, scope: Scope) -> Result<Overview, AppError> {
     let result = Overview {
         total: projection.decisions.len(),
         due,
+        new_positions,
+        learning,
+        scheduled,
         next_due_at_ms,
         active_srs: active("srs")?,
         active_full_drill: active("full_drill")?,
@@ -613,6 +1030,9 @@ pub fn overview(conn: &Connection, scope: Scope) -> Result<Overview, AppError> {
     Ok(result)
 }
 pub fn start(conn: &Connection, request: StartRequest) -> Result<SessionView, AppError> {
+    if request.new_limit > SESSION_LIMIT {
+        return Err(error("Число новых позиций должно быть от 0 до 10"));
+    }
     if !["srs", "full_drill"].contains(&request.mode.as_str()) {
         return Err(error("Неизвестный режим тренировки"));
     }
@@ -644,24 +1064,56 @@ pub fn start(conn: &Connection, request: StartRequest) -> Result<SessionView, Ap
             feedback: "finished".into(),
             attempted_uci: None,
             created_at_ms: now_ms(),
+            strategy_version: STRATEGY_VERSION,
+            new_limit: request.new_limit,
+            queue: vec![],
+            task: String::new(),
+            step: 0,
+            visit_assisted: false,
+            scored: BTreeSet::new(),
+            new_items: BTreeSet::new(),
+            introduced: BTreeSet::new(),
+            first_try_correct: BTreeSet::new(),
+            recovered: BTreeSet::new(),
         };
-        session.items = eligible(&tx, &projection, &session.mode, now_ms())?;
-        let first = projection
-            .decisions
-            .iter()
-            .find(|item| session.items.contains(&item.id));
-        set_current(&mut session, first);
+        if session.mode == "srs" {
+            let state = schedules(&tx, &session.scope.side)?;
+            for (id, fresh) in planned_items(
+                &projection,
+                &state,
+                now_ms(),
+                session.new_limit,
+                &HashSet::new(),
+            ) {
+                session.items.push(id.clone());
+                if fresh {
+                    session.new_items.insert(id.clone());
+                }
+                session.queue.push(QueuedTask {
+                    decision_id: id,
+                    task: if fresh { "learn" } else { "review" }.into(),
+                    ready_at_step: 0,
+                });
+            }
+            choose_adaptive(&mut session, &projection);
+        } else {
+            session.items = eligible(&tx, &projection, &session.mode, now_ms())?;
+            let first = projection
+                .decisions
+                .iter()
+                .find(|item| session.items.contains(&item.id));
+            set_current(&mut session, first);
+        }
         session
     };
     save(&tx, &session)?;
-    let result = view(&session, &projection)?;
+    let result = view(&tx, &session, &projection)?;
     tx.commit()?;
     Ok(result)
 }
 
-/// Published SuperMemo SM-2 with fixed grades: 4 = unaided recall,
-/// 1 = failure / hint. Guided correction never schedules a second review.
-/// https://www.super-memory.com/english/ol/sm2.htm
+/// FSRS-6 at 90% requested retention. Historical grades remain 4/1 in the
+/// event log; these map to FSRS Good/Again. Guided work is never a new review.
 fn schedule(
     conn: &Connection,
     session: &Session,
@@ -669,20 +1121,40 @@ fn schedule(
     grade: u8,
     timestamp: i64,
 ) -> Result<(), AppError> {
-    let previous: Option<(i64,i64,f64)> = conn.query_row("SELECT repetitions,interval_days,ease FROM repertoire_training_srs WHERE decision_id=?1",[&decision.id],|row|Ok((row.get(0)?,row.get(1)?,row.get(2)?))).optional()?;
-    let (repetitions, interval, ease) = previous.unwrap_or((0, 0, 2.5));
-    let next_repetitions = if grade < 3 { 0 } else { repetitions + 1 };
-    let next_interval = if grade < 3 || next_repetitions == 1 {
-        1
-    } else if next_repetitions == 2 {
-        6
+    let state = schedules(conn, &session.scope.side)?;
+    let previous = state.get(&decision.id);
+    let fsrs = FSRS::default();
+    let memory = previous
+        .map(|previous| {
+            previous.memory().map(Ok).unwrap_or_else(|| {
+                fsrs.memory_state_from_sm2(
+                    previous.ease as f32,
+                    previous.interval_days.max(1) as f32,
+                    DESIRED_RETENTION,
+                )
+            })
+        })
+        .transpose()
+        .map_err(error)?;
+    let elapsed = previous.map_or(0, |previous| {
+        (timestamp.saturating_sub(previous.last_review_at_ms).max(0) / DAY_MS).min(u32::MAX as i64)
+            as u32
+    });
+    let next = fsrs
+        .next_states(memory, DESIRED_RETENTION, elapsed)
+        .map_err(error)?;
+    let next = if grade < 3 { next.again } else { next.good };
+    let interval = next.interval.clamp(1.0 / 1440.0, 36_500.0);
+    let due = timestamp.saturating_add((interval as f64 * DAY_MS as f64).round() as i64);
+    let repetitions = if grade < 3 {
+        0
     } else {
-        ((interval as f64) * ease).ceil().min(36_500.0) as i64
+        previous
+            .map_or(0, |previous| previous.repetitions)
+            .saturating_add(1)
     };
-    let delta = 5.0 - grade as f64;
-    let next_ease = (ease + 0.1 - delta * (0.08 + delta * 0.02)).max(1.3);
-    let due = timestamp.saturating_add(next_interval * DAY_MS);
-    conn.execute("INSERT INTO repertoire_training_srs(decision_id,side,position_key,solution_key,repetitions,interval_days,ease,due_at_ms,last_review_at_ms) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9) ON CONFLICT(decision_id) DO UPDATE SET repetitions=excluded.repetitions,interval_days=excluded.interval_days,ease=excluded.ease,due_at_ms=excluded.due_at_ms,last_review_at_ms=excluded.last_review_at_ms",params![decision.id,session.scope.side,decision.key,decision.solution_key,next_repetitions,next_interval,next_ease,due,timestamp])?;
+    let ease = previous.map_or(2.5, |previous| previous.ease);
+    conn.execute("INSERT INTO repertoire_training_srs(decision_id,side,position_key,solution_key,repetitions,interval_days,ease,due_at_ms,last_review_at_ms,stability,difficulty,scheduler_version) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,6) ON CONFLICT(decision_id) DO UPDATE SET repetitions=excluded.repetitions,interval_days=excluded.interval_days,due_at_ms=excluded.due_at_ms,last_review_at_ms=excluded.last_review_at_ms,stability=excluded.stability,difficulty=excluded.difficulty,scheduler_version=6",params![decision.id,session.scope.side,decision.key,decision.solution_key,repetitions,interval.round().max(1.0) as i64,ease,due,timestamp,next.memory.stability,next.memory.difficulty])?;
     Ok(())
 }
 fn record(
@@ -714,7 +1186,7 @@ pub fn answer(conn: &Connection, session_id: &str, uci: &str) -> Result<SessionV
     let projection = current_projection(&tx, &mut session)?;
     if before != session.current {
         save(&tx, &session)?;
-        let result = view(&session, &projection)?;
+        let result = view(&tx, &session, &projection)?;
         tx.commit()?;
         return Ok(result);
     }
@@ -727,8 +1199,10 @@ pub fn answer(conn: &Connection, session_id: &str, uci: &str) -> Result<SessionV
         .iter()
         .find(|item| item.id == current)
         .expect("validated current");
-    if session.completed.contains(current) {
-        return view(&session, &projection);
+    if session.completed.contains(current)
+        || matches!(session.feedback.as_str(), "correct" | "assisted")
+    {
+        return view(&tx, &session, &projection);
     }
     let (pos, _) = replay(&session.initial_fen, &session.path)?;
     uci.parse::<UciMove>()
@@ -736,6 +1210,61 @@ pub fn answer(conn: &Connection, session_id: &str, uci: &str) -> Result<SessionV
         .to_move(&pos)
         .map_err(|_| error("Недопустимый ход"))?;
     let correct = decision.answers.iter().any(|edge| edge.uci == uci);
+    if session.mode == "srs" {
+        if correct {
+            if session.task == "learn" {
+                record(&tx, &session, decision, "learn", Some(uci), None)?;
+                session.introduced.insert(current.into());
+                session.feedback = "assisted".into();
+            } else if session.visit_assisted {
+                record(&tx, &session, decision, "retry", Some(uci), None)?;
+                session.feedback = "assisted".into();
+            } else {
+                let first = session.scored.insert(current.into());
+                record(
+                    &tx,
+                    &session,
+                    decision,
+                    if first { "correct" } else { "retest" },
+                    Some(uci),
+                    first.then_some(4),
+                )?;
+                session.completed.insert(current.into());
+                if session.failed.contains(current) {
+                    session.recovered.insert(current.into());
+                } else {
+                    session.first_try_correct.insert(current.into());
+                }
+                session.feedback = "correct".into();
+            }
+        } else {
+            let grade = if session.task == "learn" {
+                None
+            } else {
+                session.failed.insert(current.into());
+                session.scored.insert(current.into()).then_some(1)
+            };
+            record(
+                &tx,
+                &session,
+                decision,
+                if session.task == "learn" {
+                    "learn_error"
+                } else {
+                    "error"
+                },
+                Some(uci),
+                grade,
+            )?;
+            session.visit_assisted = true;
+            session.feedback = "retry".into();
+        }
+        session.attempted_uci = Some(uci.into());
+        save(&tx, &session)?;
+        let result = view(&tx, &session, &projection)?;
+        tx.commit()?;
+        return Ok(result);
+    }
     if correct {
         let assisted = session.failed.contains(current);
         record(
@@ -747,6 +1276,11 @@ pub fn answer(conn: &Connection, session_id: &str, uci: &str) -> Result<SessionV
             if assisted { None } else { Some(4) },
         )?;
         session.completed.insert(current.into());
+        if assisted {
+            session.recovered.insert(current.into());
+        } else {
+            session.first_try_correct.insert(current.into());
+        }
         session.feedback = if assisted { "assisted" } else { "correct" }.into();
     } else {
         let first = !session.failed.contains(current);
@@ -763,7 +1297,7 @@ pub fn answer(conn: &Connection, session_id: &str, uci: &str) -> Result<SessionV
     }
     session.attempted_uci = Some(uci.into());
     save(&tx, &session)?;
-    let result = view(&session, &projection)?;
+    let result = view(&tx, &session, &projection)?;
     tx.commit()?;
     Ok(result)
 }
@@ -774,7 +1308,7 @@ pub fn hint(conn: &Connection, session_id: &str) -> Result<SessionView, AppError
     let projection = current_projection(&tx, &mut session)?;
     if before != session.current {
         save(&tx, &session)?;
-        let result = view(&session, &projection)?;
+        let result = view(&tx, &session, &projection)?;
         tx.commit()?;
         return Ok(result);
     }
@@ -787,6 +1321,20 @@ pub fn hint(conn: &Connection, session_id: &str) -> Result<SessionView, AppError
         .iter()
         .find(|item| item.id == current)
         .expect("validated current");
+    if session.mode == "srs" {
+        if !session.visit_assisted && !matches!(session.feedback.as_str(), "correct" | "assisted") {
+            let first = session.scored.insert(current.into());
+            record(&tx, &session, decision, "hint", None, first.then_some(1))?;
+            session.failed.insert(current.into());
+            session.visit_assisted = true;
+            session.feedback = "retry".into();
+            session.attempted_uci = None;
+            save(&tx, &session)?;
+        }
+        let result = view(&tx, &session, &projection)?;
+        tx.commit()?;
+        return Ok(result);
+    }
     if !session.completed.contains(current) && !session.failed.contains(current) {
         record(&tx, &session, decision, "hint", None, Some(1))?;
         session.failed.insert(current.into());
@@ -794,7 +1342,7 @@ pub fn hint(conn: &Connection, session_id: &str) -> Result<SessionView, AppError
         session.attempted_uci = None;
         save(&tx, &session)?;
     }
-    let result = view(&session, &projection)?;
+    let result = view(&tx, &session, &projection)?;
     tx.commit()?;
     Ok(result)
 }
@@ -809,12 +1357,38 @@ pub fn next(conn: &Connection, session_id: &str) -> Result<SessionView, AppError
     let projection = current_projection(&tx, &mut session)?;
     if before != session.current {
         save(&tx, &session)?;
-        let result = view(&session, &projection)?;
+        let result = view(&tx, &session, &projection)?;
         tx.commit()?;
         return Ok(result);
     }
     if session.current.is_none() {
-        return view(&session, &projection);
+        return view(&tx, &session, &projection);
+    }
+    if session.mode == "srs" {
+        if !matches!(session.feedback.as_str(), "correct" | "assisted") {
+            return Err(error("Сначала воспроизведите подготовленный ход"));
+        }
+        let current = session
+            .current
+            .as_deref()
+            .ok_or_else(|| error("Тренировка завершена"))?;
+        if !session.completed.contains(current) {
+            session.queue.push(QueuedTask {
+                decision_id: current.into(),
+                task: if session.task == "learn" {
+                    "recall"
+                } else {
+                    "relearn"
+                }
+                .into(),
+                ready_at_step: session.step.saturating_add(RETEST_GAP + 1),
+            });
+        }
+        choose_adaptive(&mut session, &projection);
+        save(&tx, &session)?;
+        let result = view(&tx, &session, &projection)?;
+        tx.commit()?;
+        return Ok(result);
     }
     if !session
         .completed
@@ -876,7 +1450,7 @@ pub fn next(conn: &Connection, session_id: &str) -> Result<SessionView, AppError
         set_current(&mut session, pending.first().copied());
     }
     save(&tx, &session)?;
-    let result = view(&session, &projection)?;
+    let result = view(&tx, &session, &projection)?;
     tx.commit()?;
     Ok(result)
 }
@@ -884,6 +1458,7 @@ pub fn next(conn: &Connection, session_id: &str) -> Result<SessionView, AppError
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::storage;
     const REPERTOIRE: &str = "[Event \"Queen pawn\"]\n\n1.d4 d5 2.Nf3 Nf6 3.c4 {Central break} e6 (3...g6 4.Nc3 Bg7) 4.Nc3 *\n\n[Event \"Transposition\"]\n\n1.Nf3 Nf6 2.d4 d5 3.e3 {Quiet development} e6 4.Bd3 *";
     fn db() -> Connection {
         let conn = Connection::open_in_memory().unwrap();
@@ -894,12 +1469,17 @@ mod tests {
             .unwrap();
         conn.execute_batch(include_str!("../../migrations/008_repertoire_training.sql"))
             .unwrap();
+        conn.execute_batch(include_str!(
+            "../../migrations/009_adaptive_repertoire_training.sql"
+        ))
+        .unwrap();
         conn
     }
     fn attached(conn: &Connection, pgn: &str, side: &str) -> KnowledgeDocument {
         let document = super::super::import(
             conn,
             ImportRequest {
+                kind: "repertoire".into(),
                 title: "Preparation".into(),
                 side: side.into(),
                 pgn: pgn.into(),
@@ -925,6 +1505,7 @@ mod tests {
                 scope: scope("white"),
                 mode: mode.into(),
                 restart: false,
+                new_limit: 10,
             },
         )
         .unwrap()
@@ -965,6 +1546,381 @@ mod tests {
             row.get(0)
         })
         .unwrap()
+    }
+
+    const LONG_LINE: &str = "1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O Be7 6.Re1 b5 7.Bb3 d6 8.c3 O-O 9.h3 Nb8 10.d4 Nbd7 11.c4 c6 12.Nc3 Bb7 *";
+
+    #[test]
+    fn new_positions_are_shown_before_interleaved_independent_recall() {
+        let conn = db();
+        attached(&conn, LONG_LINE, "white");
+        let request: StartRequest =
+            serde_json::from_str(r#"{"scope":{"side":"white"},"mode":"srs"}"#).unwrap();
+        assert_eq!(request.new_limit, 5);
+        let mut current = start(&conn, request).unwrap();
+        assert_eq!(
+            (current.total, current.new_count, current.review_count),
+            (5, 5, 0)
+        );
+        let root_id = current.prompt.as_ref().unwrap().decision_id.clone();
+        let root_step = current.step;
+        for index in 0..5 {
+            assert_eq!(current.task.as_deref(), Some("learn"));
+            assert!(!current.prompt.as_ref().unwrap().accepted_moves.is_empty());
+            let answer_move = choose(&conn, &current);
+            current = answer(&conn, &current.id, &answer_move).unwrap();
+            assert_eq!(
+                (
+                    current.feedback.as_str(),
+                    current.completed,
+                    current.mistakes
+                ),
+                ("assisted", 0, 0)
+            );
+            assert_eq!(current.pending_retests, index + 1);
+            let before = count(&conn, "repertoire_training_reviews");
+            answer(&conn, &current.id, &answer_move).unwrap();
+            assert_eq!(count(&conn, "repertoire_training_reviews"), before);
+            assert_eq!(count(&conn, "repertoire_training_srs"), 0);
+            current = next(&conn, &current.id).unwrap();
+        }
+        assert_eq!(current.task.as_deref(), Some("recall"));
+        assert_eq!(current.prompt.as_ref().unwrap().decision_id, root_id);
+        assert!(current.step >= root_step + RETEST_GAP + 1);
+        assert!(current.prompt.as_ref().unwrap().accepted_moves.is_empty());
+        let recalled = answer(&conn, &current.id, &choose(&conn, &current)).unwrap();
+        assert_eq!(
+            (
+                recalled.completed,
+                recalled.first_try_correct,
+                recalled.recovered
+            ),
+            (1, 1, 0)
+        );
+        assert!(recalled.next_review_at_ms.is_some_and(|at| at > now_ms()));
+        assert_eq!(count(&conn, "repertoire_training_srs"), 1);
+        let result = finish(&conn, recalled);
+        assert_eq!(
+            (result.completed, result.total, result.first_try_correct),
+            (5, 5, 5)
+        );
+        let overview = overview(&conn, scope("white")).unwrap();
+        assert_eq!(
+            (overview.due, overview.scheduled, overview.new_positions),
+            (0, 5, 7)
+        );
+    }
+
+    #[test]
+    fn failed_recall_is_retested_without_overwriting_the_first_again_schedule() {
+        let conn = db();
+        attached(&conn, "1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 *", "white");
+        let mut current = begin(&conn, "srs");
+        while current.task.as_deref() == Some("learn") {
+            answer(&conn, &current.id, &choose(&conn, &current)).unwrap();
+            current = next(&conn, &current.id).unwrap();
+        }
+        let failed_id = current.prompt.as_ref().unwrap().decision_id.clone();
+        let failed_step = current.step;
+        let failed = answer(&conn, &current.id, "d2d4").unwrap();
+        assert_eq!(
+            (failed.feedback.as_str(), failed.completed, failed.mistakes),
+            ("retry", 0, 1)
+        );
+        let before: (i64,i64,f64,f64) = conn.query_row("SELECT due_at_ms,last_review_at_ms,stability,difficulty FROM repertoire_training_srs WHERE decision_id=?1", [&failed_id], |row|Ok((row.get(0)?,row.get(1)?,row.get(2)?,row.get(3)?))).unwrap();
+        hint(&conn, &current.id).unwrap();
+        let corrected = answer(&conn, &current.id, &choose(&conn, &failed)).unwrap();
+        assert_eq!(
+            (corrected.feedback.as_str(), corrected.completed),
+            ("assisted", 0)
+        );
+        current = next(&conn, &current.id).unwrap();
+        for _ in 0..3 {
+            assert_ne!(current.prompt.as_ref().unwrap().decision_id, failed_id);
+            let corrected = answer(&conn, &current.id, &choose(&conn, &current)).unwrap();
+            current = next(&conn, &corrected.id).unwrap();
+        }
+        assert_eq!(current.task.as_deref(), Some("relearn"));
+        assert_eq!(current.feedback, "awaiting");
+        assert_eq!(current.prompt.as_ref().unwrap().decision_id, failed_id);
+        assert!(current.prompt.as_ref().unwrap().accepted_moves.is_empty());
+        assert_eq!(current.step, failed_step + 4);
+        let recovered = answer(&conn, &current.id, &choose(&conn, &current)).unwrap();
+        assert_eq!(
+            (
+                recovered.completed,
+                recovered.recovered,
+                recovered.first_try_correct
+            ),
+            (4, 1, 3)
+        );
+        let after: (i64,i64,f64,f64) = conn.query_row("SELECT due_at_ms,last_review_at_ms,stability,difficulty FROM repertoire_training_srs WHERE decision_id=?1", [&failed_id], |row|Ok((row.get(0)?,row.get(1)?,row.get(2)?,row.get(3)?))).unwrap();
+        assert_eq!(before, after);
+        let grades: String = conn.query_row("SELECT group_concat(grade) FROM repertoire_training_reviews WHERE decision_id=?1 AND grade IS NOT NULL", [&failed_id], |row|row.get(0)).unwrap();
+        assert_eq!(grades, "1");
+        assert!(next(&conn, &current.id).unwrap().finished);
+    }
+
+    #[test]
+    fn due_cards_precede_capped_new_material_and_overview_keeps_counts_distinct() {
+        let conn = db();
+        attached(&conn, LONG_LINE, "white");
+        let projection = projection(&conn);
+        for (index, decision) in projection.decisions.iter().take(8).enumerate() {
+            conn.execute("INSERT INTO repertoire_training_srs(decision_id,side,position_key,solution_key,repetitions,interval_days,ease,due_at_ms,last_review_at_ms) VALUES(?1,'white',?2,?3,3,6,2.5,?4,?5)", params![decision.id,decision.key,decision.solution_key,now_ms()-(index as i64+1)*DAY_MS,now_ms()-15*DAY_MS]).unwrap();
+        }
+        let overview = overview(&conn, scope("white")).unwrap();
+        assert_eq!(
+            (
+                overview.total,
+                overview.due,
+                overview.new_positions,
+                overview.scheduled
+            ),
+            (12, 8, 4, 8)
+        );
+        let session = start(
+            &conn,
+            StartRequest {
+                scope: scope("white"),
+                mode: "srs".into(),
+                restart: true,
+                new_limit: 5,
+            },
+        )
+        .unwrap();
+        assert_eq!(
+            (session.total, session.review_count, session.new_count),
+            (10, 8, 2)
+        );
+        assert_eq!(session.task.as_deref(), Some("review"));
+        assert_eq!(
+            session.prompt.as_ref().unwrap().decision_id,
+            projection.decisions[7].id
+        );
+        let reviews_only = start(
+            &conn,
+            StartRequest {
+                scope: scope("white"),
+                mode: "srs".into(),
+                restart: true,
+                new_limit: 0,
+            },
+        )
+        .unwrap();
+        assert_eq!((reviews_only.total, reviews_only.new_count), (8, 0));
+        assert!(
+            start(
+                &conn,
+                StartRequest {
+                    scope: scope("white"),
+                    mode: "srs".into(),
+                    restart: true,
+                    new_limit: 11
+                }
+            )
+            .is_err()
+        );
+    }
+
+    #[test]
+    fn fsrs_migrates_sm2_only_on_the_next_scored_review() {
+        let conn = db();
+        attached(&conn, "1.e4 *", "white");
+        let projection = projection(&conn);
+        let decision = &projection.decisions[0];
+        let previous_review = now_ms() - 15 * DAY_MS;
+        let old_due = now_ms() - DAY_MS;
+        conn.execute("INSERT INTO repertoire_training_srs(decision_id,side,position_key,solution_key,repetitions,interval_days,ease,due_at_ms,last_review_at_ms) VALUES(?1,'white',?2,?3,3,15,1.8,?4,?5)",params![decision.id,decision.key,decision.solution_key,old_due,previous_review]).unwrap();
+        overview(&conn, scope("white")).unwrap();
+        let current = begin(&conn, "srs");
+        assert_eq!(current.task.as_deref(), Some("review"));
+        let before = schedules(&conn, "white").unwrap();
+        assert_eq!(
+            (
+                before[&decision.id].due_at_ms,
+                before[&decision.id].memory()
+            ),
+            (old_due, None)
+        );
+        let fsrs = FSRS::default();
+        let migrated = fsrs
+            .memory_state_from_sm2(1.8, 15.0, DESIRED_RETENTION)
+            .unwrap();
+        let expected = fsrs
+            .next_states(Some(migrated), DESIRED_RETENTION, 15)
+            .unwrap()
+            .good;
+        answer(&conn, &current.id, "e2e4").unwrap();
+        let state = schedules(&conn, "white").unwrap();
+        assert_eq!(state[&decision.id].memory(), Some(expected.memory));
+        assert!(state[&decision.id].due_at_ms > now_ms());
+        assert_eq!(state[&decision.id].ease, 1.8);
+    }
+
+    #[test]
+    fn pgn_expansion_fills_available_new_slots_after_excluding_existing_items() {
+        let conn = db();
+        let document = attached(&conn, "1.e4 e5 2.Nf3 *", "white");
+        let original = start(
+            &conn,
+            StartRequest {
+                scope: scope("white"),
+                mode: "srs".into(),
+                restart: false,
+                new_limit: 5,
+            },
+        )
+        .unwrap();
+        assert_eq!(original.total, 2);
+        let leaf = &document.chapters[0].root.children[0].children[0].children[0];
+        let with_reply = super::super::apply(
+            &conn,
+            &document.id,
+            document.revision,
+            EditOperation::AddMove {
+                chapter_id: document.chapters[0].id.clone(),
+                parent_id: leaf.id.clone(),
+                uci: "b8c6".into(),
+            },
+        )
+        .unwrap();
+        let reply = &with_reply.chapters[0].root.children[0].children[0].children[0].children[0];
+        super::super::apply(
+            &conn,
+            &document.id,
+            with_reply.revision,
+            EditOperation::AddMove {
+                chapter_id: document.chapters[0].id.clone(),
+                parent_id: reply.id.clone(),
+                uci: "f1b5".into(),
+            },
+        )
+        .unwrap();
+        let resumed = begin(&conn, "srs");
+        assert_eq!(resumed.id, original.id);
+        assert_eq!((resumed.total, resumed.new_count), (3, 3));
+        assert_eq!(
+            resumed.prompt.as_ref().unwrap().decision_id,
+            original.prompt.as_ref().unwrap().decision_id
+        );
+    }
+
+    #[test]
+    fn adaptive_retest_remains_hidden_and_resumable_after_database_reopen() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("adaptive.sqlite3");
+        let (id, step, due);
+        {
+            let conn = storage::open(&path).unwrap();
+            attached(&conn, "1.e4 *", "white");
+            let initial = begin(&conn, "srs");
+            id = initial.id;
+            answer(&conn, &id, "e2e4").unwrap();
+            let recall = next(&conn, &id).unwrap();
+            assert_eq!(recall.task.as_deref(), Some("recall"));
+            hint(&conn, &id).unwrap();
+            answer(&conn, &id, "e2e4").unwrap();
+            let retest = next(&conn, &id).unwrap();
+            step = retest.step;
+            due = retest.next_review_at_ms;
+            assert_eq!(retest.task.as_deref(), Some("relearn"));
+        }
+        let conn = storage::open(&path).unwrap();
+        let resumed = begin(&conn, "srs");
+        assert_eq!(
+            (resumed.id.as_str(), resumed.step, resumed.next_review_at_ms),
+            (id.as_str(), step, due)
+        );
+        assert_eq!(resumed.feedback, "awaiting");
+        assert!(resumed.prompt.as_ref().unwrap().accepted_moves.is_empty());
+        let recovered = answer(&conn, &id, "e2e4").unwrap();
+        assert_eq!(
+            (recovered.completed, recovered.mistakes, recovered.recovered),
+            (1, 1, 1)
+        );
+        assert_eq!(recovered.next_review_at_ms, due);
+        assert_eq!(
+            conn.query_row(
+                "SELECT count(*) FROM repertoire_training_reviews WHERE grade IS NOT NULL",
+                [],
+                |row| row.get::<_, i64>(0)
+            )
+            .unwrap(),
+            1
+        );
+    }
+
+    #[test]
+    fn legacy_active_session_keeps_membership_completed_work_and_failed_schedule() {
+        let conn = db();
+        attached(&conn, LONG_LINE, "white");
+        let initial = begin(&conn, "srs");
+        let projected = projection(&conn);
+        let mut legacy = load_session(&conn, &initial.id).unwrap();
+        legacy.items = projected
+            .decisions
+            .iter()
+            .map(|decision| decision.id.clone())
+            .collect();
+        legacy.completed.insert(projected.decisions[0].id.clone());
+        legacy.failed.insert(projected.decisions[1].id.clone());
+        legacy.feedback = "correct".into();
+        legacy.attempted_uci = Some("e2e4".into());
+        schedule(&conn, &legacy, &projected.decisions[0], 4, now_ms()).unwrap();
+        schedule(&conn, &legacy, &projected.decisions[1], 1, now_ms()).unwrap();
+        let due = due_at(&conn, &projected.decisions[1].id).unwrap();
+        let mut json = serde_json::to_value(&legacy).unwrap();
+        for key in [
+            "strategy_version",
+            "new_limit",
+            "queue",
+            "task",
+            "step",
+            "visit_assisted",
+            "scored",
+            "new_items",
+            "introduced",
+            "first_try_correct",
+            "recovered",
+        ] {
+            json.as_object_mut().unwrap().remove(key);
+        }
+        conn.execute(
+            "UPDATE repertoire_training_sessions SET state_json=?1 WHERE id=?2",
+            params![json.to_string(), initial.id],
+        )
+        .unwrap();
+        let resumed = begin(&conn, "srs");
+        assert_eq!(
+            (
+                resumed.id.as_str(),
+                resumed.total,
+                resumed.completed,
+                resumed.feedback.as_str()
+            ),
+            (initial.id.as_str(), 12, 1, "correct")
+        );
+        let pending = next(&conn, &initial.id).unwrap();
+        assert_eq!(
+            pending.prompt.as_ref().unwrap().decision_id,
+            projected.decisions[1].id
+        );
+        assert_eq!(pending.task.as_deref(), Some("relearn"));
+        assert_eq!(pending.feedback, "awaiting");
+        assert!(pending.prompt.as_ref().unwrap().accepted_moves.is_empty());
+        let recalled = answer(&conn, &initial.id, &choose(&conn, &pending)).unwrap();
+        assert_eq!((recalled.completed, recalled.recovered), (2, 1));
+        assert_eq!(due_at(&conn, &projected.decisions[1].id).unwrap(), due);
+        assert_eq!(
+            conn.query_row(
+                "SELECT count(*) FROM repertoire_training_reviews WHERE grade IS NOT NULL",
+                [],
+                |row| row.get::<_, i64>(0)
+            )
+            .unwrap(),
+            0
+        );
     }
 
     #[test]
@@ -1085,7 +2041,12 @@ mod tests {
     fn srs_wrong_hint_and_guided_correction_grade_once_and_preserve_resumable_state() {
         let conn = db();
         attached(&conn, REPERTOIRE, "white");
-        let original = begin(&conn, "srs");
+        let mut original = begin(&conn, "srs");
+        while original.task.as_deref() == Some("learn") {
+            answer(&conn, &original.id, &choose(&conn, &original)).unwrap();
+            original = next(&conn, &original.id).unwrap();
+        }
+        let introductions = count(&conn, "repertoire_training_reviews");
         let id = original.id.clone();
         let failed = answer(&conn, &id, "a2a3").unwrap();
         assert_eq!(failed.feedback, "retry");
@@ -1100,17 +2061,20 @@ mod tests {
             )
             .unwrap();
         assert_eq!((rows.0, rows.1), (0, 1));
-        assert!((rows.2 - 1.96).abs() < 1e-10);
+        assert_eq!(rows.2, 2.5);
         hint(&conn, &id).unwrap();
         hint(&conn, &id).unwrap();
-        assert_eq!(count(&conn, "repertoire_training_reviews"), 1);
+        assert_eq!(
+            count(&conn, "repertoire_training_reviews"),
+            introductions + 1
+        );
         let resumed = begin(&conn, "srs");
         assert_eq!(resumed.id, id);
         assert_eq!(resumed.feedback, "retry");
         let correction = choose(&conn, &resumed);
         let corrected = answer(&conn, &id, &correction).unwrap();
         assert_eq!(corrected.feedback, "assisted");
-        assert_eq!(corrected.completed, 1);
+        assert_eq!(corrected.completed, 0);
         let graded: i64 = conn
             .query_row(
                 "SELECT count(*) FROM repertoire_training_reviews WHERE grade IS NOT NULL",
@@ -1146,45 +2110,54 @@ mod tests {
     }
 
     #[test]
-    fn sm2_uses_published_intervals_and_ease_minimum() {
+    fn fsrs_uses_official_memory_states_and_again_interval_is_shorter_than_good() {
         let conn = db();
         attached(&conn, "1.e4 *", "white");
         let view = begin(&conn, "srs");
         let session = load_session(&conn, &view.id).unwrap();
         let projected = projection(&conn);
         let decision = &projected.decisions[0];
-        for (index, expected) in [1, 6, 15, 38].iter().enumerate() {
-            schedule(&conn, &session, decision, 4, 1000 + index as i64).unwrap();
-            let interval: i64 = conn
-                .query_row(
-                    "SELECT interval_days FROM repertoire_training_srs",
-                    [],
-                    |row| row.get(0),
-                )
-                .unwrap();
-            assert_eq!(interval, *expected);
-        }
-        for _ in 0..10 {
-            schedule(&conn, &session, decision, 1, 1000).unwrap();
-        }
-        let result: (i64, i64, f64) = conn
-            .query_row(
-                "SELECT repetitions,interval_days,ease FROM repertoire_training_srs",
-                [],
-                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
-            )
+        let fsrs = FSRS::default();
+        let expected = fsrs.next_states(None, DESIRED_RETENTION, 0).unwrap().good;
+        schedule(&conn, &session, decision, 4, 1000).unwrap();
+        let state = schedules(&conn, "white").unwrap();
+        let first = &state[&decision.id];
+        assert_eq!(first.memory(), Some(expected.memory));
+        assert!(
+            (first.due_at_ms - 1000 - (expected.interval as f64 * DAY_MS as f64).round() as i64)
+                .abs()
+                <= 1
+        );
+        let elapsed = 2;
+        let expected = fsrs
+            .next_states(first.memory(), DESIRED_RETENTION, elapsed)
             .unwrap();
-        assert_eq!(result, (0, 1, 1.3));
+        let timestamp = 1000 + elapsed as i64 * DAY_MS;
+        schedule(&conn, &session, decision, 1, timestamp).unwrap();
+        let after = schedules(&conn, "white").unwrap();
+        let after = &after[&decision.id];
+        assert_eq!(after.memory(), Some(expected.again.memory));
+        assert!(expected.again.interval < expected.good.interval);
+        assert_eq!(after.repetitions, 0);
+        assert!(after.due_at_ms > timestamp);
     }
 
     #[test]
     fn changed_pgn_keeps_unchanged_solution_history_and_refreshes_coverage() {
         let conn = db();
         let document = attached(&conn, REPERTOIRE, "white");
-        let session = begin(&conn, "srs");
+        let session = begin(&conn, "full_drill");
         let old_root = session.prompt.as_ref().unwrap().decision_id.clone();
         answer(&conn, &session.id, "d2d4").unwrap();
         let old_projection = projection(&conn);
+        schedule(
+            &conn,
+            &load_session(&conn, &session.id).unwrap(),
+            &old_projection.decisions[0],
+            4,
+            now_ms(),
+        )
+        .unwrap();
         let root = &document.chapters[0].root;
         let changed = super::super::apply(
             &conn,
@@ -1210,12 +2183,20 @@ mod tests {
                     .any(|item| item.id == old.id)
             );
         }
-        let resumed = begin(&conn, "srs");
+        let resumed = begin(&conn, "full_drill");
         assert_eq!(resumed.id, session.id);
         assert_eq!(resumed.completed, 0);
         assert_eq!(resumed.prompt.as_ref().unwrap().decision_id, new_root.id);
         // A comment edit cannot invalidate an unchanged decision or its schedule.
         answer(&conn, &resumed.id, "d2d4").unwrap();
+        schedule(
+            &conn,
+            &load_session(&conn, &resumed.id).unwrap(),
+            new_root,
+            4,
+            now_ms(),
+        )
+        .unwrap();
         let before = due_at(&conn, &new_root.id).unwrap();
         super::super::apply(
             &conn,
@@ -1230,7 +2211,7 @@ mod tests {
             },
         )
         .unwrap();
-        assert_eq!(begin(&conn, "srs").completed, 1);
+        assert_eq!(begin(&conn, "full_drill").completed, 1);
         assert_eq!(due_at(&conn, &new_root.id).unwrap(), before);
     }
 
@@ -1252,6 +2233,7 @@ mod tests {
                 scope: scope("white"),
                 mode: "full_drill".into(),
                 restart: true,
+                new_limit: 10,
             },
         )
         .unwrap();
@@ -1270,6 +2252,7 @@ mod tests {
                 scope: scope("black"),
                 mode: "full_drill".into(),
                 restart: false,
+                new_limit: 10,
             },
         )
         .unwrap();
@@ -1293,6 +2276,11 @@ mod tests {
     fn overlapping_srs_scopes_skip_decisions_already_reviewed_elsewhere() {
         let conn = db();
         attached(&conn, REPERTOIRE, "white");
+        let learned = begin(&conn, "srs");
+        let learned = finish(&conn, learned);
+        let baseline = learned.total as i64;
+        conn.execute("UPDATE repertoire_training_srs SET due_at_ms=0,last_review_at_ms=0,stability=1,difficulty=5,scheduler_version=6", [])
+            .unwrap();
         let whole = begin(&conn, "srs");
         let total = whole.total;
         let document = fragments::combined(&conn, "white").unwrap();
@@ -1308,10 +2296,11 @@ mod tests {
                 },
                 mode: "srs".into(),
                 restart: false,
+                new_limit: 10,
             },
         )
         .unwrap();
-        answer(&conn, &scoped.id, "d2d4").unwrap();
+        answer(&conn, &scoped.id, &choose(&conn, &scoped)).unwrap();
         let resumed = begin(&conn, "srs");
         assert_eq!(resumed.id, whole.id);
         assert_eq!(resumed.total, total - 1);
@@ -1326,7 +2315,7 @@ mod tests {
                 |row| row.get(0),
             )
             .unwrap();
-        assert_eq!(grade_count, 1);
+        assert_eq!(grade_count, baseline + 1);
         // An in-flight old answer is discarded after reconciliation, not graded
         // against the different current task chosen during the refresh.
         let other = start(
@@ -1340,6 +2329,7 @@ mod tests {
                 },
                 mode: "srs".into(),
                 restart: true,
+                new_limit: 10,
             },
         )
         .unwrap();
@@ -1354,7 +2344,7 @@ mod tests {
                 |row| row.get(0),
             )
             .unwrap();
-        assert_eq!(count_after, 2);
+        assert_eq!(count_after, baseline + 2);
     }
 
     #[test]
@@ -1401,6 +2391,7 @@ mod tests {
                 scope: source_scope(document, index),
                 mode: mode.into(),
                 restart: false,
+                new_limit: 10,
             },
         )
         .unwrap()
@@ -1480,12 +2471,14 @@ mod tests {
         let global_root = global.prompt.as_ref().unwrap().decision_id.clone();
         answer(&conn, &global_id, "e2e4").unwrap();
         let source = source_begin(&conn, &document, 2, "srs");
-        answer(&conn, &source.id, "d2d4").unwrap();
-        next(&conn, &source.id).unwrap();
-        answer(&conn, &source.id, "g1f3").unwrap();
-        let common = next(&conn, &source.id).unwrap();
+        let mut common = source.clone();
+        while common.completed < common.total {
+            common = answer(&conn, &common.id, &choose(&conn, &common)).unwrap();
+            if common.completed < common.total {
+                common = next(&conn, &common.id).unwrap();
+            }
+        }
         let common_id = common.prompt.as_ref().unwrap().decision_id.clone();
-        answer(&conn, &source.id, "c2c4").unwrap();
         let merged = projection(&conn);
         assert!(
             merged
@@ -1501,7 +2494,9 @@ mod tests {
                 .any(|decision| decision.id == common_id)
         );
         assert!(due_at(&conn, &common_id).unwrap().is_some());
-        assert_eq!(overview(&conn, source_scope(&document, 3)).unwrap().due, 2);
+        let transposed_overview = overview(&conn, source_scope(&document, 3)).unwrap();
+        assert_eq!(transposed_overview.due, 0);
+        assert_eq!(transposed_overview.new_positions, 2);
         let resumed = begin(&conn, "full_drill");
         assert_eq!(resumed.id, global_id);
         assert_eq!(resumed.completed, 1);

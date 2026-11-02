@@ -10,6 +10,76 @@ fn database(app: &tauri::AppHandle) -> std::path::PathBuf {
     app.state::<Arc<StatisticsRuntime>>().database.clone()
 }
 #[tauri::command]
+pub async fn knowledge_tag_suggestions(
+    app: tauri::AppHandle,
+    query: String,
+) -> Result<Vec<String>, AppError> {
+    let activity = command_activity(&app)?;
+    let path = database(&app);
+    tauri::async_runtime::spawn_blocking(move || {
+        let _activity = activity;
+        tag_suggestions(&storage::open(&path)?, &query)
+    })
+    .await
+    .map_err(|_| error("Список тегов недоступен"))?
+}
+#[tauri::command]
+pub async fn knowledge_delete_study(
+    app: tauri::AppHandle,
+    document_id: String,
+    expected_revision: i64,
+) -> Result<(), AppError> {
+    let activity = command_activity(&app)?;
+    let path = database(&app);
+    let handle = app.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        let _activity = activity;
+        delete_study(&storage::open(&path)?, &document_id, expected_revision)?;
+        let _ = handle.emit("knowledge-updated", ());
+        Ok(())
+    })
+    .await
+    .map_err(|_| error("Не удалось удалить знание"))?
+}
+#[tauri::command]
+pub async fn knowledge_import_file(
+    app: tauri::AppHandle,
+    path: String,
+) -> Result<KnowledgeDocument, AppError> {
+    let activity = command_activity(&app)?;
+    let database = database(&app);
+    let handle = app.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        let _activity = activity;
+        let value = import_file(&storage::open(&database)?, std::path::Path::new(&path))?;
+        let _ = handle.emit("knowledge-updated", ());
+        Ok(value)
+    })
+    .await
+    .map_err(|_| error("Не удалось импортировать файл PGN"))?
+}
+#[tauri::command]
+pub async fn knowledge_export_file(
+    app: tauri::AppHandle,
+    document_id: String,
+    path: String,
+    revision: Option<i64>,
+) -> Result<(), AppError> {
+    let activity = command_activity(&app)?;
+    let database = database(&app);
+    tauri::async_runtime::spawn_blocking(move || {
+        let _activity = activity;
+        export_file(
+            &storage::open(&database)?,
+            &document_id,
+            revision,
+            std::path::Path::new(&path),
+        )
+    })
+    .await
+    .map_err(|_| error("Не удалось сохранить файл PGN"))?
+}
+#[tauri::command]
 pub async fn knowledge_list(app: tauri::AppHandle) -> Result<Vec<DocumentSummary>, AppError> {
     let activity = command_activity(&app)?;
     let path = database(&app);

@@ -1,5 +1,6 @@
 import { StatisticsSettings } from "./statistics/StatisticsSettings";
 import { EngineSettings } from "./statistics/EngineSettings";
+import { ProfileSettings } from "./profile/ProfileSettings";
 import { useEffect, useRef, useState } from "react";
 import type { AccountStatus } from "./lichess";
 
@@ -15,12 +16,14 @@ interface SettingsProps {
   onCancel: () => void;
   onDisconnect: () => void;
   initialSection?: string;
+  onRestoringChange?: (value: boolean) => void;
 }
 const sections = [
   ["account", "Аккаунт"],
   ["appearance", "Внешний вид"],
   ["engine", "Движок"],
   ["statistics", "Статистика"],
+  ["data", "Данные"],
 ] as const;
 export function Settings({
   account,
@@ -34,6 +37,7 @@ export function Settings({
   onCancel,
   onDisconnect,
   initialSection = "account",
+  onRestoringChange,
 }: SettingsProps) {
   const [token, setToken] = useState("");
   const [section, setSection] = useState(initialSection);
@@ -194,6 +198,9 @@ export function Settings({
           )}
           {section === "engine" && <EngineSettings />}
           {section === "statistics" && <StatisticsSettings />}
+          {section === "data" && (
+            <ProfileSettings onRestoringChange={onRestoringChange} />
+          )}
         </div>
         {(error || account.message) && (
           <div role="alert" className="error">

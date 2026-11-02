@@ -28,6 +28,7 @@ import {
   saveGraphState,
   type Projection,
   type GraphEdge,
+  type GraphKnowledgeReference,
 } from "./api";
 import {
   pushRoute,
@@ -52,6 +53,28 @@ export interface RepertoireAddress {
   nodeId?: string;
   initialFen?: string;
   initialLinks?: KnowledgeLink[];
+}
+export interface GraphKnowledgeAddress {
+  documentId?: string;
+  chapterId?: string;
+  nodeId?: string;
+  initialFen?: string;
+  initialLinks?: KnowledgeLink[];
+}
+function BookIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      aria-hidden="true"
+    >
+      <path d="M12 5.5C9 3.8 5.5 3.7 2.5 5v15c3-1.3 6.5-1.2 9.5.5 3-1.7 6.5-1.8 9.5-.5V5c-3-1.3-6.5-1.2-9.5.5ZM12 5.5v15" />
+    </svg>
+  );
 }
 const pieceRoles: Record<string, string> = {
   N: "knight",
@@ -110,11 +133,15 @@ export function GameGraph({
   onContextChange,
   openPositionRequest,
   onPositionRequestHandled,
+  onOpenKnowledge,
+  onOpenRepertoire,
+  onOpenGame,
 }: {
   filter: Filter;
   generation: string;
   onOpenGame: (id: string, ply: number) => void;
   onOpenRepertoire?: (address: RepertoireAddress) => void;
+  onOpenKnowledge?: (address: GraphKnowledgeAddress) => void;
   onContextChange?: (label: string) => void;
   openPositionRequest?: DocumentPosition;
   onPositionRequestHandled?: () => void;
@@ -133,6 +160,12 @@ export function GameGraph({
     [loading, setLoading] = useState(false);
   const [documents, setDocuments] = useState<DocumentSummary[]>([]),
     [visibleCount, setVisibleCount] = useState(5);
+  const [includeKnowledge, setIncludeKnowledge] = useState(true);
+  const [knowledgeChoice, setKnowledgeChoice] = useState<{
+    references: GraphKnowledgeReference[];
+    count: number;
+    move: string;
+  } | null>(null);
   const [hovered, setHovered] = useState<{
       uci: string;
       reply?: string;
@@ -174,7 +207,7 @@ export function GameGraph({
       documents
         .filter(
           (d) =>
-            d.kind === "repertoire" &&
+            (d.kind === "repertoire" || d.kind === "study") &&
             d.attachment &&
             d.attachment_active &&
             (d.side === side || d.side === "both"),
@@ -190,6 +223,7 @@ export function GameGraph({
     filterKey,
     repertoireIds,
     docRevision,
+    includeKnowledge,
   ]);
   const contextPending = appliedContext.current !== contextKey;
   const positionRequestKey = JSON.stringify(openPositionRequest);
@@ -207,6 +241,10 @@ export function GameGraph({
       .then(([state, docs]) => {
         if (!alive) return;
         setDocuments(docs);
+        setIncludeKnowledge(
+          (state as { include_knowledge?: boolean } | null)
+            ?.include_knowledge !== false,
+        );
         setHistory(
           restoreHistory(
             (state as { history?: unknown } | null)?.history,
@@ -270,7 +308,7 @@ export function GameGraph({
   }, [hydrated, externalPath]);
   useEffect(() => {
     if (!hydrated) return;
-    const state = { history };
+    const state = { history, include_knowledge: includeKnowledge };
     savedState.current = state;
     const timer = setTimeout(
       () =>
@@ -280,7 +318,7 @@ export function GameGraph({
       300,
     );
     return () => clearTimeout(timer);
-  }, [hydrated, history, account]);
+  }, [hydrated, history, account, includeKnowledge]);
   useEffect(
     () => () => {
       if (savedState.current)
@@ -301,6 +339,7 @@ export function GameGraph({
       top_k: 1,
       max_nodes: 2,
       repertoire_ids: repertoireIds,
+      include_knowledge: includeKnowledge,
       all_paths: false,
       preview_limit: 30,
       preview_top_k: 2,
@@ -345,6 +384,7 @@ export function GameGraph({
     graphScroll.current?.scrollTo({ top: 0, left: 0, behavior: "instant" });
     setSelectedSquare(null);
     setHovered(null);
+    setKnowledgeChoice(null);
   }, [routeKey]);
   useEffect(() => {
     if (!projection || contextPending) return;
@@ -366,12 +406,58 @@ export function GameGraph({
   const edges = projection?.continuations ?? [],
     selected = projection?.selected,
     turn = session.position.turn;
+  const knowledgeReferences =
+    knowledgeChoice?.references ?? selected?.knowledge ?? [];
+  const knowledgeCount =
+    knowledgeChoice?.count ??
+    selected?.knowledge_count ??
+    knowledgeReferences.length;
+  const openKnowledge = (reference: GraphKnowledgeReference) =>
+    onOpenKnowledge?.({
+      documentId: reference.document_id,
+      chapterId: reference.chapter_id,
+      nodeId: reference.node_id,
+    });
+  const chooseKnowledge = (edge: GraphEdge) => {
+    const references = edge.knowledge ?? [];
+    if (references.length === 1 && onOpenKnowledge)
+      openKnowledge(references[0]);
+    else
+      setKnowledgeChoice({
+        references,
+        count: edge.knowledge_count ?? references.length,
+        move: edge.san,
+      });
+  };
+  const createKnowledge = () => {
+    if (!projection || contextPending) return;
+    const links: KnowledgeLink[] = [
+      {
+        target: { type: "position", position_key: projection.selected_key },
+        provenance: "game_graph",
+        initial_fen: projection.initial_fen,
+        path_uci: projection.line,
+      },
+    ];
+    if (selected?.example)
+      links.push({
+        target: { type: "occurrence", ...selected.example },
+        provenance: "game_graph",
+        initial_fen: projection.initial_fen,
+        path_uci: projection.line,
+      });
+    onOpenKnowledge?.({
+      initialFen: projection.selected_fen,
+      initialLinks: links,
+    });
+  };
   const ordered = useMemo(
     () =>
       [...edges].sort(
         (a, b) =>
           b.games - a.games ||
           b.prepared.length - a.prepared.length ||
+          (b.knowledge_count ?? 0) - (a.knowledge_count ?? 0) ||
           a.uci.localeCompare(b.uci),
       ),
     [edges],
@@ -454,68 +540,99 @@ export function GameGraph({
     }
   }
   const title = (edge: GraphEdge) =>
-    `${edge.san}; уникальных партий ${edge.games}; посещений ${edge.visits}; частота ${number(edge.frequency, 1)}%; победы ${edge.wins}, ничьи ${edge.draws}, поражения ${edge.losses}${edge.prepared.length ? "; в репертуаре" : ""}`;
+    `${edge.san}; уникальных партий ${edge.games}; посещений ${edge.visits}; частота ${number(edge.frequency, 1)}%; победы ${edge.wins}, ничьи ${edge.draws}, поражения ${edge.losses}${edge.prepared.length ? "; в репертуаре" : ""}${edge.knowledge_count ? `; знаний ${edge.knowledge_count}` : ""}`;
   const node = (edge: GraphEdge, y: number, parent?: GraphEdge) => (
-    <button
-      key={`${parent?.uci ?? "root"}/${edge.uci}`}
-      className={`branch-node ${edge.prepared.length ? "in-repertoire" : ""} ${!edge.games ? "prepared-only" : ""} ${selectedSquare && !parent && edge.uci.startsWith(selectedSquare) ? "piece-selected" : ""}`}
-      style={{
-        left: PAD + COLUMN * (parent ? 2 : 1),
-        top: y,
-        height: parent ? REPLY_H : NODE_H,
-        width: NODE_W,
-      }}
-      data-level={parent ? 2 : 1}
-      data-uci={edge.uci}
-      data-parent-uci={parent?.uci}
-      aria-label={title(edge)}
-      title={title(edge)}
-      disabled={contextPending}
-      onMouseEnter={() =>
-        setHovered({
-          uci: parent?.uci ?? edge.uci,
-          reply: parent ? edge.uci : undefined,
-        })
-      }
-      onMouseLeave={() => setHovered(null)}
-      onFocus={() =>
-        setHovered({
-          uci: parent?.uci ?? edge.uci,
-          reply: parent ? edge.uci : undefined,
-        })
-      }
-      onBlur={() => setHovered(null)}
-      onClick={(e) =>
-        selectEdge(parent ?? edge, parent ? edge : undefined, e.detail === 0)
-      }
-    >
-      <span className="branch-move">
-        <MoveLabel
-          san={edge.san}
-          color={parent ? (turn === "white" ? "black" : "white") : turn}
-        />
-        {edge.prepared.length > 0 && (
-          <span
-            className="branch-prepared-mark"
-            aria-label="В репертуаре"
-            title="В репертуаре"
-          >
-            ✓
-          </span>
-        )}
-      </span>
-      <span className="branch-counts">
-        {edge.games ? (
-          <>
-            <strong>Партий: {edge.games}</strong>
-            <span>{number(edge.frequency, 0)}%</span>
-          </>
-        ) : (
-          <span>Подготовлено</span>
-        )}
-      </span>
-      <Results edge={edge} />
-    </button>
+    <div key={`${parent?.uci ?? "root"}/${edge.uci}`} className="branch-item">
+      <button
+        className={`branch-node ${edge.prepared.length ? "in-repertoire" : ""} ${!edge.games ? "prepared-only" : ""} ${edge.knowledge_count ? "has-knowledge" : ""} ${!edge.games && !edge.prepared.length ? "knowledge-only" : ""} ${selectedSquare && !parent && edge.uci.startsWith(selectedSquare) ? "piece-selected" : ""}`}
+        style={{
+          left: PAD + COLUMN * (parent ? 2 : 1),
+          top: y,
+          height: parent ? REPLY_H : NODE_H,
+          width: NODE_W,
+        }}
+        data-level={parent ? 2 : 1}
+        data-uci={edge.uci}
+        data-parent-uci={parent?.uci}
+        aria-label={title(edge)}
+        title={title(edge)}
+        disabled={contextPending}
+        onMouseEnter={() =>
+          setHovered({
+            uci: parent?.uci ?? edge.uci,
+            reply: parent ? edge.uci : undefined,
+          })
+        }
+        onMouseLeave={() => setHovered(null)}
+        onFocus={() =>
+          setHovered({
+            uci: parent?.uci ?? edge.uci,
+            reply: parent ? edge.uci : undefined,
+          })
+        }
+        onBlur={() => setHovered(null)}
+        onClick={(e) =>
+          selectEdge(parent ?? edge, parent ? edge : undefined, e.detail === 0)
+        }
+      >
+        <span className="branch-move">
+          <MoveLabel
+            san={edge.san}
+            color={parent ? (turn === "white" ? "black" : "white") : turn}
+          />
+          {edge.prepared.length > 0 && (
+            <span
+              className="branch-prepared-mark"
+              aria-label="В репертуаре"
+              title="В репертуаре"
+            >
+              ✓
+            </span>
+          )}
+        </span>
+        <span className="branch-counts">
+          {edge.games ? (
+            <>
+              <strong>Партий: {edge.games}</strong>
+              <span>{number(edge.frequency, 0)}%</span>
+            </>
+          ) : (
+            <span>{edge.prepared.length ? "Подготовлено" : "Знание"}</span>
+          )}
+        </span>
+        <Results edge={edge} />
+      </button>
+      {includeKnowledge && (edge.knowledge_count ?? 0) > 0 && (
+        <button
+          className="branch-knowledge-mark"
+          style={{
+            left: PAD + COLUMN * (parent ? 2 : 1) + NODE_W - 34,
+            top: y + 8,
+          }}
+          aria-label={`Знания после ${edge.san}: ${edge.knowledge_count}`}
+          title={`Знания: ${edge.knowledge_count}`}
+          disabled={contextPending}
+          onMouseEnter={() =>
+            setHovered({
+              uci: parent?.uci ?? edge.uci,
+              reply: parent ? edge.uci : undefined,
+            })
+          }
+          onMouseLeave={() => setHovered(null)}
+          onFocus={() =>
+            setHovered({
+              uci: parent?.uci ?? edge.uci,
+              reply: parent ? edge.uci : undefined,
+            })
+          }
+          onBlur={() => setHovered(null)}
+          onClick={() => chooseKnowledge(edge)}
+        >
+          <BookIcon />
+          <span>{edge.knowledge_count}</span>
+        </button>
+      )}
+    </div>
   );
   const currentMove = projection?.path_nodes.at(-1);
   return (
@@ -578,9 +695,118 @@ export function GameGraph({
             >
               ⇅
             </button>
+            {selected?.example && (
+              <button
+                disabled={contextPending}
+                onClick={() =>
+                  onOpenGame(selected.example!.game_id, selected.example!.ply)
+                }
+              >
+                Партия
+              </button>
+            )}
+            {onOpenKnowledge && (
+              <button
+                className="graph-create-knowledge"
+                disabled={contextPending || !projection}
+                onClick={createKnowledge}
+              >
+                <BookIcon /> Создать знание
+              </button>
+            )}
           </div>
+          {includeKnowledge && knowledgeReferences.length > 0 && (
+            <section className="graph-knowledge" aria-label="Знания в позиции">
+              <header>
+                <h3>
+                  <BookIcon />{" "}
+                  {knowledgeChoice
+                    ? `После ${knowledgeChoice.move}`
+                    : "Знания в позиции"}{" "}
+                  <span>{knowledgeCount}</span>
+                </h3>
+                {knowledgeChoice && (
+                  <button
+                    aria-label="Закрыть список знаний"
+                    onClick={() => setKnowledgeChoice(null)}
+                  >
+                    ×
+                  </button>
+                )}
+              </header>
+              <ul>
+                {knowledgeReferences.map((reference) => (
+                  <li key={reference.document_id}>
+                    <button
+                      onClick={() => openKnowledge(reference)}
+                      disabled={!onOpenKnowledge}
+                    >
+                      <span className="graph-knowledge-title">
+                        {reference.title}
+                      </span>
+                      <span className="graph-knowledge-type">
+                        {reference.classification === "position"
+                          ? "Позиция"
+                          : "Заметка"}
+                      </span>
+                      {reference.tags.length > 0 && (
+                        <span className="graph-knowledge-tags">
+                          {reference.tags.join(" · ")}
+                        </span>
+                      )}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              {knowledgeCount > knowledgeReferences.length &&
+                onOpenKnowledge && (
+                  <button onClick={() => onOpenKnowledge({})}>
+                    Все знания
+                  </button>
+                )}
+            </section>
+          )}
+          {onOpenRepertoire && edges.some((edge) => edge.prepared.length) && (
+            <div className="graph-repertoire-links">
+              {edges
+                .filter((edge) => edge.prepared.length)
+                .slice(0, 3)
+                .map((edge) => (
+                  <button
+                    key={edge.id}
+                    onClick={() => {
+                      const link = edge.prepared[0];
+                      onOpenRepertoire({
+                        documentId: link.document_id,
+                        chapterId: link.chapter_id,
+                        nodeId: link.node_id,
+                      });
+                    }}
+                  >
+                    ✓ {edge.san} в репертуаре
+                  </button>
+                ))}
+            </div>
+          )}
         </div>
         <div className="graph-branches" aria-label="Ветка и продолжения">
+          <div className="graph-toolbar">
+            <span>
+              Продолжения <strong>{edges.length}</strong>
+            </span>
+            <label className="graph-knowledge-toggle">
+              <input
+                type="checkbox"
+                checked={includeKnowledge}
+                disabled={!hydrated}
+                onChange={(event) => {
+                  setIncludeKnowledge(event.target.checked);
+                  setKnowledgeChoice(null);
+                }}
+              />
+              <BookIcon /> Знания
+            </label>
+          </div>
           <div
             className="graph-history"
             aria-label="История ветки"
@@ -662,14 +888,14 @@ export function GameGraph({
                 {layout.rows.map((row) => (
                   <g key={row.edge.uci}>
                     <path
-                      className={`${row.edge.prepared.length ? "prepared" : ""} ${hovered?.uci === row.edge.uci ? "active" : ""}`}
+                      className={`${row.edge.prepared.length ? "prepared" : ""} ${!row.edge.games && !row.edge.prepared.length && row.edge.knowledge_count ? "knowledge" : ""} ${hovered?.uci === row.edge.uci ? "active" : ""}`}
                       d={`M${PAD + NODE_W} ${layout.rootY + NODE_H / 2} C${PAD + NODE_W + 20} ${layout.rootY + NODE_H / 2},${PAD + COLUMN - 20} ${row.center},${PAD + COLUMN - 3} ${row.center}`}
                       markerEnd="url(#branch-arrow)"
                     />
                     {row.replies.map((reply) => (
                       <path
                         key={reply.edge.uci}
-                        className={`${reply.edge.prepared.length ? "prepared" : ""} ${hovered?.uci === row.edge.uci && hovered.reply === reply.edge.uci ? "active" : ""}`}
+                        className={`${reply.edge.prepared.length ? "prepared" : ""} ${!reply.edge.games && !reply.edge.prepared.length && reply.edge.knowledge_count ? "knowledge" : ""} ${hovered?.uci === row.edge.uci && hovered.reply === reply.edge.uci ? "active" : ""}`}
                         d={`M${PAD + COLUMN + NODE_W} ${row.center} C${PAD + COLUMN + NODE_W + 20} ${row.center},${PAD + COLUMN * 2 - 20} ${reply.y + REPLY_H / 2},${PAD + COLUMN * 2 - 3} ${reply.y + REPLY_H / 2}`}
                         markerEnd="url(#branch-arrow)"
                       />
@@ -695,6 +921,15 @@ export function GameGraph({
                     />
                   ) : (
                     "Начало"
+                  )}
+                  {includeKnowledge && (selected?.knowledge_count ?? 0) > 0 && (
+                    <span
+                      className="branch-current-knowledge"
+                      title={`Знания: ${selected?.knowledge_count}`}
+                    >
+                      <BookIcon />
+                      <span>{selected?.knowledge_count}</span>
+                    </span>
                   )}
                 </span>
                 <span className="branch-counts">
@@ -732,9 +967,7 @@ export function GameGraph({
                   className="graph-empty"
                   style={{ left: PAD + COLUMN, top: layout.rootY }}
                 >
-                  {route.line.length
-                    ? "Ветвь закончилась"
-                    : "Завершённые партии появятся здесь"}
+                  {route.line.length ? "Ветвь закончилась" : "Нет продолжений"}
                 </div>
               )}
             </div>

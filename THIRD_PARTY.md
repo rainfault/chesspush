@@ -17,6 +17,7 @@ Versions are locked in `package-lock.json` and `src-tauri/Cargo.lock`.
 | reqwest / native-tls | Lichess HTTPS via Windows SChannel | MIT / Apache-2.0 |
 | base64 / getrandom / zeroize | PKCE, OS randomness and secret memory cleanup | MIT / Apache-2.0 |
 | windows-sys | Windows credential store and system browser | MIT / Apache-2.0 |
+| [fsrs 6.6.2](https://github.com/open-spaced-repetition/fsrs-rs/tree/v6.6.2) | adaptive repertoire review scheduling | BSD-3-Clause |
 
 Chessground's official npm CSS includes the cburnett SVG pieces by
 **Colin M. L. Burnett**, licensed GPL-2.0-or-later. Its additional license notice
@@ -47,6 +48,13 @@ The font, editable SFD source and glyph map are in `public/lichess/`.
 Its authors and mixed OFL/MIT/CC BY 3.0/AGPLv3+ attribution are retained in
 `public/lichess/licenses/LILA-COPYING.md`, alongside the AGPL license text.
 
+The interface also bundles unmodified Latin and Cyrillic Noto Sans and Roboto
+WOFF2 subsets from [Lichess public/font](https://github.com/lichess-org/lila/tree/2e3e641c32b361c113e696cee34f9fddefef6727/public/font),
+downloaded on 2026-11-02 into `public/lichess/fonts/`. Noto Sans is by Google;
+Roboto is by Christian Robertson. Lichess's [copying notice](https://github.com/lichess-org/lila/blob/2e3e641c32b361c113e696cee34f9fddefef6727/COPYING.md)
+identifies these font files as Apache-2.0. The full license is retained in
+`licenses/APACHE-2.0.txt` and distributed with the installed application.
+
 Statistics legal replay uses [shakmaty 0.30.0](https://github.com/niklasf/shakmaty)
 and [pgn-reader 0.29.1](https://github.com/niklasf/rust-pgn-reader), both
 GPL-3.0-or-later; GPL text is retained in `licenses/GPL-3.0.txt`.
@@ -71,8 +79,10 @@ The renderer comparison under `tools/graph-renderer-prototype.tsx` uses developm
 React Flow 12.12.0 (MIT), Sigma 4.0.3 (MIT), Graphology 0.26.0 (MIT), and ELK.js 0.12.0
 (EPL-2.0 OR GPL-3.0-or-later). These comparison packages are not imported by the product bundle.
 
-Repertoire spaced repetition uses a local implementation of Piotr Woźniak's
-[SM-2 algorithm](https://www.super-memory.com/english/ol/sm2.htm), described in
-*Optimization of learning* (1990). An unaided correct answer receives quality 4;
-an error or hint receives quality 1. Guided corrections do not award a second
-successful review. Full Drill does not update the SM-2 schedule.
+Repertoire scheduling uses the official FSRS 6.6.2 Rust implementation,
+Copyright (c) 2023 Open Spaced Repetition. Its complete notice is retained in
+[licenses/FSRS-BSD-3-Clause.txt](licenses/FSRS-BSD-3-Clause.txt).
+Existing Piotr Woźniak SM-2 schedules retain their due dates and are converted
+using FSRS's migration API when next reviewed. Historical quality 4/1 maps to
+FSRS Good/Again. Guided correction and same-session error retests do not award
+another scheduled review. Full Drill does not change the review schedule.

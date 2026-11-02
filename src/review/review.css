@@ -1,0 +1,330 @@
+.review-library {
+  max-width: 1660px;
+  margin: 0 auto;
+  padding: 10px 24px 16px;
+  height: calc(100dvh - 60px);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.review-library-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 54px;
+}
+.review-library-header h1 {
+  font-size: 24px;
+  font-weight: 400;
+  margin: 0 auto 0 0;
+}
+.review-library-header h1 span {
+  color: var(--secondary);
+  margin-left: 12px;
+  font-size: 18px;
+}
+.review-filters {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+}
+.review-filters input {
+  flex: 1;
+  min-width: 160px;
+}
+.review-filters select {
+  width: auto;
+  max-width: 200px;
+}
+.review-date-filters {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 10px;
+  color: var(--secondary);
+}
+.review-date-filters label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.review-date-filters input {
+  width: 160px;
+}
+.review-games-wrap {
+  overflow: auto;
+  min-height: 0;
+  flex: 1;
+  background: var(--surface);
+  box-shadow: 0 1px 3px #0002;
+}
+.review-games-wrap table {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+  font-variant-numeric: tabular-nums;
+}
+.review-games-wrap thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface-muted);
+  color: var(--secondary);
+}
+.review-games-wrap th {
+  font-weight: 500;
+  text-align: left;
+}
+.review-games-wrap th,
+.review-games-wrap td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--surface-muted);
+}
+.review-games-wrap th:first-child {
+  width: 150px;
+}
+.review-games-wrap th:nth-child(2) {
+  width: 24%;
+}
+.review-games-wrap th:nth-child(3) {
+  width: 86px;
+}
+.review-games-wrap th:nth-child(4) {
+  width: 90px;
+}
+.review-games-wrap th:nth-child(6) {
+  width: 140px;
+}
+.review-games-wrap th:nth-child(7) {
+  width: 140px;
+}
+.review-games-wrap th:last-child {
+  width: 70px;
+  text-align: center;
+}
+.review-games-wrap td:last-child {
+  text-align: center;
+}
+.review-games-wrap td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.review-games-wrap tbody tr:hover {
+  background: var(--hover);
+}
+.review-game-link {
+  display: block;
+  width: 100%;
+  padding: 0;
+  min-height: 26px;
+  text-align: left;
+  color: var(--accent);
+}
+.review-game-link .own-player {
+  color: var(--text);
+  font-weight: 500;
+}
+.review-versus {
+  color: var(--secondary);
+}
+.review-opening,
+.review-row-tags {
+  white-space: nowrap;
+}
+.review-opening > span {
+  color: var(--secondary);
+}
+.review-result {
+  font-family: var(--font-moves);
+  white-space: nowrap;
+}
+.review-analysis-status {
+  white-space: nowrap;
+}
+.review-analysis-status.done,
+.review-is-reviewed,
+.review-game-analysis .done {
+  color: var(--success);
+}
+.review-analysis-status.failed,
+.review-game-analysis .failed {
+  color: var(--error);
+}
+.review-analysis-status.running,
+.review-game-analysis .running {
+  color: var(--accent);
+}
+.review-pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+  min-height: 42px;
+}
+.review-pagination > span {
+  margin-right: auto;
+  color: var(--secondary);
+}
+.review-pagination button {
+  font-size: 23px;
+  min-width: 36px;
+  padding: 0 8px;
+}
+.review-empty {
+  display: grid;
+  place-items: center;
+  flex: 1;
+  color: var(--secondary);
+  font-size: 18px;
+}
+.review-error {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 24px;
+}
+.review-error > span {
+  flex: 1;
+}
+.review-reviewed {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+.review-reviewed input,
+.review-engine input {
+  width: auto;
+}
+.review-source {
+  padding: 10px 12px;
+  display: grid;
+  gap: 5px;
+  border-bottom: 1px solid var(--border);
+}
+.review-source > span:first-child {
+  color: var(--accent);
+}
+.review-source > span:last-child {
+  color: var(--secondary);
+}
+.review-engine {
+  background: var(--surface);
+  border-top: 3px solid var(--success);
+  border-bottom: 1px solid var(--border);
+  padding: 0 10px 8px;
+}
+.review-engine > header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+}
+.review-engine > header label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.review-engine > header button {
+  margin-left: auto;
+  font-size: 20px;
+  padding: 0 5px;
+}
+.review-evaluation {
+  font-size: 22px;
+  font-weight: 500;
+  font-family: var(--font-moves);
+}
+.review-engine-state {
+  color: var(--secondary);
+  min-height: 21px;
+}
+.review-engine-error {
+  color: var(--error);
+}
+.review-engine-error > button {
+  color: var(--accent);
+}
+.review-pv {
+  font: 16px/1.6 var(--font-moves);
+  max-height: 78px;
+  overflow: auto;
+  margin: 4px 0;
+}
+.review-play-engine {
+  padding: 3px 0;
+  color: var(--accent);
+}
+.review-game-analysis {
+  padding: 7px 10px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px 10px;
+  border-bottom: 1px solid var(--border);
+  color: var(--secondary);
+}
+.review-game-analysis button {
+  color: var(--accent);
+  padding: 3px;
+  min-height: 30px;
+}
+.review-save-dialog {
+  width: min(520px, 90vw);
+  padding: 24px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 6px 30px #0006;
+}
+.review-save-dialog::backdrop {
+  background: #0007;
+}
+.review-save-dialog h2 {
+  font-size: 24px;
+  font-weight: 400;
+  margin: 0 0 20px;
+}
+.review-save-dialog form {
+  display: grid;
+  gap: 16px;
+}
+.review-save-dialog label {
+  display: grid;
+  gap: 7px;
+}
+.review-save-dialog footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+@media (max-width: 1100px) {
+  .review-library {
+    padding: 8px 12px 12px;
+  }
+  .review-filters {
+    flex-wrap: wrap;
+  }
+  .review-filters select {
+    flex: 1;
+    max-width: none;
+  }
+  .review-games-wrap th:first-child {
+    width: 130px;
+  }
+  .review-games-wrap th:nth-child(2) {
+    width: 22%;
+  }
+  .review-games-wrap th:nth-child(6) {
+    width: 95px;
+  }
+  .review-games-wrap th:nth-child(7) {
+    width: 115px;
+  }
+  .review-games-wrap th,
+  .review-games-wrap td {
+    padding: 8px 6px;
+  }
+}

@@ -5,9 +5,9 @@
 .graph-workspace {
   display: grid;
   grid-template-columns:
-    minmax(280px, min(39vw, 500px, calc(100dvh - 230px)))
+    minmax(280px, min(44vw, 600px, calc(100dvh - 260px)))
     minmax(0, 1fr);
-  gap: 24px;
+  gap: 16px;
   align-items: start;
 }
 .graph-board {
@@ -18,8 +18,9 @@
 }
 .graph-board-actions {
   display: flex;
-  gap: 8px;
-  padding: 12px 0;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 4px 0;
   align-items: center;
 }
 .graph-board-actions button {
@@ -29,11 +30,43 @@
 .graph-board-actions button:last-child {
   margin-left: auto;
 }
+.graph-board-actions .graph-create-knowledge {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--accent);
+}
+.graph-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 42px;
+  padding: 4px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+.graph-toolbar > span {
+  display: flex;
+  gap: 8px;
+}
+.graph-toolbar strong {
+  font-weight: 500;
+}
+.graph-knowledge-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.graph-knowledge-toggle input {
+  margin: 0 2px 0 0;
+}
 .graph-branches {
   min-width: 0;
   border: 1px solid var(--border);
   background: var(--surface);
-  border-radius: 4px;
+  border-radius: 3px;
   overflow: hidden;
 }
 .graph-history {
@@ -41,9 +74,9 @@
   align-items: center;
   gap: 0;
   overflow: auto hidden;
-  padding: 12px;
+  padding: 6px 10px;
   border-bottom: 1px solid var(--border);
-  min-height: 74px;
+  min-height: 48px;
   scrollbar-width: thin;
 }
 .game-graph .history-node {
@@ -53,13 +86,13 @@
   align-items: center;
   justify-content: center;
   gap: 1px;
-  min-height: 44px;
-  padding: 3px 10px 3px 4px;
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  background: var(--surface-muted);
-  font-size: 16px;
-  margin-right: 20px;
+  min-height: 32px;
+  padding: 2px 6px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: 15px;
+  margin-right: 10px;
 }
 .game-graph .history-node:last-child {
   margin-right: 0;
@@ -67,10 +100,10 @@
 .history-node:not(:last-child)::after {
   content: "";
   position: absolute;
-  width: 20px;
+  width: 10px;
   top: 50%;
   left: 100%;
-  border-top: 2px solid var(--secondary);
+  border-top: 1px solid var(--border);
   pointer-events: none;
 }
 .game-graph .history-node[aria-current] {
@@ -91,7 +124,7 @@
   flex-basis: 25px;
 }
 .graph-scroll {
-  max-height: max(300px, calc(100dvh - 270px));
+  max-height: max(300px, calc(100dvh - 310px));
   overflow: auto;
   scrollbar-width: thin;
 }
@@ -111,7 +144,7 @@
 .branch-connections > g > path {
   fill: none;
   stroke: var(--border);
-  stroke-width: 2;
+  stroke-width: 1.5;
   transition: stroke 150ms ease;
 }
 .branch-connections marker path {
@@ -119,6 +152,10 @@
 }
 .branch-connections > g > path.prepared {
   stroke: var(--repertoire, var(--success));
+}
+.branch-connections > g > path.knowledge {
+  stroke: var(--accent);
+  stroke-dasharray: 3 3;
 }
 .branch-connections > g > path.active {
   stroke: var(--accent);
@@ -128,20 +165,50 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 4px;
+  gap: 3px;
   position: absolute;
   width: 160px;
-  padding: 8px 12px 10px;
+  padding: 7px 8px;
   border: 1px solid var(--control-border, var(--border));
   background: var(--surface);
-  border-radius: 8px;
+  border-radius: 2px;
   text-align: left;
   color: var(--text);
-  box-shadow: 0 2px 4px #0000000a;
   transition:
     border-color 150ms ease,
     background 150ms ease,
     box-shadow 150ms ease;
+}
+.branch-item {
+  display: contents;
+}
+.game-graph .branch-node.has-knowledge:not(.in-repertoire) {
+  border-left: 3px solid var(--accent);
+}
+.game-graph .branch-node.has-knowledge .branch-move {
+  padding-right: 25px;
+}
+.game-graph .branch-node.knowledge-only {
+  border-style: dotted;
+}
+.branch-knowledge-mark {
+  position: absolute;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  color: var(--accent);
+  font-size: 12px;
+  border-radius: 2px;
+}
+.branch-current-knowledge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: auto;
+  color: var(--accent);
+  font-size: 13px;
 }
 .game-graph button.branch-node:hover,
 .game-graph button.branch-node:focus-visible,
@@ -166,22 +233,24 @@
   display: flex;
   align-items: center;
   gap: 2px;
-  font-size: 22px;
+  font-size: 19px;
   font-weight: 500;
-  min-height: 32px;
+  min-height: 26px;
+  white-space: nowrap;
+  font-family: var(--font-moves, var(--font));
 }
 .move-piece.cg-wrap {
   position: relative;
   display: inline-block;
-  width: 32px;
-  height: 32px;
-  flex: 0 0 32px;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
   border-radius: 50%;
   background-color: var(--board-light);
 }
 .move-piece.cg-wrap piece {
-  width: 32px;
-  height: 32px;
+  width: 26px;
+  height: 26px;
   position: absolute;
   background-size: contain;
   background-repeat: no-repeat;
@@ -189,14 +258,14 @@
 .branch-prepared-mark {
   margin-left: auto;
   color: var(--repertoire, var(--success));
-  font-size: 18px;
+  font-size: 15px;
 }
 .branch-counts {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 6px;
-  font-size: 14px;
+  font-size: 13px;
   white-space: nowrap;
 }
 .branch-counts strong {
@@ -209,13 +278,16 @@
   display: flex;
   justify-content: space-between;
   gap: 6px;
-  font-size: 13px;
-  line-height: 18px;
+  font-size: 12px;
+  line-height: 16px;
+}
+.branch-node[data-level="2"] .branch-results {
+  display: none;
 }
 .branch-result-bar {
   display: flex;
   flex-shrink: 0;
-  height: 4px;
+  height: 3px;
   background: var(--border);
   border-radius: 2px;
   overflow: hidden;
@@ -266,10 +338,78 @@
   padding: 32px 0;
   color: var(--secondary);
 }
+.graph-knowledge {
+  margin-top: 8px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+.graph-knowledge > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 36px;
+  padding: 2px 10px;
+  background: var(--surface-muted);
+}
+.graph-knowledge h3 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 400;
+}
+.graph-knowledge h3 > span {
+  color: var(--accent);
+}
+.graph-knowledge ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 164px;
+  overflow: auto;
+}
+.graph-knowledge li + li {
+  border-top: 1px solid var(--border);
+}
+.graph-knowledge li > button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 3px 12px;
+  padding: 9px 12px;
+  text-align: left;
+  border-radius: 0;
+}
+.graph-knowledge-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--accent);
+}
+.graph-knowledge-type {
+  color: var(--secondary);
+  font-size: 13px;
+}
+.graph-knowledge-tags {
+  grid-column: 1 / -1;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}
+.graph-repertoire-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 6px;
+}
+.graph-repertoire-links button {
+  font-size: 14px;
+  padding: 5px 8px;
+  color: var(--success);
+}
 @media (max-width: 1100px) {
   .graph-workspace {
     gap: 16px;
-    grid-template-columns: minmax(280px, 36%) minmax(0, 1fr);
+    grid-template-columns: minmax(280px, 52%) minmax(0, 1fr);
   }
 }
 @media (prefers-reduced-motion: reduce) {

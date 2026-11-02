@@ -232,6 +232,7 @@ mod tests {
         let document = crate::knowledge::import(
             &conn,
             crate::knowledge::ImportRequest {
+                kind: "repertoire".into(),
                 title: "Prepared lines".into(),
                 side: "white".into(),
                 pgn: "1. e4 e5 (1... c5) *".into(),
@@ -243,6 +244,7 @@ mod tests {
         crate::knowledge::import(
             &conn,
             crate::knowledge::ImportRequest {
+                kind: "repertoire".into(),
                 title: "Prepared lines".into(),
                 side: "white".into(),
                 pgn: "1. d4 d5 *".into(),
